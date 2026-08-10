@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wave Physics: Transverse vs Longitudinal</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --secondary: #7c3aed;
+    --accent: #f59e0b;
+    --bg: #f8fafc;
+    --card-bg: #ffffff;
+    --text: #1e293b;
+    --text-light: #64748b;
+    --border: #e2e8f0;
+    --compression: #ef4444;
+    --rarefaction: #3b82f6;
+  }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 24px;
+    min-height: 100vh;
+  }
+  .wave-container { max-width: 900px; margin: 0 auto; }
+  .wave-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+  .wave-tab {
+    flex: 1; padding: 14px 20px; border: 2px solid var(--border); border-radius: 12px;
+    background: var(--card-bg); cursor: pointer; font-size: 15px; font-weight: 600;
+    text-align: center; transition: all 0.2s; color: var(--text-light);
+    box-shadow: 0 3px 0 rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.08);
+    transform: translateY(0);
+  }
+  .wave-tab:hover { border-color: var(--primary); color: var(--primary); transform: translateY(-2px); box-shadow: 0 5px 0 rgba(0,0,0,0.12), 0 8px 14px rgba(0,0,0,0.12); }
+  .wave-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 3px 0 rgba(0,0,0,0.25), 0 4px 8px rgba(0,0,0,0.15); }
+  .wave-tab.active:hover { transform: translateY(-2px); box-shadow: 0 5px 0 rgba(0,0,0,0.25), 0 8px 14px rgba(0,0,0,0.18); }
+  .wave-tab:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08); }
+  .case-panel { display: none; }
+  .case-panel.active { display: block; }
+  .canvas-wrap {
+    background: var(--card-bg); border: 2px solid var(--border); border-radius: 16px;
+    padding: 16px; margin-bottom: 16px; position: relative;
+  }
+  canvas { display: block; width: 100%; border-radius: 8px; background: #f1f5f9; }
+  .controls { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+  .btn {
+    padding: 10px 24px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.25), 0 6px 12px rgba(0,0,0,0.15);
+    transform: translateY(0);
+    position: relative; top: 0;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 rgba(0,0,0,0.25), 0 10px 18px rgba(0,0,0,0.2); }
+  .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.25), 0 2px 4px rgba(0,0,0,0.15); top: 1px; }
+  .btn-start { background: #22c55e; color: #fff; }
+  .btn-start:hover { background: #16a34a; }
+  .btn-pause { background: var(--accent); color: #fff; }
+  .btn-pause:hover { background: #d97706; }
+  .btn-reset { background: var(--text-light); color: #fff; }
+  .btn-reset:hover { background: #475569; }
+  .mode-row {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px;
+  }
+  .btn-wall {
+    background: #fff; border: 2px solid var(--text-light); color: var(--text-light);
+    padding: 9px 18px; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.12), 0 4px 8px rgba(0,0,0,0.08);
+    transform: translateY(0);
+  }
+  .btn-wall:hover { border-color: var(--text); color: var(--text); transform: translateY(-2px); box-shadow: 0 5px 0 rgba(0,0,0,0.12), 0 8px 14px rgba(0,0,0,0.12); }
+  .btn-wall.active { background: #334155; border-color: #334155; color: #fff; box-shadow: 0 3px 0 rgba(0,0,0,0.25), 0 4px 8px rgba(0,0,0,0.15); }
+  .btn-wall.active:hover { transform: translateY(-2px); box-shadow: 0 5px 0 rgba(0,0,0,0.25), 0 8px 14px rgba(0,0,0,0.18); }
+  .btn-wall:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08); }
+  .pulse-group {
+    display: flex; gap: 4px; background: #eef2f7; padding: 4px; border-radius: 10px;
+  }
+  .mode-btn {
+    border: none; background: transparent; padding: 7px 14px; border-radius: 8px;
+    font-size: 12.5px; font-weight: 700; color: var(--text-light); cursor: pointer; transition: all 0.15s;
+    transform: translateY(0);
+    box-shadow: 0 2px 0 rgba(0,0,0,0.06);
+  }
+  .mode-btn:hover { color: var(--primary); transform: translateY(-1px); box-shadow: 0 3px 0 rgba(0,0,0,0.08); }
+  .mode-btn.active { background: var(--primary); color: #fff; box-shadow: 0 2px 0 rgba(0,0,0,0.15), 0 3px 6px rgba(0,0,0,0.1); }
+  .mode-btn.active:hover { transform: translateY(-1px); box-shadow: 0 3px 0 rgba(0,0,0,0.15), 0 5px 10px rgba(0,0,0,0.12); }
+  .mode-btn:active { transform: translateY(1px); box-shadow: 0 1px 0 rgba(0,0,0,0.06); }
+  .sliders { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 16px; }
+  .slider-group { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+  .slider-group label { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: var(--text-light); margin-bottom: 8px; }
+  .slider-group input[type="range"] { width: 100%; accent-color: var(--primary); }
+  .legend {
+    background: #eff6ff; border-left: 4px solid var(--primary); border-radius: 0 12px 12px 0;
+    padding: 14px 18px; font-size: 14px; line-height: 1.6; color: var(--text);
+  }
+  .legend + .legend { margin-top: 12px; }
+  .legend.reflect { background: #fef3c7; border-left-color: var(--accent); }
+  .legend strong { color: var(--primary-dark); }
+  .legend.reflect strong { color: #b45309; }
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-right: 6px;
+  }
+  .badge-comp { background: #fee2e2; color: var(--compression); }
+  .badge-rare { background: #dbeafe; color: var(--rarefaction); }
+  @media (max-width: 600px) {
+    body { padding: 12px; }
+    .wave-tab { font-size: 13px; padding: 12px 10px; }
+  }
+</style>
+<base target="_blank">
+<base target="_blank">
+</head>
+<body>
+<div class="wave-container">
+  <div class="wave-tabs">
+    <div class="wave-tab active" onclick="switchTab(0)">Case 1: Transverse Wave</div>
+    <div class="wave-tab" onclick="switchTab(1)">Case 2: Longitudinal Wave</div>
+  </div>
+
+  <!-- Case 1: Transverse -->
+  <div class="case-panel active" id="case0">
+    <div class="canvas-wrap">
+      <canvas id="canvasT" width="840" height="320"></canvas>
+    </div>
+    <div class="controls">
+      <button class="btn btn-start" onclick="startT()">Start</button>
+      <button class="btn btn-pause" onclick="pauseT()">Pause</button>
+      <button class="btn btn-reset" onclick="resetT()">Reset</button>
+    </div>
+    <div class="mode-row">
+      <button class="btn-wall" id="wallBtnT" onclick="toggleWallT()">🧱 Add Wall</button>
+      <div class="pulse-group" id="pulseGroupT">
+        <button class="mode-btn active" data-val="null" onclick="setPulseT(null)">Continuous</button>
+        <button class="mode-btn" data-val="1" onclick="setPulseT(1)">1 Pulse</button>
+        <button class="mode-btn" data-val="2" onclick="setPulseT(2)">2 Pulses</button>
+      </div>
+    </div>
+    <div class="sliders">
+      <div class="slider-group">
+        <label>Amplitude (A) <span id="valAT">40</span> px</label>
+        <input type="range" id="ampT" min="5" max="100" value="40" oninput="updateT()">
+      </div>
+      <div class="slider-group">
+        <label>Frequency <span id="valFT">0.8</span> Hz</label>
+        <input type="range" id="freqT" min="0.1" max="3.0" step="0.1" value="0.8" oninput="updateT()">
+      </div>
+      <div class="slider-group">
+        <label>Wavelength (λ) <span id="valLT">180</span> px</label>
+        <input type="range" id="waveT" min="60" max="400" value="180" oninput="updateT()">
+      </div>
+    </div>
+    <div class="legend">
+      <strong>Transverse wave:</strong> The particles of the medium move <strong>perpendicular</strong> to the direction the wave travels. Imagine flicking a rope — the bump moves horizontally while each point on the rope moves up and down.
+    </div>
+    <div class="legend reflect">
+      <strong>Studying reflection:</strong> Click <strong>Add Wall</strong> to place a fixed boundary. A never-ending wave keeps arriving and would blend with what bounces back, so switch to <strong>1 Pulse</strong> or <strong>2 Pulses</strong> first — that sends just a short wave train so you can clearly watch it travel out, hit the wall, invert, and return.
+    </div>
+  </div>
+
+  <!-- Case 2: Longitudinal -->
+  <div class="case-panel" id="case1">
+    <div class="canvas-wrap">
+      <canvas id="canvasL" width="840" height="320"></canvas>
+    </div>
+    <div class="controls">
+      <button class="btn btn-start" onclick="startL()">Start</button>
+      <button class="btn btn-pause" onclick="pauseL()">Pause</button>
+      <button class="btn btn-reset" onclick="resetL()">Reset</button>
+    </div>
+    <div class="mode-row">
+      <button class="btn-wall" id="wallBtnL" onclick="toggleWallL()">🧱 Add Wall</button>
+      <div class="pulse-group" id="pulseGroupL">
+        <button class="mode-btn active" data-val="null" onclick="setPulseL(null)">Continuous</button>
+        <button class="mode-btn" data-val="1" onclick="setPulseL(1)">1 Pulse</button>
+        <button class="mode-btn" data-val="2" onclick="setPulseL(2)">2 Pulses</button>
+      </div>
+    </div>
+    <div class="sliders">
+      <div class="slider-group">
+        <label>Amplitude (A) <span id="valAL">15</span> px</label>
+        <input type="range" id="ampL" min="2" max="40" value="15" oninput="updateL()">
+      </div>
+      <div class="slider-group">
+        <label>Frequency <span id="valFL">0.8</span> Hz</label>
+        <input type="range" id="freqL" min="0.1" max="3.0" step="0.1" value="0.8" oninput="updateL()">
+      </div>
+      <div class="slider-group">
+        <label>Wavelength (λ) <span id="valLL">180</span> px</label>
+        <input type="range" id="waveL" min="60" max="400" value="180" oninput="updateL()">
+      </div>
+    </div>
+    <div class="legend">
+      <strong>Longitudinal wave:</strong> The particles of the medium move <strong>parallel</strong> to the direction the wave travels. Think of a Slinky pushed back and forth — particles bunch closer together (compression) and spread further apart (rarefaction) as the disturbance travels along the same axis.
+    </div>
+    <div class="legend reflect">
+      <strong>Studying reflection:</strong> Click <strong>Add Wall</strong> to place a fixed boundary. Switch to <strong>1 Pulse</strong> or <strong>2 Pulses</strong> so only a short burst of compressions is sent — otherwise the continuous stream from the source would keep mixing with the echo bouncing back off the wall.
+    </div>
+  </div>
+</div>
+
+<script>
+  // ===== Shared utilities =====
+  function switchTab(idx) {
+    document.querySelectorAll('.wave-tab').forEach((t,i)=>t.classList.toggle('active', i===idx));
+    document.querySelectorAll('.case-panel').forEach((p,i)=>p.classList.toggle('active', i===idx));
+  }
+
+  // Value of a (possibly pulsed) traveling sine wave, gated by causality.
+  // te = "local time since this point started oscillating" (time since emission reached it).
+  // pulseCycles = null -> continuous train; otherwise number of cycles emitted before source stops.
+  function waveValueAt(te, A, f, omega, pulseCycles) {
+    if (te < 0) return null; // disturbance hasn't arrived here yet
+    const fadeLen = 1 / (4 * f); // quarter-period smoothing so edges don't "switch on/off" abruptly
+    let env = 1;
+    if (te < fadeLen) env *= te / fadeLen;
+    if (pulseCycles !== null) {
+      const dur = pulseCycles / f;
+      if (te > dur) return null; // pulse has fully passed this point
+      if (te > dur - fadeLen) env *= Math.max(0, (dur - te) / fadeLen);
+    }
+    return A * env * Math.sin(omega * te);
+  }
+
+  // Total displacement at rest-position x, time t, from a source at sourceX.
+  // If wallOn, adds a reflected wave computed via the method of images: a mirror
+  // source beyond the wall, phase-inverted (fixed/rigid boundary condition).
+  // Only defined (non-zero) for x <= wallX, since the medium "ends" at the wall.
+  function totalDisplacement(x, t, sourceX, A, f, L, wallOn, wallX, pulseCycles) {
+    const omega = 2 * Math.PI * f;
+    const v = f * L;
+    let y = 0;
+    if (!wallOn || x <= wallX) {
+      const te = t - (x - sourceX) / v;
+      const val = waveValueAt(te, A, f, omega, pulseCycles);
+      if (val !== null) y += val;
+    }
+    if (wallOn && x <= wallX) {
+      const xi = 2 * wallX - x; // image point beyond the wall
+      const te = t - (xi - sourceX) / v;
+      const val = waveValueAt(te, A, f, omega, pulseCycles);
+      if (val !== null) y -= val; // inverted on reflection
+    }
+    return y;
+  }
+
+  function drawWall(ctx, x, yTop, yBot) {
+    ctx.save();
+    ctx.strokeStyle = '#334155'; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(x, yTop); ctx.lineTo(x, yBot); ctx.stroke();
+    ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2;
+    for (let yy = yTop; yy < yBot; yy += 10) {
+      ctx.beginPath(); ctx.moveTo(x, yy); ctx.lineTo(x + 9, yy - 10); ctx.stroke();
+    }
+    ctx.fillStyle = '#334155'; ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('Wall', x, yTop - 6);
+    ctx.textAlign = 'left';
+    ctx.restore();
+  }
+
+  // ===== Case 1: Transverse Wave =====
+  const cT = document.getElementById('canvasT');
+  const ctxT = cT.getContext('2d');
+  let runningT = false, rafT = null;
+  let tT = 0, startedT = false;
+  let wallOnT = false, pulseCyclesT = null;
+  const pointsT = 300;
+
+  function getParamsT() {
+    return {
+      A: +document.getElementById('ampT').value,
+      f: +document.getElementById('freqT').value,
+      L: +document.getElementById('waveT').value,
+    };
+  }
+  function updateT() {
+    const p = getParamsT();
+    document.getElementById('valAT').textContent = p.A;
+    document.getElementById('valFT').textContent = p.f.toFixed(1);
+    document.getElementById('valLT').textContent = p.L;
+    if (!runningT) drawFrameT();
+  }
+  function startT() { if (!runningT) { runningT = true; startedT = true; loopT(); } }
+  function pauseT() { runningT = false; cancelAnimationFrame(rafT); }
+  function resetT() { runningT = false; cancelAnimationFrame(rafT); tT = 0; startedT = false; drawFrameT(); }
+
+  function toggleWallT() {
+    wallOnT = !wallOnT;
+    document.getElementById('wallBtnT').classList.toggle('active', wallOnT);
+    resetT();
+  }
+  function setPulseT(n) {
+    pulseCyclesT = n;
+    document.querySelectorAll('#pulseGroupT .mode-btn').forEach(b => b.classList.toggle('active', b.dataset.val === String(n)));
+    resetT();
+  }
+
+  function drawFrameT() {
+    const w = cT.width, h = cT.height;
+    const p = getParamsT();
+    const A = p.A, L = p.L, f = p.f;
+    const cy = h / 2;
+    const x0 = 40; // origin of the rope (source of disturbance)
+    const wallX = x0 + (w - 80 - x0) * 0.78;
+    const maxX = wallOnT ? wallX : (w - 40);
+
+    ctxT.clearRect(0, 0, w, h);
+
+    // Grid / center line
+    ctxT.strokeStyle = '#cbd5e1'; ctxT.lineWidth = 1;
+    ctxT.beginPath(); ctxT.moveTo(0, cy); ctxT.lineTo(w, cy); ctxT.stroke();
+
+    // Draw rope
+    ctxT.strokeStyle = '#2563eb'; ctxT.lineWidth = 3;
+    ctxT.beginPath();
+    let firstPt = true;
+    for (let i = 0; i <= pointsT; i++) {
+      const x = (i / pointsT) * (w - 80) + x0;
+      if (x > maxX + 0.001) break;
+      const y = startedT ? cy - totalDisplacement(x, tT, x0, A, f, L, wallOnT, wallX, pulseCyclesT) : cy;
+      if (firstPt) { ctxT.moveTo(x, y); firstPt = false; } else ctxT.lineTo(x, y);
+    }
+    ctxT.stroke();
+
+    // Draw points on rope
+    ctxT.fillStyle = '#1e40af';
+    for (let i = 0; i <= pointsT; i += 6) {
+      const x = (i / pointsT) * (w - 80) + x0;
+      if (x > maxX + 0.001) break;
+      const y = startedT ? cy - totalDisplacement(x, tT, x0, A, f, L, wallOnT, wallX, pulseCyclesT) : cy;
+      ctxT.beginPath(); ctxT.arc(x, y, 2.5, 0, Math.PI * 2); ctxT.fill();
+    }
+
+    // Wavefront marker (only meaningful in open, continuous mode)
+    if (!wallOnT && startedT) {
+      const speed = f * L;
+      const frontX = x0 + speed * tT;
+      if (frontX < w - 40) {
+        ctxT.strokeStyle = '#94a3b8'; ctxT.lineWidth = 1.5;
+        ctxT.setLineDash([3, 3]);
+        ctxT.beginPath(); ctxT.moveTo(frontX, cy - A - 15); ctxT.lineTo(frontX, cy + A + 15); ctxT.stroke();
+        ctxT.setLineDash([]);
+      }
+
+      // Amplitude / wavelength labels only shown in the plain open continuous case
+      if (pulseCyclesT === null) {
+        const xLabel = x0 + L * 0.25;
+        if (xLabel <= frontX) {
+          const yLabel = cy - totalDisplacement(xLabel, tT, x0, A, f, L, false, wallX, null);
+          ctxT.strokeStyle = '#ef4444'; ctxT.lineWidth = 1.5;
+          ctxT.setLineDash([4, 4]);
+          ctxT.beginPath(); ctxT.moveTo(xLabel, cy); ctxT.lineTo(xLabel, yLabel); ctxT.stroke();
+          ctxT.setLineDash([]);
+          ctxT.fillStyle = '#ef4444'; ctxT.font = 'bold 39px sans-serif';
+          ctxT.fillText('A', xLabel + 6, (cy + yLabel) / 2);
+        }
+        const x1 = x0 + L * 0.6;
+        const x2 = x1 + L;
+        if (x2 <= frontX) {
+          const yBase = cy + A + 28;
+          ctxT.strokeStyle = '#7c3aed'; ctxT.lineWidth = 1.5;
+          ctxT.beginPath();
+          ctxT.moveTo(x1, yBase - 6); ctxT.lineTo(x1, yBase + 6);
+          ctxT.moveTo(x2, yBase - 6); ctxT.lineTo(x2, yBase + 6);
+          ctxT.moveTo(x1, yBase); ctxT.lineTo(x2, yBase); ctxT.stroke();
+          ctxT.fillStyle = '#7c3aed'; ctxT.font = 'bold 39px sans-serif';
+          ctxT.fillText('λ', (x1 + x2) / 2 - 5, yBase + 18);
+        }
+      }
+    }
+
+    // Direction label
+    ctxT.fillStyle = '#334155'; ctxT.font = '12px sans-serif';
+    ctxT.fillText(wallOnT ? 'Incident →    ← Reflected' : 'Wave direction →', w - 200, cy - A - 20);
+
+    // Wall
+    if (wallOnT) drawWall(ctxT, wallX, 20, h - 20);
+
+    // YV watermark
+    ctxT.save();
+    ctxT.font = 'bold 39px sans-serif';
+    ctxT.fillStyle = 'rgba(100, 116, 139, 0.35)';
+    ctxT.textAlign = 'right';
+    ctxT.fillText('YV', w - 12, h - 12);
+    ctxT.restore();
+  }
+
+  function loopT() {
+    if (!runningT) return;
+    tT += 1 / 60;
+    drawFrameT();
+    rafT = requestAnimationFrame(loopT);
+  }
+
+  // ===== Case 2: Longitudinal Wave =====
+  const cL = document.getElementById('canvasL');
+  const ctxL = cL.getContext('2d');
+  let runningL = false, rafL = null;
+  let tL = 0, startedL = false;
+  let wallOnL = false, pulseCyclesL = null;
+  const nDots = 45;
+  const dotR = 4;
+  const nRows = 7;
+
+  function getParamsL() {
+    return {
+      A: +document.getElementById('ampL').value,
+      f: +document.getElementById('freqL').value,
+      L: +document.getElementById('waveL').value,
+    };
+  }
+  function updateL() {
+    const p = getParamsL();
+    document.getElementById('valAL').textContent = p.A;
+    document.getElementById('valFL').textContent = p.f.toFixed(1);
+    document.getElementById('valLL').textContent = p.L;
+    if (!runningL) drawFrameL();
+  }
+  function startL() { if (!runningL) { runningL = true; startedL = true; loopL(); } }
+  function pauseL() { runningL = false; cancelAnimationFrame(rafL); }
+  function resetL() { runningL = false; cancelAnimationFrame(rafL); tL = 0; startedL = false; drawFrameL(); }
+
+  function toggleWallL() {
+    wallOnL = !wallOnL;
+    document.getElementById('wallBtnL').classList.toggle('active', wallOnL);
+    resetL();
+  }
+  function setPulseL(n) {
+    pulseCyclesL = n;
+    document.querySelectorAll('#pulseGroupL .mode-btn').forEach(b => b.classList.toggle('active', b.dataset.val === String(n)));
+    resetL();
+  }
+
+  function drawFrameL() {
+    const w = cL.width, h = cL.height;
+    const p = getParamsL();
+    const A = p.A, L = p.L, f = p.f;
+    const margin = 60;
+    const usableW = w - margin * 2;
+    const spacing = usableW / (nDots - 1);
+    const wallX = margin + usableW * 0.78;
+    const sourceX = 0; // matches original phase reference (rest position itself)
+
+    ctxL.clearRect(0, 0, w, h);
+
+    const rowSpacing = 28;
+    const rowsTop = h / 2 - (rowSpacing * (nRows - 1)) / 2;
+
+    ctxL.strokeStyle = '#e2e8f0'; ctxL.lineWidth = 1;
+    ctxL.beginPath();
+    ctxL.moveTo(margin, h / 2);
+    ctxL.lineTo(w - margin, h / 2);
+    ctxL.stroke();
+
+    for (let r = 0; r < nRows; r++) {
+      const rowY = rowsTop + r * rowSpacing;
+      for (let i = 0; i < nDots; i++) {
+        const xr = margin + i * spacing;
+        if (wallOnL && xr > wallX + 0.001) continue;
+        const x = startedL ? xr + totalDisplacement(xr, tL, sourceX, A, f, L, wallOnL, wallX, pulseCyclesL) : xr;
+        ctxL.beginPath();
+        ctxL.arc(x, rowY, dotR, 0, Math.PI * 2);
+        ctxL.fillStyle = '#334155';
+        ctxL.fill();
+      }
+    }
+
+    if (!wallOnL && startedL) {
+      const speed = f * L;
+      const frontX = margin + speed * tL;
+      if (frontX < w - margin) {
+        ctxL.strokeStyle = '#94a3b8'; ctxL.lineWidth = 1.5;
+        ctxL.setLineDash([3, 3]);
+        ctxL.beginPath();
+        ctxL.moveTo(frontX, rowsTop - 16);
+        ctxL.lineTo(frontX, rowsTop + rowSpacing * (nRows - 1) + 16);
+        ctxL.stroke();
+        ctxL.setLineDash([]);
+      }
+    }
+
+    ctxL.fillStyle = '#334155'; ctxL.font = '12px sans-serif';
+    ctxL.fillText(wallOnL ? 'Incident →    ← Reflected' : 'Wave direction →', w - 200, rowsTop - 30);
+
+    if (wallOnL) drawWall(ctxL, wallX, rowsTop - 16, rowsTop + rowSpacing * (nRows - 1) + 16);
+
+    ctxL.save();
+    ctxL.font = 'bold 39px sans-serif';
+    ctxL.fillStyle = 'rgba(100, 116, 139, 0.35)';
+    ctxL.textAlign = 'right';
+    ctxL.fillText('YV', w - 12, h - 12);
+    ctxL.restore();
+  }
+
+  function loopL() {
+    if (!runningL) return;
+    tL += 1 / 60;
+    drawFrameL();
+    rafL = requestAnimationFrame(loopL);
+  }
+
+  // Init
+  drawFrameT();
+  drawFrameL();
+</script>
+</body>
+</html>
