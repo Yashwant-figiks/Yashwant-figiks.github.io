@@ -53,6 +53,7 @@
     box-shadow: 0 4px 0 rgba(0,0,0,0.25), 0 6px 12px rgba(0,0,0,0.15);
     transform: translateY(0);
     position: relative; top: 0;
+    min-width: 96px;
   }
   .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 0 rgba(0,0,0,0.25), 0 10px 18px rgba(0,0,0,0.2); }
   .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,0.25), 0 2px 4px rgba(0,0,0,0.15); top: 1px; }
@@ -127,8 +128,7 @@
       <canvas id="canvasT" width="840" height="320"></canvas>
     </div>
     <div class="controls">
-      <button class="btn btn-start" onclick="startT()">Start</button>
-      <button class="btn btn-pause" onclick="pauseT()">Pause</button>
+      <button class="btn btn-start" id="playBtnT" onclick="togglePlayT()">Play</button>
       <button class="btn btn-reset" onclick="resetT()">Reset</button>
     </div>
     <div class="mode-row">
@@ -167,8 +167,7 @@
       <canvas id="canvasL" width="840" height="320"></canvas>
     </div>
     <div class="controls">
-      <button class="btn btn-start" onclick="startL()">Start</button>
-      <button class="btn btn-pause" onclick="pauseL()">Pause</button>
+      <button class="btn btn-start" id="playBtnL" onclick="togglePlayL()">Play</button>
       <button class="btn btn-reset" onclick="resetL()">Reset</button>
     </div>
     <div class="mode-row">
@@ -283,9 +282,29 @@
     document.getElementById('valLT').textContent = p.L;
     if (!runningT) drawFrameT();
   }
-  function startT() { if (!runningT) { runningT = true; startedT = true; loopT(); } }
-  function pauseT() { runningT = false; cancelAnimationFrame(rafT); }
-  function resetT() { runningT = false; cancelAnimationFrame(rafT); tT = 0; startedT = false; drawFrameT(); }
+
+  function updatePlayBtnT() {
+    const btn = document.getElementById('playBtnT');
+    btn.textContent = runningT ? 'Pause' : 'Play';
+    btn.classList.toggle('btn-start', !runningT);
+    btn.classList.toggle('btn-pause', runningT);
+  }
+  function togglePlayT() {
+    if (runningT) {
+      runningT = false;
+      cancelAnimationFrame(rafT);
+    } else {
+      runningT = true;
+      startedT = true;
+      loopT();
+    }
+    updatePlayBtnT();
+  }
+  function resetT() {
+    runningT = false; cancelAnimationFrame(rafT); tT = 0; startedT = false;
+    drawFrameT();
+    updatePlayBtnT();
+  }
 
   function toggleWallT() {
     wallOnT = !wallOnT;
@@ -419,9 +438,29 @@
     document.getElementById('valLL').textContent = p.L;
     if (!runningL) drawFrameL();
   }
-  function startL() { if (!runningL) { runningL = true; startedL = true; loopL(); } }
-  function pauseL() { runningL = false; cancelAnimationFrame(rafL); }
-  function resetL() { runningL = false; cancelAnimationFrame(rafL); tL = 0; startedL = false; drawFrameL(); }
+
+  function updatePlayBtnL() {
+    const btn = document.getElementById('playBtnL');
+    btn.textContent = runningL ? 'Pause' : 'Play';
+    btn.classList.toggle('btn-start', !runningL);
+    btn.classList.toggle('btn-pause', runningL);
+  }
+  function togglePlayL() {
+    if (runningL) {
+      runningL = false;
+      cancelAnimationFrame(rafL);
+    } else {
+      runningL = true;
+      startedL = true;
+      loopL();
+    }
+    updatePlayBtnL();
+  }
+  function resetL() {
+    runningL = false; cancelAnimationFrame(rafL); tL = 0; startedL = false;
+    drawFrameL();
+    updatePlayBtnL();
+  }
 
   function toggleWallL() {
     wallOnL = !wallOnL;
