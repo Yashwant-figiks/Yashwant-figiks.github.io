@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌊 Wave Reflection Simulator</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  :root {
+    --primary: #ff6b6b;
+    --secondary: #4ecdc4;
+    --accent: #ffe66d;
+    --bg: #f0f4f8;
+    --card-bg: #ffffff;
+    --text: #2d3748;
+    --compression: #e53e3e;
+    --rarefaction: #3182ce;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: 'Comic Sans MS', 'Comic Neue', 'Chalkboard SE', 'Marker Felt', 'Purisa', cursive, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: var(--text);
+    margin: 0;
+    padding-bottom: 40px;
+  }
+
+  .main-title {
+    text-align: center;
+    color: #fff;
+    text-shadow: 3px 3px 0 rgba(0,0,0,0.3);
+    font-size: 2.4rem;
+    font-weight: bold;
+    margin: 24px 0;
+    letter-spacing: 1px;
+  }
+
+  .wave-card {
+    background: var(--card-bg);
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    padding: 24px;
+    margin-bottom: 24px;
+    border: 4px solid #fff;
+  }
+
+  .nav-pills .nav-link {
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #fff;
+    background: rgba(255,255,255,0.2);
+    border-radius: 16px;
+    margin: 0 8px;
+    padding: 14px 28px;
+    border: 3px solid transparent;
+    transition: all 0.2s;
+  }
+  .nav-pills .nav-link:hover {
+    background: rgba(255,255,255,0.35);
+    transform: translateY(-2px);
+  }
+  .nav-pills .nav-link.active {
+    background: #ffe66d;
+    color: #333;
+    border-color: #ffd43b;
+    box-shadow: 0 6px 0 #fcc419, 0 8px 20px rgba(0,0,0,0.2);
+  }
+
+  .btn-3d {
+    border: none;
+    border-radius: 16px;
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    font-weight: bold;
+    font-size: 1.15rem;
+    padding: 14px 32px;
+    cursor: pointer;
+    transition: all 0.12s ease;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.25), 0 8px 16px rgba(0,0,0,0.15);
+    transform: translateY(0);
+    position: relative;
+    outline: none;
+    user-select: none;
+  }
+  .btn-3d:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 9px 0 rgba(0,0,0,0.25), 0 12px 24px rgba(0,0,0,0.2);
+  }
+  .btn-3d:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 rgba(0,0,0,0.25), 0 4px 8px rgba(0,0,0,0.15);
+  }
+
+  .btn-play { background: linear-gradient(180deg, #51cf66 0%, #37b24d 100%); color: white; }
+  .btn-pause { background: linear-gradient(180deg, #ffd43b 0%, #fcc419 100%); color: #333; }
+  .btn-reset { background: linear-gradient(180deg, #868e96 0%, #495057 100%); color: white; }
+  .btn-wall-off { background: linear-gradient(180deg, #ff6b6b 0%, #fa5252 100%); color: white; }
+  .btn-wall-on { background: linear-gradient(180deg, #339af0 0%, #228be6 100%); color: white; }
+  .btn-rigid { background: linear-gradient(180deg, #845ef7 0%, #7950f2 100%); color: white; }
+  .btn-nonrigid { background: linear-gradient(180deg, #20c997 0%, #12b886 100%); color: white; }
+  .btn-rigid-off, .btn-nonrigid-off { background: linear-gradient(180deg, #ced4da 0%, #adb5bd 100%); color: #333; }
+  .btn-ring-off { background: linear-gradient(180deg, #fd7e14 0%, #e8590c 100%); color: white; }
+  .btn-ring-on { background: linear-gradient(180deg, #20c997 0%, #12b886 100%); color: white; }
+
+  .canvas-wrap {
+    background: #f8fafc;
+    border-radius: 20px;
+    border: 3px solid #e2e8f0;
+    padding: 12px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%);
+  }
+
+  .control-row {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .slider-card {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 16px 20px;
+    border: 2px solid #e2e8f0;
+    transition: all 0.2s;
+  }
+  .slider-card:hover {
+    border-color: #a5b4fc;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  .slider-card label {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    color: #4a5568;
+    margin-bottom: 10px;
+    font-size: 1rem;
+  }
+  .slider-card input[type="range"] {
+    width: 100%;
+    height: 10px;
+    border-radius: 5px;
+    background: #e2e8f0;
+    outline: none;
+    -webkit-appearance: none;
+  }
+  .slider-card input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    cursor: pointer;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+    border: 3px solid #fff;
+  }
+  .slider-card input[type="range"]::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    cursor: pointer;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+    border: 3px solid #fff;
+  }
+
+  .legend-box {
+    background: #fffbeb;
+    border-left: 6px solid #f59e0b;
+    border-radius: 0 16px 16px 0;
+    padding: 16px 20px;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-top: 16px;
+    color: #4a5568;
+  }
+  .legend-box strong { color: #b45309; }
+  .badge-comp {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    background: #fee2e2;
+    color: #c53030;
+    margin-right: 6px;
+  }
+  .badge-rare {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    background: #dbeafe;
+    color: #2b6cb0;
+    margin-right: 6px;
+  }
+
+  .density-label {
+    font-size: 0.9rem;
+    font-weight: bold;
+    padding: 4px 12px;
+    border-radius: 8px;
+    display: inline-block;
+    margin-top: 8px;
+  }
+  .label-rarer { background: #c6f6d5; color: #276749; }
+  .label-denser { background: #fed7d7; color: #c53030; }
+  .label-equal { background: #e2e8f0; color: #475569; }
+
+  @media (max-width: 768px) {
+    .main-title { font-size: 1.6rem; }
+    .btn-3d { padding: 12px 20px; font-size: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container-fluid px-3 px-md-4">
+  <h1 class="main-title">🌊 Wave Reflection Simulator</h1>
+
+  <ul class="nav nav-pills nav-fill mb-4 justify-content-center" id="waveTab" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="tab-transverse" data-bs-toggle="pill" data-bs-target="#panel-transverse" type="button" role="tab">Case 1: Transverse Wave</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-longitudinal" data-bs-toggle="pill" data-bs-target="#panel-longitudinal" type="button" role="tab">Case 2: Longitudinal Wave</button>
+    </li>
+  </ul>
+
+  <div class="tab-content" id="waveTabContent">
+
+    <!-- ==================== CASE 1: TRANSVERSE ==================== -->
+    <div class="tab-pane fade show active" id="panel-transverse" role="tabpanel">
+      <div class="wave-card">
+        <div class="canvas-wrap">
+          <canvas id="canvasT" width="900" height="360"></canvas>
+        </div>
+
+        <div class="control-row">
+          <button class="btn-3d btn-play" id="playBtnT" onclick="togglePlayT()">▶ Play</button>
+          <button class="btn-3d btn-reset" onclick="resetT()">↺ Reset</button>
+          <button class="btn-3d btn-wall-off" id="wallBtnT" onclick="toggleWallT()">🧱 Wall: OFF</button>
+          <button class="btn-3d btn-ring-off" id="ringBtnT" onclick="toggleRingT()">🔗 Ring & Rod: OFF</button>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <div class="slider-card">
+              <label>Amplitude (A) <span id="valAT">50</span> px</label>
+              <input type="range" id="ampT" min="10" max="90" value="50" oninput="updateT()">
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="slider-card">
+              <label>Frequency <span id="valFT">1.0</span> Hz</label>
+              <input type="range" id="freqT" min="0.3" max="2.5" step="0.1" value="1.0" oninput="updateT()">
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="slider-card">
+              <label>Wavelength (λ) <span id="valLT">200</span> px</label>
+              <input type="range" id="waveT" min="100" max="400" value="200" oninput="updateT()">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="slider-card">
+              <label>Left String Thickness (μ₁) <span id="valD1">1.0</span></label>
+              <input type="range" id="dens1T" min="0.5" max="3.0" step="0.1" value="1.0" oninput="updateT()">
+              <div class="density-label label-rarer" id="labelD1">Rarer Medium</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="slider-card">
+              <label>Right String Thickness (μ₂) <span id="valD2">2.5</span></label>
+              <input type="range" id="dens2T" min="0.5" max="3.0" step="0.1" value="2.5" oninput="updateT()">
+              <div class="density-label label-denser" id="labelD2">Denser Medium</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="legend-box">
+          <strong>How it works:</strong> The left string sends a single crest pulse toward the boundary.
+          <span id="explainT">Since the right side is <strong>denser</strong>, the reflected pulse <strong>inverts</strong> (crest becomes trough), while a smaller pulse transmits through.</span>
+          <br><br>
+          <strong>Tip:</strong> Toggle <strong>Wall</strong> for a fixed end — the pulse bounces back completely <strong>inverted</strong> as a trough. Toggle <strong>Ring & Rod</strong> for a free end — a light ring sliding on a frictionless rod — and the pulse bounces back <strong>upright</strong>, no inversion at all!
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== CASE 2: LONGITUDINAL ==================== -->
+    <div class="tab-pane fade" id="panel-longitudinal" role="tabpanel">
+      <div class="wave-card">
+        <div class="canvas-wrap">
+          <canvas id="canvasL" width="900" height="360"></canvas>
+        </div>
+
+        <div class="control-row">
+          <button class="btn-3d btn-play" id="playBtnL" onclick="togglePlayL()">▶ Play</button>
+          <button class="btn-3d btn-reset" onclick="resetL()">↺ Reset</button>
+          <button class="btn-3d btn-rigid" id="rigidBtnL" onclick="toggleRigidL()">🧱 Rigid Wall: ON</button>
+          <button class="btn-3d btn-nonrigid-off" id="nonrigidBtnL" onclick="toggleNonRigidL()">🌀 Non-Rigid Wall: OFF</button>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <div class="slider-card">
+              <label>Amplitude (A) <span id="valAL">18</span> px</label>
+              <input type="range" id="ampL" min="3" max="40" value="18" oninput="updateL()">
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="slider-card">
+              <label>Frequency <span id="valFL">1.0</span> Hz</label>
+              <input type="range" id="freqL" min="0.3" max="2.5" step="0.1" value="1.0" oninput="updateL()">
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="slider-card">
+              <label>Wavelength (λ) <span id="valLL">200</span> px</label>
+              <input type="range" id="waveL" min="100" max="400" value="200" oninput="updateL()">
+            </div>
+          </div>
+        </div>
+
+        <div class="legend-box">
+          <strong>Longitudinal Wave:</strong> Particles oscillate <strong>parallel</strong> to wave direction.
+          <span class="badge-comp">C</span> = Compression (particles bunched) &nbsp;
+          <span class="badge-rare">R</span> = Rarefaction (particles spread).
+          <br><br>
+          <span id="explainL"><strong>Rigid Wall mode:</strong> Compression reflects as <strong>Compression</strong> (no phase change). Click the button to switch to <strong>Non-Rigid</strong> and see inversion — Compression becomes Rarefaction!</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ==================== SHARED HELPERS ====================
+
+// Single-crest pulse: a smooth half-sine hump, always positive in shape.
+// Multiplying by a negative coefficient flips it into a trough.
+function pulseShape(te, duration) {
+  if (te < 0 || te > duration) return 0;
+  return Math.sin((te / duration) * Math.PI);
+}
+function pulseAt(te, A, duration) {
+  const s = pulseShape(te, duration);
+  return s === 0 ? 0 : A * s;
+}
+
+// Continuous causal sine with a short fade-in so the wavefront doesn't "switch on" abruptly.
+function contWaveAt(te, A, omega) {
+  if (te < 0) return 0;
+  const fadeLen = (2 * Math.PI / omega) / 4;
+  let env = 1;
+  if (te < fadeLen) env = te / fadeLen;
+  return A * env * Math.sin(omega * te);
+}
+
+// Longitudinal single pulse: one smoothed full cycle of displacement. This naturally
+// produces a compression at the pulse's center flanked by a rarefaction on each side —
+// just like a single push-and-release wavelet in a real slinky/spring.
+function longPulseAt(te, A, duration) {
+  if (te < 0 || te > duration) return 0;
+  return -A * Math.sin(Math.PI * te / duration) * Math.sin(2 * Math.PI * te / duration);
+}
+
+function drawWatermark(ctx, w, h) {
+  ctx.save();
+  ctx.font = 'bold 22px Arial, Helvetica, sans-serif';
+  ctx.fillStyle = 'rgba(100, 116, 139, 0.35)';
+  ctx.textAlign = 'right';
+  ctx.fillText('YV', w - 14, h - 14);
+  ctx.restore();
+}
+
+function drawArrow(ctx, x, y, dir, color, label) {
+  // dir: +1 = pointing right, -1 = pointing left
+  const len = 22, headSize = 8;
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(x - dir * len / 2, y);
+  ctx.lineTo(x + dir * len / 2, y);
+  ctx.stroke();
+  ctx.beginPath();
+  const tipX = x + dir * len / 2;
+  ctx.moveTo(tipX, y);
+  ctx.lineTo(tipX - dir * headSize, y - headSize * 0.7);
+  ctx.lineTo(tipX - dir * headSize, y + headSize * 0.7);
+  ctx.closePath();
+  ctx.fill();
+  if (label) {
+    ctx.font = 'bold 13px "Comic Sans MS", cursive, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, x, y - 14);
+  }
+  ctx.restore();
+}
+
+function drawWallGraphic(ctx, x, yTop, yBot, color) {
+  ctx.save();
+  ctx.strokeStyle = color; ctx.lineWidth = 5;
+  ctx.beginPath(); ctx.moveTo(x, yTop); ctx.lineTo(x, yBot); ctx.stroke();
+  ctx.strokeStyle = color; ctx.lineWidth = 2;
+  for (let yy = yTop; yy < yBot; yy += 11) {
+    ctx.beginPath(); ctx.moveTo(x, yy); ctx.lineTo(x + 10, yy - 11); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+// ==================== CASE 1: TRANSVERSE WAVE ====================
+const cT = document.getElementById('canvasT');
+const ctxT = cT.getContext('2d');
+let runningT = false, rafT = null, tT = 0, startedT = false, stopAtT = Infinity;
+// modeT: 'boundary' = two-segment density reflection/transmission (default)
+//        'wall'     = rigid fixed end -> total reflection, INVERTED (trough)
+//        'ring'     = ring on a frictionless rod (free end) -> total reflection, NOT inverted (crest)
+let modeT = 'boundary';
+
+const x0T = 50;
+const boundaryXT = 450;
+const wallXT = 830;
+const rightEdgeT = 870;
+const baseSpeedT = 220; // px/sec reference speed (density = 1)
+
+function getParamsT() {
+  return {
+    A: +document.getElementById('ampT').value,
+    f: +document.getElementById('freqT').value,
+    lambda: +document.getElementById('waveT').value,
+    d1: +document.getElementById('dens1T').value,
+    d2: +document.getElementById('dens2T').value
+  };
+}
+
+function updateT() {
+  const p = getParamsT();
+  document.getElementById('valAT').textContent = p.A;
+  document.getElementById('valFT').textContent = p.f.toFixed(1);
+  document.getElementById('valLT').textContent = p.lambda;
+  document.getElementById('valD1').textContent = p.d1.toFixed(1);
+  document.getElementById('valD2').textContent = p.d2.toFixed(1);
+
+  const lbl1 = document.getElementById('labelD1');
+  const lbl2 = document.getElementById('labelD2');
+  const explain = document.getElementById('explainT');
+
+  if (modeT === 'wall') {
+    lbl1.textContent = 'String Medium';
+    lbl1.className = 'density-label label-equal';
+    lbl2.textContent = 'Wall Active (ignored)';
+    lbl2.className = 'density-label label-equal';
+    explain.innerHTML = 'A <strong>rigid wall</strong> is active at the far end — the pulse reflects <strong>completely</strong> and <strong>inverts</strong> into a trough, regardless of the density sliders.';
+  } else if (modeT === 'ring') {
+    lbl1.textContent = 'String Medium';
+    lbl1.className = 'density-label label-equal';
+    lbl2.textContent = 'Ring & Rod Active (ignored)';
+    lbl2.className = 'density-label label-equal';
+    explain.innerHTML = 'A <strong>ring on a frictionless rod</strong> is active at the far end (a free end) — the pulse reflects <strong>completely</strong> but stays <strong>upright</strong>, no inversion, regardless of the density sliders.';
+  } else if (Math.abs(p.d1 - p.d2) < 0.05) {
+    lbl1.textContent = 'Equal Medium'; lbl1.className = 'density-label label-equal';
+    lbl2.textContent = 'Equal Medium'; lbl2.className = 'density-label label-equal';
+    explain.innerHTML = 'The two strings are about equally thick, so almost <strong>no reflection</strong> occurs — the crest passes straight through.';
+  } else if (p.d2 > p.d1) {
+    lbl1.textContent = 'Rarer Medium'; lbl1.className = 'density-label label-rarer';
+    lbl2.textContent = 'Denser Medium'; lbl2.className = 'density-label label-denser';
+    explain.innerHTML = 'Since the right side is <strong>denser</strong>, the reflected pulse <strong>inverts</strong> (crest becomes trough), while a smaller crest transmits through.';
+  } else {
+    lbl1.textContent = 'Denser Medium'; lbl1.className = 'density-label label-denser';
+    lbl2.textContent = 'Rarer Medium'; lbl2.className = 'density-label label-rarer';
+    explain.innerHTML = 'Since the right side is <strong>rarer</strong>, the reflected pulse stays <strong>upright</strong> (no inversion), while a larger crest transmits through.';
+  }
+
+  if (!runningT) drawFrameT();
+}
+
+function updatePlayBtnT() {
+  const btn = document.getElementById('playBtnT');
+  btn.textContent = runningT ? '⏸ Pause' : '▶ Play';
+  btn.classList.toggle('btn-play', !runningT);
+  btn.classList.toggle('btn-pause', runningT);
+}
+
+function togglePlayT() {
+  if (runningT) {
+    runningT = false;
+    cancelAnimationFrame(rafT);
+  } else {
+    if (!startedT || tT === 0) tT = 0;
+    runningT = true;
+    startedT = true;
+    const p = getParamsT();
+    const v0 = p.f * p.lambda / 4; // reference speed scaled to a pleasant on-screen pace
+    const v1 = v0 / Math.sqrt(p.d1);
+    const v2 = v0 / Math.sqrt(p.d2);
+    const duration = 1 / p.f;
+    if (modeT === 'wall' || modeT === 'ring') {
+      const tHit = (wallXT - x0T) / v1;
+      stopAtT = tHit + (wallXT - x0T) / v1 + duration + 0.4;
+    } else {
+      const tHit = (boundaryXT - x0T) / v1;
+      const tReflExit = tHit + (boundaryXT - x0T) / v1 + duration;
+      const tTransExit = tHit + (rightEdgeT - boundaryXT) / v2 + duration;
+      stopAtT = Math.max(tReflExit, tTransExit) + 0.4;
+    }
+    loopT();
+  }
+  updatePlayBtnT();
+}
+
+function resetT() {
+  runningT = false; cancelAnimationFrame(rafT); tT = 0; startedT = false; stopAtT = Infinity;
+  drawFrameT();
+  updatePlayBtnT();
+}
+
+function syncModeButtonsT() {
+  const wallBtn = document.getElementById('wallBtnT');
+  const ringBtn = document.getElementById('ringBtnT');
+  const wallOn = modeT === 'wall';
+  const ringOn = modeT === 'ring';
+  wallBtn.textContent = wallOn ? '🧱 Wall: ON' : '🧱 Wall: OFF';
+  wallBtn.classList.toggle('btn-wall-off', !wallOn);
+  wallBtn.classList.toggle('btn-wall-on', wallOn);
+  ringBtn.textContent = ringOn ? '🔗 Ring & Rod: ON' : '🔗 Ring & Rod: OFF';
+  ringBtn.classList.toggle('btn-ring-off', !ringOn);
+  ringBtn.classList.toggle('btn-ring-on', ringOn);
+}
+
+function toggleWallT() {
+  modeT = (modeT === 'wall') ? 'boundary' : 'wall';
+  syncModeButtonsT();
+  updateT();
+  resetT();
+}
+
+function toggleRingT() {
+  modeT = (modeT === 'ring') ? 'boundary' : 'ring';
+  syncModeButtonsT();
+  updateT();
+  resetT();
+}
+
+function getSpeedsT(p) {
+  const v0 = p.f * p.lambda / 4;
+  return { v0, v1: v0 / Math.sqrt(p.d1), v2: v0 / Math.sqrt(p.d2) };
+}
+
+function displacementT(x, t, p, v1, v2, duration) {
+  let y = 0;
+  if (modeT === 'wall' || modeT === 'ring') {
+    if (x <= wallXT) {
+      const teI = t - (x - x0T) / v1;
+      y += pulseAt(teI, p.A, duration);
+      const teR = t - ((2 * wallXT - x) - x0T) / v1;
+      const sign = modeT === 'wall' ? -1 : 1; // wall inverts (fixed end), ring does not (free end)
+      y += sign * pulseAt(teR, p.A, duration);
+    }
+  } else {
+    const Z1 = Math.sqrt(p.d1), Z2 = Math.sqrt(p.d2);
+    const R = (Z1 - Z2) / (Z1 + Z2);
+    const T = (2 * Z1) / (Z1 + Z2);
+    if (x <= boundaryXT) {
+      const teI = t - (x - x0T) / v1;
+      y += pulseAt(teI, p.A, duration);
+      const teR = t - ((2 * boundaryXT - x) - x0T) / v1;
+      y += R * pulseAt(teR, p.A, duration);
+    } else {
+      const teTr = t - (boundaryXT - x0T) / v1 - (x - boundaryXT) / v2;
+      y += T * pulseAt(teTr, p.A, duration);
+    }
+  }
+  return y;
+}
+
+function drawFrameT() {
+  const w = cT.width, h = cT.height;
+  const p = getParamsT();
+  const { v0, v1, v2 } = getSpeedsT(p);
+  const duration = 1 / p.f;
+  const cy = h / 2;
+  const terminated = modeT === 'wall' || modeT === 'ring';
+  const rightLimit = terminated ? wallXT : rightEdgeT;
+
+  ctxT.clearRect(0, 0, w, h);
+
+  // center guide line
+  ctxT.strokeStyle = '#cbd5e1'; ctxT.lineWidth = 1; ctxT.setLineDash([4, 4]);
+  ctxT.beginPath(); ctxT.moveTo(x0T - 10, cy); ctxT.lineTo(rightLimit + 20, cy); ctxT.stroke();
+  ctxT.setLineDash([]);
+
+  // boundary marker (only for the density two-segment mode)
+  if (!terminated) {
+    ctxT.strokeStyle = '#a0aec0'; ctxT.lineWidth = 1.5; ctxT.setLineDash([2, 4]);
+    ctxT.beginPath(); ctxT.moveTo(boundaryXT, cy - 100); ctxT.lineTo(boundaryXT, cy + 100); ctxT.stroke();
+    ctxT.setLineDash([]);
+    ctxT.fillStyle = '#718096'; ctxT.font = 'bold 12px "Comic Sans MS", cursive';
+    ctxT.textAlign = 'center';
+    ctxT.fillText('Boundary', boundaryXT, cy - 108);
+  }
+
+  // draw the rope
+  function ropeWidthAt(x) {
+    if (terminated) return 2 + p.d1 * 2.2;
+    return x <= boundaryXT ? (2 + p.d1 * 2.2) : (2 + p.d2 * 2.2);
+  }
+
+  const segments = terminated ? [[x0T, wallXT]] : [[x0T, boundaryXT], [boundaryXT, rightEdgeT]];
+  segments.forEach(([xa, xb]) => {
+    ctxT.beginPath();
+    ctxT.strokeStyle = '#2563eb';
+    ctxT.lineWidth = ropeWidthAt((xa + xb) / 2);
+    ctxT.lineCap = 'round';
+    let first = true;
+    for (let x = xa; x <= xb; x += 3) {
+      const y = startedT ? cy - displacementT(x, tT, p, v1, v2, duration) : cy;
+      if (first) { ctxT.moveTo(x, y); first = false; } else ctxT.lineTo(x, y);
+    }
+    ctxT.stroke();
+  });
+
+  // pulse peak positions for arrows
+  if (startedT) {
+    const halfD = duration / 2;
+    // incident
+    const xInc = x0T + v1 * (tT - halfD);
+    const incLimit = terminated ? wallXT : boundaryXT;
+    if (xInc > x0T && xInc < incLimit) {
+      const y = cy - displacementT(xInc, tT, p, v1, v2, duration);
+      drawArrow(ctxT, xInc, y - 30, 1, '#e53e3e', 'Incident');
+    }
+    if (terminated) {
+      const tHit = (wallXT - x0T) / v1;
+      if (tT > tHit) {
+        const xRefl = 2 * wallXT - x0T - v1 * (tT - halfD);
+        if (xRefl > x0T && xRefl < wallXT) {
+          const y = cy - displacementT(xRefl, tT, p, v1, v2, duration);
+          drawArrow(ctxT, xRefl, y - 30, -1, '#3182ce', 'Reflected');
+        }
+      }
+    } else {
+      const tHit = (boundaryXT - x0T) / v1;
+      if (tT > tHit) {
+        const xRefl = 2 * boundaryXT - x0T - v1 * (tT - halfD);
+        if (xRefl > x0T && xRefl < boundaryXT) {
+          const y = cy - displacementT(xRefl, tT, p, v1, v2, duration);
+          drawArrow(ctxT, xRefl, y - 30, -1, '#3182ce', 'Reflected');
+        }
+        const xTrans = boundaryXT + v2 * (tT - tHit - halfD);
+        if (xTrans > boundaryXT && xTrans < rightEdgeT) {
+          const y = cy - displacementT(xTrans, tT, p, v1, v2, duration);
+          drawArrow(ctxT, xTrans, y - 30, 1, '#38a169', 'Transmitted');
+        }
+      }
+    }
+  }
+
+  // wall / ring-and-rod graphic
+  if (modeT === 'wall') {
+    drawWallGraphic(ctxT, wallXT, 30, h - 30, '#334155');
+    ctxT.fillStyle = '#334155'; ctxT.font = 'bold 12px "Comic Sans MS", cursive'; ctxT.textAlign = 'center';
+    ctxT.fillText('Wall', wallXT, 22);
+  } else if (modeT === 'ring') {
+    // frictionless rod (vertical support the string end can slide freely along)
+    ctxT.save();
+    ctxT.strokeStyle = '#e8590c'; ctxT.lineWidth = 5;
+    ctxT.beginPath(); ctxT.moveTo(wallXT, 30); ctxT.lineTo(wallXT, h - 30); ctxT.stroke();
+    ctxT.setLineDash([2, 5]); ctxT.lineWidth = 2; ctxT.strokeStyle = '#fd7e14';
+    ctxT.beginPath(); ctxT.moveTo(wallXT, 30); ctxT.lineTo(wallXT, h - 30); ctxT.stroke();
+    ctxT.setLineDash([]);
+    // the ring itself, sitting at the string's current end height
+    const yEnd = startedT ? cy - displacementT(wallXT, tT, p, v1, v2, duration) : cy;
+    ctxT.beginPath(); ctxT.arc(wallXT, yEnd, 9, 0, Math.PI * 2);
+    ctxT.lineWidth = 4; ctxT.strokeStyle = '#e8590c'; ctxT.stroke();
+    ctxT.restore();
+    ctxT.fillStyle = '#e8590c'; ctxT.font = 'bold 12px "Comic Sans MS", cursive'; ctxT.textAlign = 'center';
+    ctxT.fillText('Ring & Rod', wallXT, 22);
+  }
+
+  drawWatermark(ctxT, w, h);
+
+  // auto-stop when pulse has fully left the scene
+  if (runningT && tT > stopAtT) {
+    runningT = false; cancelAnimationFrame(rafT);
+    updatePlayBtnT();
+  }
+}
+
+function loopT() {
+  if (!runningT) return;
+  tT += 1 / 60;
+  drawFrameT();
+  if (runningT) rafT = requestAnimationFrame(loopT);
+}
+
+// ==================== CASE 2: LONGITUDINAL WAVE ====================
+const cL = document.getElementById('canvasL');
+const ctxL = cL.getContext('2d');
+let runningL = false, rafL = null, tL = 0, startedL = false, stopAtL = Infinity;
+// modeL: 'rigid'    = fixed wall -> compression reflects as compression (default)
+//        'nonrigid' = open/free end -> compression reflects as rarefaction
+//        'none'     = no wall at all -> pulse just travels off the right edge, no reflection
+let modeL = 'rigid';
+
+const x0L = 50;
+const wallXL = 830;
+const rightEdgeL = 870;
+const nLinesL = 78;
+
+function getParamsL() {
+  return {
+    A: +document.getElementById('ampL').value,
+    f: +document.getElementById('freqL').value,
+    lambda: +document.getElementById('waveL').value
+  };
+}
+
+function updateL() {
+  const p = getParamsL();
+  document.getElementById('valAL').textContent = p.A;
+  document.getElementById('valFL').textContent = p.f.toFixed(1);
+  document.getElementById('valLL').textContent = p.lambda;
+  if (!runningL) drawFrameL();
+}
+
+function updatePlayBtnL() {
+  const btn = document.getElementById('playBtnL');
+  btn.textContent = runningL ? '⏸ Pause' : '▶ Play';
+  btn.classList.toggle('btn-play', !runningL);
+  btn.classList.toggle('btn-pause', runningL);
+}
+
+function togglePlayL() {
+  if (runningL) {
+    runningL = false;
+    cancelAnimationFrame(rafL);
+  } else {
+    tL = 0; // each press sends one fresh pulse
+    runningL = true;
+    startedL = true;
+    const p = getParamsL();
+    const v = p.f * p.lambda / 4;
+    const duration = 1 / p.f;
+    const endX = modeL === 'none' ? rightEdgeL : wallXL;
+    if (modeL === 'none') {
+      stopAtL = (endX - x0L) / v + duration + 0.4;
+    } else {
+      const tHit = (endX - x0L) / v;
+      stopAtL = tHit + (endX - x0L) / v + duration + 0.4;
+    }
+    loopL();
+  }
+  updatePlayBtnL();
+}
+
+function resetL() {
+  runningL = false; cancelAnimationFrame(rafL); tL = 0; startedL = false; stopAtL = Infinity;
+  drawFrameL();
+  updatePlayBtnL();
+}
+
+function syncModeButtonsL() {
+  const rigidBtn = document.getElementById('rigidBtnL');
+  const nonrigidBtn = document.getElementById('nonrigidBtnL');
+  const rigidOn = modeL === 'rigid';
+  const nonrigidOn = modeL === 'nonrigid';
+  rigidBtn.textContent = rigidOn ? '🧱 Rigid Wall: ON' : '🧱 Rigid Wall: OFF';
+  rigidBtn.classList.toggle('btn-rigid', rigidOn);
+  rigidBtn.classList.toggle('btn-rigid-off', !rigidOn);
+  nonrigidBtn.textContent = nonrigidOn ? '🌀 Non-Rigid Wall: ON' : '🌀 Non-Rigid Wall: OFF';
+  nonrigidBtn.classList.toggle('btn-nonrigid', nonrigidOn);
+  nonrigidBtn.classList.toggle('btn-nonrigid-off', !nonrigidOn);
+}
+
+function updateExplainL() {
+  const explain = document.getElementById('explainL');
+  if (modeL === 'rigid') {
+    explain.innerHTML = '<strong>Rigid Wall mode:</strong> Compression reflects as <strong>Compression</strong> (no phase change).';
+  } else if (modeL === 'nonrigid') {
+    explain.innerHTML = '<strong>Non-Rigid Wall mode:</strong> Compression reflects as <strong>Rarefaction</strong> (phase change of π), like an open end.';
+  } else {
+    explain.innerHTML = '<strong>No wall active:</strong> the pulse just travels off the far edge — nothing reflects back.';
+  }
+}
+
+function toggleRigidL() {
+  modeL = (modeL === 'rigid') ? 'none' : 'rigid';
+  syncModeButtonsL();
+  updateExplainL();
+  resetL();
+}
+
+function toggleNonRigidL() {
+  modeL = (modeL === 'nonrigid') ? 'none' : 'nonrigid';
+  syncModeButtonsL();
+  updateExplainL();
+  resetL();
+}
+
+function displacementL(x, t, p, v, duration) {
+  const endX = modeL === 'none' ? rightEdgeL : wallXL;
+  if (x > endX) return 0;
+  let y = 0;
+  const teI = t - (x - x0L) / v;
+  y += longPulseAt(teI, p.A, duration);
+  if (modeL !== 'none') {
+    const sign = modeL === 'rigid' ? -1 : 1; // rigid: displacement inverts (but density does NOT) | non-rigid: opposite
+    const teR = t - ((2 * wallXL - x) - x0L) / v;
+    y += sign * longPulseAt(teR, p.A, duration);
+  }
+  return y;
+}
+
+function drawFrameL() {
+  const w = cL.width, h = cL.height;
+  const p = getParamsL();
+  const v = p.f * p.lambda / 4;
+  const duration = 1 / p.f;
+  const cy = h / 2;
+  const topY = cy - 110, botY = cy + 110;
+  const endX = modeL === 'none' ? rightEdgeL : wallXL;
+
+  ctxL.clearRect(0, 0, w, h);
+
+  const restSpacing = (endX - x0L) / (nLinesL - 1);
+  const positions = [];
+  for (let i = 0; i < nLinesL; i++) {
+    const rx = x0L + i * restSpacing;
+    const dx = startedL ? displacementL(rx, tL, p, v, duration) : 0;
+    positions.push(rx + dx);
+  }
+
+  // draw lines, colored by local spacing (compression / rarefaction)
+  for (let i = 0; i < nLinesL; i++) {
+    const spacingLeft = i > 0 ? positions[i] - positions[i - 1] : restSpacing;
+    const spacingRight = i < nLinesL - 1 ? positions[i + 1] - positions[i] : restSpacing;
+    const localSpacing = (spacingLeft + spacingRight) / 2;
+    const ratio = localSpacing / restSpacing;
+    let color = '#334155';
+    if (ratio < 0.82) color = '#e53e3e';
+    else if (ratio > 1.18) color = '#3182ce';
+    ctxL.strokeStyle = color;
+    ctxL.lineWidth = 2;
+    ctxL.beginPath();
+    ctxL.moveTo(positions[i], topY);
+    ctxL.lineTo(positions[i], botY);
+    ctxL.stroke();
+  }
+
+  // find local extrema of spacing to label C / R
+  const spacings = [];
+  for (let i = 0; i < nLinesL - 1; i++) spacings.push(positions[i + 1] - positions[i]);
+  ctxL.font = 'bold 15px "Comic Sans MS", cursive';
+  ctxL.textAlign = 'center';
+  for (let i = 2; i < spacings.length - 2; i++) {
+    const isMin = spacings[i] < spacings[i - 2] && spacings[i] < spacings[i + 2] && spacings[i] / restSpacing < 0.85;
+    const isMax = spacings[i] > spacings[i - 2] && spacings[i] > spacings[i + 2] && spacings[i] / restSpacing > 1.15;
+    const midX = (positions[i] + positions[i + 1]) / 2;
+    if (isMin) { ctxL.fillStyle = '#c53030'; ctxL.fillText('C', midX, topY - 10); }
+    else if (isMax) { ctxL.fillStyle = '#2b6cb0'; ctxL.fillText('R', midX, topY - 10); }
+  }
+
+  // arrows
+  if (startedL) {
+    const tHit = (endX - x0L) / v;
+    const xFront = x0L + v * tL;
+    if ((modeL === 'none' || tL < tHit) && xFront < endX) {
+      drawArrow(ctxL, Math.min(xFront, endX - 20), cy - 140, 1, '#e53e3e', 'Incident');
+    } else if (modeL !== 'none' && tL >= tHit) {
+      drawArrow(ctxL, Math.max(x0L + 20, 2 * endX - xFront), cy - 140, -1, '#3182ce', 'Reflected');
+    }
+  }
+
+  // wall (only drawn when a wall is actually active)
+  if (modeL !== 'none') {
+    drawWallGraphic(ctxL, wallXL, topY - 20, botY + 20, modeL === 'rigid' ? '#334155' : '#12b886');
+    ctxL.fillStyle = modeL === 'rigid' ? '#334155' : '#12b886';
+    ctxL.font = 'bold 12px "Comic Sans MS", cursive';
+    ctxL.textAlign = 'center';
+    ctxL.fillText(modeL === 'rigid' ? 'Rigid Wall' : 'Open End', wallXL, topY - 30);
+  }
+
+  drawWatermark(ctxL, w, h);
+
+  // auto-stop once the pulse (incident + reflected) has fully left the scene
+  if (runningL && tL > stopAtL) {
+    runningL = false; cancelAnimationFrame(rafL);
+    updatePlayBtnL();
+  }
+}
+
+function loopL() {
+  if (!runningL) return;
+  tL += 1 / 60;
+  drawFrameL();
+  rafL = requestAnimationFrame(loopL);
+}
+
+// ==================== INIT ====================
+updateT();
+updateL();
+</script>
+</body>
+</html>
