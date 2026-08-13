@@ -4,99 +4,183 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Physics Simulations Hub</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text: #1e293b;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --accent-osc: #0ea5e9;
-            --accent-sound: #8b5cf6;
-            --accent-wave: #10b981;
-            --shadow: 0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.05);
-            --shadow-hover: 0 8px 25px rgba(0,0,0,0.1);
+            --bg: #05070d;
+            --bg-elev: #0b0f19;
+            --card-bg: rgba(255,255,255,0.035);
+            --card-bg-hover: rgba(255,255,255,0.06);
+            --text: #f4f5f7;
+            --text-muted: #93989f;
+            --border: rgba(255,255,255,0.09);
+            --border-hover: rgba(212,175,55,0.4);
+            --gold: #d4af37;
+            --gold-soft: #f0d580;
+            --accent-osc: #5aa2ff;
+            --accent-sound: #b98af0;
+            --accent-wave: #34d399;
+            --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 10px 30px rgba(0,0,0,0.35);
+            --shadow-hover: 0 20px 50px rgba(0,0,0,0.55), 0 0 0 1px rgba(212,175,55,0.15);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Inter', system-ui, sans-serif;
-            background: var(--bg);
+            background:
+                radial-gradient(ellipse 900px 500px at 15% -10%, rgba(212,175,55,0.09) 0%, transparent 60%),
+                radial-gradient(ellipse 800px 500px at 90% 10%, rgba(90,162,255,0.08) 0%, transparent 55%),
+                var(--bg);
             color: var(--text);
             line-height: 1.6;
             min-height: 100vh;
         }
 
+        ::selection { background: rgba(212,175,55,0.35); color: #fff; }
+
         /* Header */
         header {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            background:
+                radial-gradient(ellipse 700px 400px at 50% -20%, rgba(212,175,55,0.14) 0%, transparent 60%),
+                linear-gradient(180deg, #060810 0%, #0c1120 100%);
             color: white;
-            padding: 60px 20px 50px;
+            padding: 70px 20px 56px;
             text-align: center;
             position: relative;
             overflow: hidden;
+            border-bottom: 1px solid var(--border);
         }
 
         header::before {
             content: '';
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at 30% 50%, rgba(14,165,233,0.08) 0%, transparent 50%),
-                        radial-gradient(circle at 70% 50%, rgba(139,92,246,0.08) 0%, transparent 50%);
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+            background-size: 42px 42px;
+            mask-image: radial-gradient(ellipse 700px 400px at 50% 0%, black, transparent 75%);
             pointer-events: none;
         }
 
-        header h1 {
-            font-size: 2.8rem;
+        /* YV watermark — large faint monogram behind the title */
+        .yv-watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Playfair Display', serif;
+            font-size: 15rem;
             font-weight: 700;
-            margin-bottom: 10px;
-            position: relative;
             letter-spacing: -0.02em;
+            color: transparent;
+            background: linear-gradient(180deg, rgba(212,175,55,0.10), rgba(212,175,55,0.015));
+            -webkit-background-clip: text;
+            background-clip: text;
+            pointer-events: none;
+            user-select: none;
+            white-space: nowrap;
+            z-index: 0;
+        }
+
+        .brand-row {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .yv-badge {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #1a1400;
+            background: linear-gradient(145deg, var(--gold-soft), var(--gold) 55%, #9c7a1e);
+            box-shadow: 0 2px 10px rgba(212,175,55,0.4), inset 0 1px 1px rgba(255,255,255,0.5);
+            letter-spacing: -0.02em;
+            flex-shrink: 0;
+        }
+
+        .brand-kicker {
+            font-size: 0.72rem;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--gold-soft);
+            font-weight: 600;
+        }
+
+        header h1 {
+            position: relative;
+            font-family: 'Playfair Display', serif;
+            font-size: 3.1rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            letter-spacing: -0.01em;
+            background: linear-gradient(180deg, #ffffff 0%, #cfd3da 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
 
         header p {
-            font-size: 1.15rem;
-            color: #94a3b8;
-            max-width: 500px;
-            margin: 0 auto;
             position: relative;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 520px;
+            margin: 0 auto;
+            font-weight: 300;
         }
 
         .stats {
+            position: relative;
             display: flex;
             justify-content: center;
-            gap: 30px;
-            margin-top: 30px;
-            position: relative;
+            gap: 14px;
+            margin-top: 34px;
             flex-wrap: wrap;
         }
 
         .stat {
             text-align: center;
+            padding: 14px 26px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            backdrop-filter: blur(8px);
+            min-width: 96px;
         }
 
         .stat-number {
-            font-size: 2rem;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.9rem;
             font-weight: 700;
-            color: #38bdf8;
+            background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
 
         .stat-label {
-            font-size: 0.85rem;
-            color: #64748b;
+            font-size: 0.72rem;
+            color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.1em;
+            margin-top: 2px;
         }
 
         /* Search */
         .search-container {
-            max-width: 500px;
-            margin: -25px auto 0;
+            max-width: 520px;
+            margin: -26px auto 0;
             padding: 0 20px;
             position: relative;
             z-index: 10;
@@ -104,10 +188,11 @@
 
         .search-box {
             width: 100%;
-            padding: 16px 24px 16px 50px;
+            padding: 17px 24px 17px 50px;
             border: 1px solid var(--border);
             border-radius: 14px;
-            background: var(--card-bg);
+            background: rgba(15,18,28,0.9);
+            backdrop-filter: blur(14px);
             font-size: 1rem;
             color: var(--text);
             box-shadow: var(--shadow);
@@ -115,9 +200,11 @@
             transition: all 0.2s;
         }
 
+        .search-box::placeholder { color: #676c76; }
+
         .search-box:focus {
-            border-color: var(--accent-osc);
-            box-shadow: 0 0 0 3px rgba(14,165,233,0.1), var(--shadow);
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(212,175,55,0.15), var(--shadow);
         }
 
         .search-icon {
@@ -126,71 +213,167 @@
             top: 50%;
             transform: translateY(-50%);
             color: var(--text-muted);
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             pointer-events: none;
+        }
+
+        .filter-row {
+            max-width: 520px;
+            margin: 16px auto 0;
+            padding: 0 20px;
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-pill {
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.03);
+            color: var(--text-muted);
+            padding: 7px 15px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .filter-pill:hover {
+            border-color: var(--border-hover);
+            color: var(--text);
+        }
+
+        .filter-pill.active {
+            background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+            border-color: var(--gold);
+            color: #1a1400;
+            font-weight: 600;
+        }
+
+        /* Journal */
+        .journal-wrap {
+            max-width: 720px;
+            margin: 44px auto 0;
+            padding: 0 20px;
+        }
+
+        .journal-box {
+            background: linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.02));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 22px 26px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+        }
+
+        .journal-box-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .journal-title {
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--gold-soft);
+        }
+
+        .journal-status {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .journal-textarea {
+            width: 100%;
+            min-height: 84px;
+            resize: vertical;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 13px 15px;
+            font-family: inherit;
+            font-size: 0.92rem;
+            color: var(--text);
+            outline: none;
+            background: rgba(0,0,0,0.25);
+        }
+
+        .journal-textarea::placeholder { color: #5c6069; }
+
+        .journal-textarea:focus {
+            border-color: var(--gold);
         }
 
         /* Main Content */
         main {
-            max-width: 1100px;
+            max-width: 1120px;
             margin: 0 auto;
-            padding: 50px 20px 80px;
+            padding: 54px 20px 90px;
         }
 
         /* Section */
         .section {
-            margin-bottom: 50px;
+            margin-bottom: 54px;
         }
 
         .section-header {
             display: flex;
             align-items: center;
-            gap: 12px;
-            margin-bottom: 24px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid var(--border);
+            gap: 14px;
+            margin-bottom: 26px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border);
         }
 
         .section-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
+            width: 42px;
+            height: 42px;
+            border-radius: 11px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.3rem;
+            border: 1px solid var(--border);
         }
 
         .section-title {
-            font-size: 1.4rem;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
             font-weight: 600;
             flex: 1;
+            letter-spacing: -0.01em;
         }
 
         .section-count {
-            background: var(--bg);
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--border);
             color: var(--text-muted);
-            padding: 4px 12px;
+            padding: 4px 13px;
             border-radius: 20px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 500;
         }
 
         /* Cards Grid */
         .cards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(285px, 1fr));
             gap: 20px;
         }
 
         .card {
-            background: var(--card-bg);
+            background: linear-gradient(165deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015));
             border: 1px solid var(--border);
             border-radius: 16px;
-            padding: 28px;
-            transition: all 0.25s ease;
+            padding: 26px;
+            transition: all 0.3s cubic-bezier(.2,.8,.2,1);
             position: relative;
             overflow: hidden;
+            backdrop-filter: blur(6px);
         }
 
         .card::before {
@@ -199,49 +382,95 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 3px;
-            background: var(--card-accent);
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--card-accent), transparent);
             opacity: 0;
-            transition: opacity 0.25s;
+            transition: opacity 0.3s;
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            top: -60%;
+            left: -20%;
+            width: 60%;
+            height: 220%;
+            background: linear-gradient(120deg, transparent, rgba(255,255,255,0.05), transparent);
+            transform: rotate(20deg);
+            opacity: 0;
+            transition: opacity 0.4s;
+            pointer-events: none;
         }
 
         .card:hover {
-            transform: translateY(-4px);
+            transform: translateY(-5px);
             box-shadow: var(--shadow-hover);
-            border-color: transparent;
+            border-color: var(--border-hover);
+            background: linear-gradient(165deg, rgba(255,255,255,0.075), rgba(255,255,255,0.02));
         }
 
-        .card:hover::before {
-            opacity: 1;
-        }
+        .card:hover::before { opacity: 1; }
+        .card:hover::after { opacity: 1; }
 
-        .card-title {
-            font-size: 1.15rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--text);
+        .card-title-row {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
+            justify-content: space-between;
             gap: 8px;
         }
 
+        .card-title {
+            font-size: 1.12rem;
+            font-weight: 600;
+            margin-bottom: 9px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            letter-spacing: -0.01em;
+        }
+
+        .fav-btn {
+            background: none;
+            border: none;
+            font-size: 1.15rem;
+            cursor: pointer;
+            line-height: 1;
+            opacity: 0.4;
+            transition: all 0.15s, transform 0.15s;
+            flex-shrink: 0;
+            filter: grayscale(1);
+        }
+
+        .fav-btn:hover { transform: scale(1.15); opacity: 0.8; }
+        .fav-btn.active { opacity: 1; filter: none; }
+
         .card-desc {
-            font-size: 0.9rem;
+            font-size: 0.89rem;
             color: var(--text-muted);
-            margin-bottom: 20px;
-            line-height: 1.5;
+            margin-bottom: 15px;
+            line-height: 1.55;
+            font-weight: 300;
+        }
+
+        .visited-tag {
+            font-size: 0.74rem;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            display: block;
         }
 
         .card-footer {
             display: flex;
             gap: 10px;
+            margin-bottom: 13px;
         }
 
         .btn {
             padding: 10px 18px;
             border-radius: 10px;
-            font-size: 0.9rem;
-            font-weight: 500;
+            font-size: 0.88rem;
+            font-weight: 600;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
@@ -253,13 +482,14 @@
 
         .btn-primary {
             background: var(--btn-bg);
-            color: white;
+            color: #06080f;
             flex: 1;
             justify-content: center;
+            box-shadow: 0 4px 14px color-mix(in srgb, var(--btn-bg) 45%, transparent);
         }
 
         .btn-primary:hover {
-            filter: brightness(1.1);
+            filter: brightness(1.12);
             transform: scale(1.02);
         }
 
@@ -271,7 +501,65 @@
 
         .btn-secondary:hover {
             background: var(--btn-bg);
-            color: white;
+            color: #06080f;
+        }
+
+        .note-toggle {
+            width: 100%;
+            background: rgba(255,255,255,0.02);
+            border: 1px dashed var(--border);
+            color: var(--text-muted);
+            border-radius: 8px;
+            padding: 8px 11px;
+            font-size: 0.79rem;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.15s;
+        }
+
+        .note-toggle:hover {
+            border-color: var(--btn-bg);
+            color: var(--text);
+        }
+
+        .note-toggle.has-note {
+            border-style: solid;
+            border-color: var(--btn-bg);
+            color: var(--text);
+            background: rgba(255,255,255,0.03);
+        }
+
+        .note-area {
+            display: none;
+            margin-top: 9px;
+        }
+
+        .note-area.open { display: block; }
+
+        .note-area textarea {
+            width: 100%;
+            min-height: 62px;
+            resize: vertical;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 9px 11px;
+            font-family: inherit;
+            font-size: 0.81rem;
+            color: var(--text);
+            outline: none;
+            background: rgba(0,0,0,0.25);
+        }
+
+        .note-area textarea:focus {
+            border-color: var(--btn-bg);
+        }
+
+        .note-saved-tag {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+            display: block;
+            min-height: 14px;
         }
 
         .no-results {
@@ -289,21 +577,26 @@
         /* Footer */
         footer {
             text-align: center;
-            padding: 30px;
+            padding: 34px 20px;
             color: var(--text-muted);
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             border-top: 1px solid var(--border);
+            background: rgba(0,0,0,0.15);
         }
 
         footer a {
-            color: var(--accent-osc);
+            color: var(--gold-soft);
             text-decoration: none;
         }
 
+        footer a:hover { text-decoration: underline; }
+
         /* Responsive */
         @media (max-width: 600px) {
-            header h1 { font-size: 2rem; }
-            .stats { gap: 20px; }
+            header h1 { font-size: 2.2rem; }
+            .yv-watermark { font-size: 8rem; }
+            .stats { gap: 10px; }
+            .stat { padding: 12px 18px; min-width: 78px; }
             .cards-grid { grid-template-columns: 1fr; }
             .card { padding: 22px; }
         }
@@ -313,7 +606,12 @@
 <body>
 
     <header>
-        <h1>⚡ Physics Simulations</h1>
+        <div class="yv-watermark">YV</div>
+        <div class="brand-row">
+            <div class="yv-badge">YV</div>
+            <span class="brand-kicker">Est. Physics Lab</span>
+        </div>
+        <h1>Physics Simulations</h1>
         <p>Interactive visualizations for waves, oscillations & sound</p>
         <div class="stats">
             <div class="stat">
@@ -325,8 +623,12 @@
                 <div class="stat-label">Simulations</div>
             </div>
             <div class="stat">
-                <div class="stat-number">∞</div>
-                <div class="stat-label">Experiments</div>
+                <div class="stat-number" id="favCount">0</div>
+                <div class="stat-label">Favorites</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number" id="visitedCount">0</div>
+                <div class="stat-label">Visited</div>
             </div>
         </div>
     </header>
@@ -334,6 +636,23 @@
     <div class="search-container">
         <span class="search-icon">🔍</span>
         <input type="text" class="search-box" id="searchInput" placeholder="Search simulations...">
+    </div>
+
+    <div class="filter-row">
+        <button class="filter-pill active" data-filter="all">All</button>
+        <button class="filter-pill" data-filter="favorites">⭐ Favorites</button>
+        <button class="filter-pill" data-filter="visited">👣 Visited</button>
+        <button class="filter-pill" data-filter="unvisited">🆕 Not yet opened</button>
+    </div>
+
+    <div class="journal-wrap">
+        <div class="journal-box">
+            <div class="journal-box-header">
+                <div class="journal-title">📓 Lab Journal</div>
+                <div class="journal-status" id="journalStatus"></div>
+            </div>
+            <textarea class="journal-textarea" id="journalText" placeholder="General notes for today's session — what you're studying, questions to chase down, things to revisit..."></textarea>
+        </div>
     </div>
 
     <main id="mainContent">
@@ -345,13 +664,16 @@
     </div>
 
     <footer>
-        Built with HTML, CSS & JavaScript · 
+        Built with HTML, CSS & JavaScript ·
         <a href="https://github.com/" target="_blank">View on GitHub</a>
+        <div style="margin-top:6px; font-size:0.78rem;">Notes, favorites and visit history are saved on this device/session only.</div>
     </footer>
 
     <script>
         // ═══════════════════════════════════════════════════════════════
         //  ADD NEW SIMULATIONS HERE — just copy a line and edit it!
+        //  (the "path" field must stay exactly as-is — it's the real
+        //   link that opens each simulation file)
         // ═══════════════════════════════════════════════════════════════
         const simulations = [
             // ─── Oscillations ───
@@ -435,20 +757,99 @@
             "Superposition of Waves": { icon: "〰️", title: "Superposition of Waves", accent: "var(--accent-wave)" }
         };
 
+        // ── Living-note persistence layer ──────────────────────────────
+        // Uses window.storage when available (persists across visits).
+        // Falls back to an in-memory store for the current session only
+        // if storage isn't available in this environment.
+        const hasRealStorage = typeof window.storage !== 'undefined';
+        const memoryFallback = {};
+
+        async function storeGet(key) {
+            if (hasRealStorage) {
+                try {
+                    const res = await window.storage.get(key, false);
+                    return res ? res.value : null;
+                } catch (e) {
+                    return null;
+                }
+            }
+            return memoryFallback[key] ?? null;
+        }
+
+        async function storeSet(key, value) {
+            if (hasRealStorage) {
+                try {
+                    await window.storage.set(key, value, false);
+                    return true;
+                } catch (e) {
+                    return false;
+                }
+            }
+            memoryFallback[key] = value;
+            return true;
+        }
+
+        let favorites = new Set();
+        let notes = {};      // path -> note text
+        let visited = {};    // path -> ISO timestamp
+        let activeFilter = 'all';
+        let debounceTimers = {};
+
+        function slug(path) {
+            return path.replace(/[^a-zA-Z0-9]/g, '_');
+        }
+
+        async function loadState() {
+            const favRaw = await storeGet('favorites');
+            if (favRaw) {
+                try { favorites = new Set(JSON.parse(favRaw)); } catch (e) { favorites = new Set(); }
+            }
+            const journalRaw = await storeGet('journal');
+            if (journalRaw !== null) {
+                document.getElementById('journalText').value = journalRaw;
+            }
+            for (const sim of simulations) {
+                const noteRaw = await storeGet('note:' + slug(sim.path));
+                if (noteRaw) notes[sim.path] = noteRaw;
+                const visitRaw = await storeGet('visited:' + slug(sim.path));
+                if (visitRaw) visited[sim.path] = visitRaw;
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('favCount').textContent = favorites.size;
+            document.getElementById('visitedCount').textContent = Object.keys(visited).length;
+        }
+
+        function formatTime(iso) {
+            const d = new Date(iso);
+            return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) +
+                   ' ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+        }
+
         function render() {
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
             const container = document.getElementById('mainContent');
             const noResults = document.getElementById('noResults');
             container.innerHTML = '';
 
-            const filtered = simulations.filter(s => 
-                s.name.toLowerCase().includes(query) || 
+            let filtered = simulations.filter(s =>
+                s.name.toLowerCase().includes(query) ||
                 s.desc.toLowerCase().includes(query) ||
                 s.folder.toLowerCase().includes(query)
             );
 
+            if (activeFilter === 'favorites') {
+                filtered = filtered.filter(s => favorites.has(s.path));
+            } else if (activeFilter === 'visited') {
+                filtered = filtered.filter(s => !!visited[s.path]);
+            } else if (activeFilter === 'unvisited') {
+                filtered = filtered.filter(s => !visited[s.path]);
+            }
+
             if (filtered.length === 0) {
                 noResults.classList.add('show');
+                updateStats();
                 return;
             } else {
                 noResults.classList.remove('show');
@@ -468,32 +869,141 @@
                 sectionEl.className = 'section';
                 sectionEl.innerHTML = `
                     <div class="section-header">
-                        <div class="section-icon" style="background: ${sec.accent}15; color: ${sec.accent};">${sec.icon}</div>
+                        <div class="section-icon" style="background: ${sec.accent}18; color: ${sec.accent};">${sec.icon}</div>
                         <h2 class="section-title">${sec.title}</h2>
                         <span class="section-count">${groups[key].length} sim${groups[key].length > 1 ? 's' : ''}</span>
                     </div>
                     <div class="cards-grid">
-                        ${groups[key].map(sim => `
+                        ${groups[key].map(sim => {
+                            const id = slug(sim.path);
+                            const isFav = favorites.has(sim.path);
+                            const noteVal = notes[sim.path] || '';
+                            const hasNote = noteVal.trim().length > 0;
+                            const visitedAt = visited[sim.path];
+                            return `
                             <div class="card" style="--card-accent: ${sim.accent}; --btn-bg: ${sim.accent};">
-                                <div class="card-title">
-                                    <span>${sim.icon}</span>
-                                    ${sim.name}
+                                <div class="card-title-row">
+                                    <div class="card-title">
+                                        <span>${sim.icon}</span>
+                                        ${sim.name}
+                                    </div>
+                                    <button class="fav-btn ${isFav ? 'active' : ''}" data-fav="${id}" title="Toggle favorite">
+                                        ${isFav ? '⭐' : '☆'}
+                                    </button>
                                 </div>
                                 <div class="card-desc">${sim.desc}</div>
+                                ${visitedAt ? `<span class="visited-tag">👣 Last opened ${formatTime(visitedAt)}</span>` : ''}
                                 <div class="card-footer">
-                                    <a href="${sim.path}" class="btn btn-primary">▶ Open Simulation</a>
+                                    <a href="${sim.path}" class="btn btn-primary" data-open="${id}">▶ Open Simulation</a>
                                     <a href="https://github.com/" target="_blank" class="btn btn-secondary" title="View source code">💻</a>
                                 </div>
+                                <button class="note-toggle ${hasNote ? 'has-note' : ''}" data-note-toggle="${id}">
+                                    ${hasNote ? '📝 Note saved — click to view/edit' : '📝 Add a note...'}
+                                </button>
+                                <div class="note-area" data-note-area="${id}">
+                                    <textarea data-note-input="${id}" placeholder="What did you observe? Questions, parameter values worth remembering...">${noteVal}</textarea>
+                                    <span class="note-saved-tag" data-note-status="${id}"></span>
+                                </div>
                             </div>
-                        `).join('')}
+                        `;
+                        }).join('')}
                     </div>
                 `;
                 container.appendChild(sectionEl);
             });
+
+            attachCardHandlers();
+            updateStats();
         }
 
+        function attachCardHandlers() {
+            // Favorite toggles
+            document.querySelectorAll('[data-fav]').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    const id = btn.getAttribute('data-fav');
+                    const sim = simulations.find(s => slug(s.path) === id);
+                    if (!sim) return;
+                    if (favorites.has(sim.path)) {
+                        favorites.delete(sim.path);
+                    } else {
+                        favorites.add(sim.path);
+                    }
+                    await storeSet('favorites', JSON.stringify([...favorites]));
+                    render();
+                });
+            });
+
+            // Mark visited when opening (link still navigates normally)
+            document.querySelectorAll('[data-open]').forEach(link => {
+                link.addEventListener('click', async () => {
+                    const id = link.getAttribute('data-open');
+                    const sim = simulations.find(s => slug(s.path) === id);
+                    if (!sim) return;
+                    const now = new Date().toISOString();
+                    visited[sim.path] = now;
+                    await storeSet('visited:' + id, now);
+                    updateStats();
+                });
+            });
+
+            // Note toggles
+            document.querySelectorAll('[data-note-toggle]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = btn.getAttribute('data-note-toggle');
+                    const area = document.querySelector(`[data-note-area="${id}"]`);
+                    if (area) area.classList.toggle('open');
+                });
+            });
+
+            // Note inputs (debounced save)
+            document.querySelectorAll('[data-note-input]').forEach(textarea => {
+                textarea.addEventListener('input', () => {
+                    const id = textarea.getAttribute('data-note-input');
+                    const statusEl = document.querySelector(`[data-note-status="${id}"]`);
+                    if (statusEl) statusEl.textContent = 'Saving...';
+                    clearTimeout(debounceTimers[id]);
+                    debounceTimers[id] = setTimeout(async () => {
+                        const sim = simulations.find(s => slug(s.path) === id);
+                        if (!sim) return;
+                        notes[sim.path] = textarea.value;
+                        await storeSet('note:' + id, textarea.value);
+                        if (statusEl) statusEl.textContent = 'Saved ✓';
+                    }, 600);
+                });
+            });
+        }
+
+        // Journal autosave
+        const journalEl = document.getElementById('journalText');
+        const journalStatus = document.getElementById('journalStatus');
+        let journalTimer = null;
+        journalEl.addEventListener('input', () => {
+            journalStatus.textContent = 'Saving...';
+            clearTimeout(journalTimer);
+            journalTimer = setTimeout(async () => {
+                await storeSet('journal', journalEl.value);
+                journalStatus.textContent = 'Saved ✓';
+            }, 600);
+        });
+
+        // Filter pills
+        document.querySelectorAll('.filter-pill').forEach(pill => {
+            pill.addEventListener('click', () => {
+                document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+                activeFilter = pill.getAttribute('data-filter');
+                render();
+            });
+        });
+
         document.getElementById('searchInput').addEventListener('input', render);
-        render();
+
+        // Boot
+        (async function init() {
+            await loadState();
+            render();
+        })();
     </script>
 
 </body>
