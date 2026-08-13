@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Simulations Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --accent-osc: #0ea5e9;
+            --accent-sound: #8b5cf6;
+            --accent-wave: #10b981;
+            --shadow: 0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.05);
+            --shadow-hover: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            padding: 60px 20px 50px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 50%, rgba(14,165,233,0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 50%, rgba(139,92,246,0.08) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        header h1 {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            letter-spacing: -0.02em;
+        }
+
+        header p {
+            font-size: 1.15rem;
+            color: #94a3b8;
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 30px;
+            position: relative;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #38bdf8;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Search */
+        .search-container {
+            max-width: 500px;
+            margin: -25px auto 0;
+            padding: 0 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 16px 24px 16px 50px;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: var(--card-bg);
+            font-size: 1rem;
+            color: var(--text);
+            box-shadow: var(--shadow);
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .search-box:focus {
+            border-color: var(--accent-osc);
+            box-shadow: 0 0 0 3px rgba(14,165,233,0.1), var(--shadow);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            pointer-events: none;
+        }
+
+        /* Main Content */
+        main {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 50px 20px 80px;
+        }
+
+        /* Section */
+        .section {
+            margin-bottom: 50px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .section-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .section-count {
+            background: var(--bg);
+            color: var(--text-muted);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* Cards Grid */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--card-accent);
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-hover);
+            border-color: transparent;
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .card-footer {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: var(--btn-bg);
+            color: white;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .btn-primary:hover {
+            filter: brightness(1.1);
+            transform: scale(1.02);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--btn-bg);
+            border: 1.5px solid var(--btn-bg);
+        }
+
+        .btn-secondary:hover {
+            background: var(--btn-bg);
+            color: white;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            display: none;
+        }
+
+        .no-results.show {
+            display: block;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border);
+        }
+
+        footer a {
+            color: var(--accent-osc);
+            text-decoration: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            header h1 { font-size: 2rem; }
+            .stats { gap: 20px; }
+            .cards-grid { grid-template-columns: 1fr; }
+            .card { padding: 22px; }
+        }
+    </style>
+<base target="_blank">
+</head>
+<body>
+
+    <header>
+        <h1>⚡ Physics Simulations</h1>
+        <p>Interactive visualizations for waves, oscillations & sound</p>
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-number">3</div>
+                <div class="stat-label">Topics</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">8</div>
+                <div class="stat-label">Simulations</div>
+            </div>
+            <div class="stat">
+                <div class="stat-number">∞</div>
+                <div class="stat-label">Experiments</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="search-container">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-box" id="searchInput" placeholder="Search simulations...">
+    </div>
+
+    <main id="mainContent">
+        <!-- Sections injected by JS -->
+    </main>
+
+    <div class="no-results" id="noResults">
+        No simulations found matching your search.
+    </div>
+
+    <footer>
+        Built with HTML, CSS & JavaScript · 
+        <a href="https://github.com/" target="_blank">View on GitHub</a>
+    </footer>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════
+        //  ADD NEW SIMULATIONS HERE — just copy a line and edit it!
+        // ═══════════════════════════════════════════════════════════════
+        const simulations = [
+            // ─── Oscillations ───
+            {
+                name: "Simple Harmonic Motion",
+                folder: "Oscillations",
+                path: "Oscillations/SHM/index.html",
+                desc: "Classic SHM visualization with displacement, velocity and acceleration graphs.",
+                accent: "var(--accent-osc)",
+                icon: "🔄"
+            },
+            {
+                name: "Spring Parallel & Series",
+                folder: "Oscillations",
+                path: "Oscillations/Spring-parallel-series/index.html",
+                desc: "Compare effective spring constants for springs connected in parallel and series.",
+                accent: "var(--accent-osc)",
+                icon: "🔗"
+            },
+            {
+                name: "Magnet in Magnetic Field",
+                folder: "Oscillations",
+                path: "Oscillations/magnet-vibrating-in-magnetic-field/index.html",
+                desc: "A magnet vibrating in an external magnetic field — damped oscillations demo.",
+                accent: "var(--accent-osc)",
+                icon: "🧲"
+            },
+            {
+                name: "Torsional Pendulum",
+                folder: "Oscillations",
+                path: "Oscillations/torsional-pendulum/index.html",
+                desc: "Angular Simple Harmonic Motion using a torsional pendulum setup.",
+                accent: "var(--accent-osc)",
+                icon: "🌀"
+            },
+
+            // ─── Sound ───
+            {
+                name: "Doppler Effect",
+                folder: "Sound",
+                path: "Sound/Doppler-effect/index.html",
+                desc: "Visualize frequency shift when source and observer move relative to each other.",
+                accent: "var(--accent-sound)",
+                icon: "🔊"
+            },
+
+            // ─── Superposition of Waves ───
+            {
+                name: "Reflection of Waves",
+                folder: "Superposition of Waves",
+                path: "Superposition-of-waves/Reflection-of-transverse-longitudinal/index.html",
+                desc: "Reflection behavior of transverse and longitudinal waves at fixed and free ends.",
+                accent: "var(--accent-wave)",
+                icon: "🪞"
+            },
+            {
+                name: "Interference of Waves",
+                folder: "Superposition of Waves",
+                path: "Superposition-of-waves/interference-waves/index.html",
+                desc: "Constructive and destructive interference patterns from two coherent sources.",
+                accent: "var(--accent-wave)",
+                icon: "〰️"
+            },
+            {
+                name: "Longitudinal vs Transverse",
+                folder: "Superposition of Waves",
+                path: "Superposition-of-waves/longitudinal-transverse/index.html",
+                desc: "Side-by-side comparison of longitudinal and transverse wave propagation.",
+                accent: "var(--accent-wave)",
+                icon: "📊"
+            }
+        ];
+
+        // ═══════════════════════════════════════════════════════════════
+        //  RENDER LOGIC — you don't need to touch anything below
+        // ═══════════════════════════════════════════════════════════════
+
+        const sections = {
+            "Oscillations": { icon: "🔄", title: "Oscillations", accent: "var(--accent-osc)" },
+            "Sound": { icon: "🔊", title: "Sound", accent: "var(--accent-sound)" },
+            "Superposition of Waves": { icon: "〰️", title: "Superposition of Waves", accent: "var(--accent-wave)" }
+        };
+
+        function render() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const container = document.getElementById('mainContent');
+            const noResults = document.getElementById('noResults');
+            container.innerHTML = '';
+
+            const filtered = simulations.filter(s => 
+                s.name.toLowerCase().includes(query) || 
+                s.desc.toLowerCase().includes(query) ||
+                s.folder.toLowerCase().includes(query)
+            );
+
+            if (filtered.length === 0) {
+                noResults.classList.add('show');
+                return;
+            } else {
+                noResults.classList.remove('show');
+            }
+
+            // Group by folder
+            const groups = {};
+            filtered.forEach(s => {
+                if (!groups[s.folder]) groups[s.folder] = [];
+                groups[s.folder].push(s);
+            });
+
+            Object.keys(sections).forEach(key => {
+                if (!groups[key]) return;
+                const sec = sections[key];
+                const sectionEl = document.createElement('div');
+                sectionEl.className = 'section';
+                sectionEl.innerHTML = `
+                    <div class="section-header">
+                        <div class="section-icon" style="background: ${sec.accent}15; color: ${sec.accent};">${sec.icon}</div>
+                        <h2 class="section-title">${sec.title}</h2>
+                        <span class="section-count">${groups[key].length} sim${groups[key].length > 1 ? 's' : ''}</span>
+                    </div>
+                    <div class="cards-grid">
+                        ${groups[key].map(sim => `
+                            <div class="card" style="--card-accent: ${sim.accent}; --btn-bg: ${sim.accent};">
+                                <div class="card-title">
+                                    <span>${sim.icon}</span>
+                                    ${sim.name}
+                                </div>
+                                <div class="card-desc">${sim.desc}</div>
+                                <div class="card-footer">
+                                    <a href="${sim.path}" class="btn btn-primary">▶ Open Simulation</a>
+                                    <a href="https://github.com/" target="_blank" class="btn btn-secondary" title="View source code">💻</a>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                container.appendChild(sectionEl);
+            });
+        }
+
+        document.getElementById('searchInput').addEventListener('input', render);
+        render();
+    </script>
+
+</body>
+</html>
