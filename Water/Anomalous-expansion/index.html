@@ -26,7 +26,7 @@
     padding: 24px;
     line-height: 1.5;
   }
-  .container { max-width: 800px; margin: 0 auto; }
+  .container { max-width: 1180px; margin: 0 auto; }
   h1 { font-size: 22px; font-weight: 600; text-align: center; margin-bottom: 4px; }
   .subtitle { text-align: center; color: var(--text-secondary); font-size: 14px; margin-bottom: 20px; }
   .panel {
@@ -179,6 +179,16 @@
     user-select: none;
     z-index: 5;
   }
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+  .left-col, .right-col { display: flex; flex-direction: column; }
+  @media (max-width: 860px) {
+    .main-grid { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -186,32 +196,38 @@
   <h1>Hope's Apparatus</h1>
   <p class="subtitle">Anomalous expansion of water (0–10°C) — 15 H₂O molecules (45 atoms)</p>
 
-  <div class="panel graph-wrap">
-    <svg id="graph-svg" viewBox="0 0 720 260" preserveAspectRatio="xMidYMid meet"></svg>
-    <p class="graph-caption">Specific volume of water vs. temperature — real data, minimum volume (maximum density) at 4°C</p>
-  </div>
+  <div class="main-grid">
+    <div class="left-col">
+      <div class="panel graph-wrap">
+        <svg id="graph-svg" viewBox="0 0 720 260" preserveAspectRatio="xMidYMid meet"></svg>
+        <p class="graph-caption">Specific volume of water vs. temperature — real data, minimum volume (maximum density) at 4°C</p>
+      </div>
 
-  <div class="panel">
-    <div class="molecule-stage" id="stage">
-      <span class="stage-watermark">YV</span>
+      <div class="panel info-bar">
+        <span class="info-text" id="info-text">Ice: Molecules are locked in a hexagonal crystal lattice held open by hydrogen bonds. Volume is relatively high.</span>
+        <span class="density-readout" id="density-readout">Specific volume: 1.000159 cm³/g</span>
+      </div>
     </div>
-    <div class="legend">
-      <div class="legend-item"><div class="legend-dot o"></div>Oxygen</div>
-      <div class="legend-item"><div class="legend-dot h"></div>Hydrogen</div>
-      <div class="legend-item"><div class="legend-line dashed"></div>H-bond (ice)</div>
+
+    <div class="right-col">
+      <div class="panel">
+        <div class="molecule-stage" id="stage">
+          <span class="stage-watermark">YV</span>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot o"></div>Oxygen</div>
+          <div class="legend-item"><div class="legend-dot h"></div>Hydrogen</div>
+          <div class="legend-item"><div class="legend-line dashed"></div>H-bond (ice)</div>
+        </div>
+      </div>
+
+      <div class="panel controls">
+        <span class="temp-label">Temperature</span>
+        <input type="range" class="temp-slider" id="slider" min="0" max="10" value="0" step="1">
+        <span class="temp-display" id="temp-display">0°C</span>
+        <span id="state-pill" class="state-pill pill-ice">Ice</span>
+      </div>
     </div>
-  </div>
-
-  <div class="panel controls">
-    <span class="temp-label">Temperature</span>
-    <input type="range" class="temp-slider" id="slider" min="0" max="10" value="0" step="1">
-    <span class="temp-display" id="temp-display">0°C</span>
-    <span id="state-pill" class="state-pill pill-ice">Ice</span>
-  </div>
-
-  <div class="panel info-bar">
-    <span class="info-text" id="info-text">Ice: Molecules are locked in a hexagonal crystal lattice held open by hydrogen bonds. Volume is relatively high.</span>
-    <span class="density-readout" id="density-readout">Specific volume: 1.000159 cm³/g</span>
   </div>
 </div>
 <div class="watermark">YV</div>
