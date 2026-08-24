@@ -203,9 +203,11 @@
         <p class="graph-caption">Specific volume of water vs. temperature — real data, minimum volume (maximum density) at 4°C</p>
       </div>
 
-      <div class="panel info-bar">
-        <span class="info-text" id="info-text">Ice: Molecules are locked in a hexagonal crystal lattice held open by hydrogen bonds. Volume is relatively high.</span>
-        <span class="density-readout" id="density-readout">Specific volume: 1.000159 cm³/g</span>
+      <div class="panel controls">
+        <span class="temp-label">Temperature</span>
+        <input type="range" class="temp-slider" id="slider" min="0" max="10" value="0" step="1">
+        <span class="temp-display" id="temp-display">0°C</span>
+        <span id="state-pill" class="state-pill pill-ice">Ice</span>
       </div>
     </div>
 
@@ -214,18 +216,6 @@
         <div class="molecule-stage" id="stage">
           <span class="stage-watermark">YV</span>
         </div>
-        <div class="legend">
-          <div class="legend-item"><div class="legend-dot o"></div>Oxygen</div>
-          <div class="legend-item"><div class="legend-dot h"></div>Hydrogen</div>
-          <div class="legend-item"><div class="legend-line dashed"></div>H-bond (ice)</div>
-        </div>
-      </div>
-
-      <div class="panel controls">
-        <span class="temp-label">Temperature</span>
-        <input type="range" class="temp-slider" id="slider" min="0" max="10" value="0" step="1">
-        <span class="temp-display" id="temp-display">0°C</span>
-        <span id="state-pill" class="state-pill pill-ice">Ice</span>
       </div>
     </div>
   </div>
@@ -348,8 +338,6 @@
   const tempDisplay = document.getElementById('temp-display');
   const statePill = document.getElementById('state-pill');
   const stage = document.getElementById('stage');
-  const infoText = document.getElementById('info-text');
-  const densityReadout = document.getElementById('density-readout');
 
   const MOLS = 15;
   const BOX_W = 640;
@@ -464,8 +452,6 @@
     const state = getStateInfo(temp);
     statePill.textContent = state.name;
     statePill.className = 'state-pill ' + state.class;
-    infoText.textContent = state.info;
-    densityReadout.textContent = 'Specific volume: ' + VOLUME[temp].toFixed(6) + ' cm³/g';
 
     // move the red dot to the exact real data point for this temperature
     const p = pts[temp];
