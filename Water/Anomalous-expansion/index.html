@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hope's Apparatus – Anomalous Expansion of Water</title>
+<style>
+  :root {
+    --bg: #f8f9fa;
+    --surface: #ffffff;
+    --border: #e2e8f0;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+    --accent-red: #ef4444;
+    --accent-blue: #3b82f6;
+    --accent-green: #16a34a;
+    --bond: #cbd5e1;
+    --shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    padding: 24px;
+    line-height: 1.5;
+  }
+  .container { max-width: 800px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 600; text-align: center; margin-bottom: 4px; }
+  .subtitle { text-align: center; color: var(--text-secondary); font-size: 14px; margin-bottom: 20px; }
+  .panel {
+    background: var(--surface);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+  .graph-wrap { position: relative; }
+  .graph-wrap svg { width: 100%; height: 260px; }
+  .graph-caption {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  .molecule-stage {
+    position: relative;
+    height: 380px;
+    overflow: hidden;
+    background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%);
+    border-radius: 10px;
+  }
+  .atom {
+    position: absolute;
+    border-radius: 50%;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+  }
+  .atom-o {
+    width: 14px;
+    height: 14px;
+    background: radial-gradient(circle at 35% 35%, #ff6b6b, var(--accent-red));
+    box-shadow: 0 0 8px rgba(239,68,68,0.35), 0 2px 4px rgba(0,0,0,0.15);
+    z-index: 3;
+  }
+  .atom-h {
+    width: 8px;
+    height: 8px;
+    background: radial-gradient(circle at 35% 35%, #93c5fd, var(--accent-blue));
+    box-shadow: 0 0 4px rgba(59,130,246,0.3), 0 1px 2px rgba(0,0,0,0.1);
+    z-index: 2;
+  }
+  .h-bond {
+    position: absolute;
+    height: 1.5px;
+    background: repeating-linear-gradient(90deg, var(--bond), var(--bond) 4px, transparent 4px, transparent 7px);
+    transform-origin: left center;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+    opacity: 0;
+  }
+  .h-bond.active { opacity: 0.55; }
+  .controls { display: flex; align-items: center; gap: 16px; padding: 16px 20px; }
+  .temp-label { font-size: 14px; font-weight: 500; min-width: 90px; }
+  .temp-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--border);
+    outline: none;
+    cursor: pointer;
+  }
+  .temp-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--text-primary);
+    cursor: pointer;
+    border: 3px solid var(--surface);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+  .temp-slider::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--text-primary);
+    cursor: pointer;
+    border: 3px solid var(--surface);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+  .temp-display {
+    font-size: 22px;
+    font-weight: 600;
+    min-width: 60px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .state-pill {
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .pill-ice { background: #dbeafe; color: #1d4ed8; }
+  .pill-liquid { background: #dcfce7; color: #15803d; }
+  .info-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .info-text { font-size: 13px; color: var(--text-secondary); max-width: 65%; }
+  .density-readout { font-size: 13px; font-weight: 600; color: var(--text-primary); white-space: nowrap; }
+  .legend { display: flex; gap: 20px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .legend-dot.o { background: var(--accent-red); }
+  .legend-dot.h { background: var(--accent-blue); }
+  .legend-line { width: 16px; height: 2px; background: var(--bond); border-radius: 1px; }
+  .legend-line.dashed {
+    background: repeating-linear-gradient(90deg, var(--bond), var(--bond) 3px, transparent 3px, transparent 5px);
+    height: 1.5px;
+  }
+  .watermark {
+    position: fixed;
+    bottom: 14px;
+    right: 18px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--text-primary);
+    opacity: 0.18;
+    pointer-events: none;
+    user-select: none;
+    z-index: 999;
+  }
+  .stage-watermark {
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: #1e293b;
+    opacity: 0.08;
+    pointer-events: none;
+    user-select: none;
+    z-index: 5;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Hope's Apparatus</h1>
+  <p class="subtitle">Anomalous expansion of water (0–10°C) — 15 H₂O molecules (45 atoms)</p>
+
+  <div class="panel graph-wrap">
+    <svg id="graph-svg" viewBox="0 0 720 260" preserveAspectRatio="xMidYMid meet"></svg>
+    <p class="graph-caption">Specific volume of water vs. temperature — real data, minimum volume (maximum density) at 4°C</p>
+  </div>
+
+  <div class="panel">
+    <div class="molecule-stage" id="stage">
+      <span class="stage-watermark">YV</span>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot o"></div>Oxygen</div>
+      <div class="legend-item"><div class="legend-dot h"></div>Hydrogen</div>
+      <div class="legend-item"><div class="legend-line dashed"></div>H-bond (ice)</div>
+    </div>
+  </div>
+
+  <div class="panel controls">
+    <span class="temp-label">Temperature</span>
+    <input type="range" class="temp-slider" id="slider" min="0" max="10" value="0" step="1">
+    <span class="temp-display" id="temp-display">0°C</span>
+    <span id="state-pill" class="state-pill pill-ice">Ice</span>
+  </div>
+
+  <div class="panel info-bar">
+    <span class="info-text" id="info-text">Ice: Molecules are locked in a hexagonal crystal lattice held open by hydrogen bonds. Volume is relatively high.</span>
+    <span class="density-readout" id="density-readout">Specific volume: 1.000159 cm³/g</span>
+  </div>
+</div>
+<div class="watermark">YV</div>
+
+<script>
+(function() {
+  // ---------------------------------------------------------------
+  // REAL DATA: specific volume of water (cm3/g) at 0-10 C
+  // derived from standard density values (g/cm3) at each degree
+  // ---------------------------------------------------------------
+  const DENSITY = {
+    0: 0.999841, 1: 0.999900, 2: 0.999941, 3: 0.999965, 4: 0.999973,
+    5: 0.999965, 6: 0.999941, 7: 0.999902, 8: 0.999849, 9: 0.999781, 10: 0.999700
+  };
+  const VOLUME = {};
+  for (const t in DENSITY) VOLUME[t] = 1 / DENSITY[t];
+  const volMin = Math.min(...Object.values(VOLUME)); // at 4C
+  const volMax = Math.max(...Object.values(VOLUME)); // at 10C
+
+  // ---------------------------------------------------------------
+  // GRAPH (built in JS so it plots the exact data table above)
+  // ---------------------------------------------------------------
+  const svg = document.getElementById('graph-svg');
+  const NS = 'http://www.w3.org/2000/svg';
+  const plotX0 = 80, plotX1 = 680, plotY0 = 210, plotY1 = 30;
+
+  function xScale(t) { return plotX0 + (t / 10) * (plotX1 - plotX0); }
+  function yScale(v) {
+    // pad so curve doesn't touch the axes
+    const pad = (plotY0 - plotY1) * 0.08;
+    const top = plotY1 + pad, bottom = plotY0 - pad;
+    return bottom - (v - volMin) / (volMax - volMin) * (bottom - top);
+  }
+
+  function el(tag, attrs) {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+
+  // grid + axes
+  for (let t = 0; t <= 10; t += 2) {
+    svg.appendChild(el('line', { x1: xScale(t), y1: plotY0, x2: xScale(t), y2: plotY1, stroke: '#e2e8f0', 'stroke-width': 1 }));
+  }
+  svg.appendChild(el('line', { x1: plotX0, y1: plotY0, x2: plotX1, y2: plotY0, stroke: '#1e293b', 'stroke-width': 1.5 }));
+  svg.appendChild(el('line', { x1: plotX0, y1: plotY0, x2: plotX0, y2: plotY1, stroke: '#1e293b', 'stroke-width': 1.5 }));
+
+  for (let t = 0; t <= 10; t += 1) {
+    const txt = el('text', { x: xScale(t), y: plotY0 + 18, fill: '#64748b', 'font-size': 11, 'text-anchor': 'middle' });
+    txt.textContent = t;
+    svg.appendChild(txt);
+  }
+  const xTitle = el('text', { x: (plotX0 + plotX1) / 2, y: plotY0 + 38, fill: '#64748b', 'font-size': 12, 'text-anchor': 'middle', 'font-weight': 500 });
+  xTitle.textContent = 'Temperature (°C)';
+  svg.appendChild(xTitle);
+
+  // y-axis ticks: min, mid, max actual volume values
+  [volMin, (volMin + volMax) / 2, volMax].forEach(v => {
+    const y = yScale(v);
+    svg.appendChild(el('line', { x1: plotX0 - 5, y1: y, x2: plotX0, y2: y, stroke: '#1e293b', 'stroke-width': 1 }));
+    const txt = el('text', { x: plotX0 - 10, y: y + 4, fill: '#64748b', 'font-size': 10, 'text-anchor': 'end' });
+    txt.textContent = v.toFixed(6);
+    svg.appendChild(txt);
+  });
+  const yTitle = el('text', {
+    x: 20, y: (plotY0 + plotY1) / 2, fill: '#64748b', 'font-size': 12, 'text-anchor': 'middle',
+    'font-weight': 500, transform: `rotate(-90, 20, ${(plotY0 + plotY1) / 2})`
+  });
+  yTitle.textContent = 'Specific volume (cm³/g)';
+  svg.appendChild(yTitle);
+
+  // marker at 4C (max density)
+  svg.appendChild(el('line', { x1: xScale(4), y1: plotY1, x2: xScale(4), y2: plotY0, stroke: '#94a3b8', 'stroke-width': 1, 'stroke-dasharray': '4,3' }));
+  const label4 = el('text', { x: xScale(4), y: plotY1 - 8, fill: '#15803d', 'font-size': 10, 'text-anchor': 'middle', 'font-weight': 600 });
+  label4.textContent = '4°C — max density';
+  svg.appendChild(label4);
+
+  // build smooth green curve through the real data points (Catmull-Rom -> Bezier)
+  const pts = [];
+  for (let t = 0; t <= 10; t++) pts.push({ x: xScale(t), y: yScale(VOLUME[t]) });
+
+  function catmullRomPath(points) {
+    if (points.length < 2) return '';
+    let d = `M ${points[0].x},${points[0].y} `;
+    for (let i = 0; i < points.length - 1; i++) {
+      const p0 = points[i === 0 ? i : i - 1];
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      const p3 = points[i + 2 < points.length ? i + 2 : i + 1];
+      const c1x = p1.x + (p2.x - p0.x) / 6;
+      const c1y = p1.y + (p2.y - p0.y) / 6;
+      const c2x = p2.x - (p3.x - p1.x) / 6;
+      const c2y = p2.y - (p3.y - p1.y) / 6;
+      d += `C ${c1x},${c1y} ${c2x},${c2y} ${p2.x},${p2.y} `;
+    }
+    return d;
+  }
+
+  const curveD = catmullRomPath(pts);
+  // fill under curve
+  const fillD = curveD + `L ${plotX1},${plotY0} L ${plotX0},${plotY0} Z`;
+  svg.appendChild(el('path', { d: fillD, fill: '#16a34a', opacity: 0.08 }));
+  svg.appendChild(el('path', { d: curveD, fill: 'none', stroke: '#16a34a', 'stroke-width': 3, 'stroke-linecap': 'round' }));
+
+  // small dots at each real data point
+  pts.forEach(p => svg.appendChild(el('circle', { cx: p.x, cy: p.y, r: 2.5, fill: '#16a34a' })));
+
+  // the moving red dot tied to the slider
+  const graphDot = el('circle', { cx: pts[0].x, cy: pts[0].y, r: 7, fill: '#ef4444', stroke: 'white', 'stroke-width': 2.5 });
+  const graphGlow = el('circle', { cx: pts[0].x, cy: pts[0].y, r: 12, fill: 'none', stroke: '#ef4444', 'stroke-width': 1.5, opacity: 0.3 });
+  svg.appendChild(graphGlow);
+  svg.appendChild(graphDot);
+
+  // ---------------------------------------------------------------
+  // MOLECULE VISUALIZATION
+  // ---------------------------------------------------------------
+  const slider = document.getElementById('slider');
+  const tempDisplay = document.getElementById('temp-display');
+  const statePill = document.getElementById('state-pill');
+  const stage = document.getElementById('stage');
+  const infoText = document.getElementById('info-text');
+  const densityReadout = document.getElementById('density-readout');
+
+  const MOLS = 15;
+  const BOX_W = 640;
+  const BOX_H = 380;
+  const OH_DIST = 14;
+  const H_ANGLE = 52.25 * Math.PI / 180;
+
+  const atoms = [];
+  for (let m = 0; m < MOLS; m++) {
+    const o = document.createElement('div');
+    o.className = 'atom atom-o';
+    stage.appendChild(o);
+    atoms.push({ el: o, type: 'o', mol: m });
+    for (let h = 0; h < 2; h++) {
+      const hi = document.createElement('div');
+      hi.className = 'atom atom-h';
+      stage.appendChild(hi);
+      atoms.push({ el: hi, type: 'h', mol: m, hIdx: h });
+    }
+  }
+
+  const hBonds = [];
+  for (let i = 0; i < 24; i++) {
+    const b = document.createElement('div');
+    b.className = 'h-bond';
+    stage.appendChild(b);
+    hBonds.push(b);
+  }
+
+  function getIcePositions() {
+    const spacing = 58;
+    const cx = BOX_W / 2, cy = BOX_H / 2;
+    const layout = [
+      {x: 0, y: 0, a: 0},
+      {x: 1, y: 0, a: 60}, {x: 0.5, y: 0.866, a: 120},
+      {x: -0.5, y: 0.866, a: 180}, {x: -1, y: 0, a: 240},
+      {x: -0.5, y: -0.866, a: 300}, {x: 0.5, y: -0.866, a: 0},
+      {x: 1.5, y: 0.866, a: 30}, {x: 0, y: 1.732, a: 90},
+      {x: -1.5, y: 0.866, a: 150}, {x: -1.5, y: -0.866, a: 210},
+      {x: 0, y: -1.732, a: 270}, {x: 1.5, y: -0.866, a: 330},
+      {x: 2, y: 0, a: 0}, {x: -2, y: 0, a: 180}
+    ];
+    return layout.map(p => ({ x: cx + p.x * spacing, y: cy + p.y * spacing, angle: p.a }));
+  }
+
+  function getLiquidPositions(temp) {
+    // tightest packing at 4C, expands moving away from 4C in either direction
+    const spread = 48 + Math.abs(temp - 4) * 3.2;
+    const cx = BOX_W / 2, cy = BOX_H / 2;
+    const jitter = Math.min(spread * 0.18, 12);
+    const seeds = [
+      {r: 0, c: 0}, {r: 0.5, c: 0.9}, {r: -0.4, c: 0.8},
+      {r: 0.8, c: -0.3}, {r: -0.7, c: -0.6}, {r: 0.3, c: -0.9},
+      {r: -0.9, c: 0.2}, {r: 0.6, c: 0.4}, {r: -0.3, c: 0.5},
+      {r: 0.2, c: -0.5}, {r: -0.5, c: -0.2}, {r: 0.9, c: 0.1},
+      {r: -0.8, c: 0.7}, {r: 0.4, c: -0.7}, {r: -0.2, c: -0.8}
+    ];
+    return seeds.map((s, i) => {
+      const jx = Math.sin(i * 7.3 + temp) * jitter;
+      const jy = Math.cos(i * 5.1 + temp) * jitter;
+      return { x: cx + s.c * spread + jx, y: cy + s.r * spread + jy, angle: (i * 137.5 + temp * 6) % 360 };
+    });
+  }
+
+  function updateHBonds(molPos, show) {
+    if (!show) { hBonds.forEach(b => b.classList.remove('active')); return; }
+    let bi = 0;
+    const threshold = 72;
+    for (let i = 0; i < MOLS && bi < hBonds.length; i++) {
+      for (let j = i + 1; j < MOLS && bi < hBonds.length; j++) {
+        const dx = molPos[j].x - molPos[i].x;
+        const dy = molPos[j].y - molPos[i].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < threshold && dist > 20) {
+          const bond = hBonds[bi];
+          const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+          bond.style.left = molPos[i].x + 'px';
+          bond.style.top = molPos[i].y + 'px';
+          bond.style.width = dist + 'px';
+          bond.style.transform = `rotate(${angle}deg)`;
+          bond.classList.add('active');
+          bi++;
+        }
+      }
+    }
+    for (let i = bi; i < hBonds.length; i++) hBonds[i].classList.remove('active');
+  }
+
+  function getStateInfo(temp) {
+    if (temp === 0) return {
+      name: 'Ice', class: 'pill-ice',
+      info: 'Ice (0°C): Molecules are locked in an open hexagonal lattice by hydrogen bonds, giving a relatively large volume.',
+    };
+    if (temp < 4) return {
+      name: 'Liquid', class: 'pill-liquid',
+      info: `Liquid, warming toward 4°C: the open lattice has collapsed and molecules pack closer together, so volume keeps falling toward its minimum.`,
+    };
+    if (temp === 4) return {
+      name: 'Liquid', class: 'pill-liquid',
+      info: 'Liquid at 4°C: molecules are packed as closely as possible — this is the point of minimum volume and maximum density.',
+    };
+    return {
+      name: 'Liquid', class: 'pill-liquid',
+      info: `Liquid, warming above 4°C: increased thermal motion pushes molecules apart again, so volume rises (anomalous expansion).`,
+    };
+  }
+
+  function update() {
+    const temp = parseInt(slider.value, 10);
+    tempDisplay.textContent = temp + '°C';
+
+    const state = getStateInfo(temp);
+    statePill.textContent = state.name;
+    statePill.className = 'state-pill ' + state.class;
+    infoText.textContent = state.info;
+    densityReadout.textContent = 'Specific volume: ' + VOLUME[temp].toFixed(6) + ' cm³/g';
+
+    // move the red dot to the exact real data point for this temperature
+    const p = pts[temp];
+    graphDot.setAttribute('cx', p.x);
+    graphDot.setAttribute('cy', p.y);
+    graphGlow.setAttribute('cx', p.x);
+    graphGlow.setAttribute('cy', p.y);
+
+    const pos = temp === 0 ? getIcePositions() : getLiquidPositions(temp);
+    updateHBonds(pos, temp === 0);
+
+    for (let m = 0; m < MOLS; m++) {
+      const pp = pos[m];
+      const rad = pp.angle * Math.PI / 180;
+
+      const oAtom = atoms[m * 3];
+      oAtom.el.style.left = (pp.x - 7) + 'px';
+      oAtom.el.style.top = (pp.y - 7) + 'px';
+
+      const h1 = atoms[m * 3 + 1];
+      const a1 = rad - H_ANGLE;
+      h1.el.style.left = (pp.x + Math.cos(a1) * OH_DIST - 4) + 'px';
+      h1.el.style.top = (pp.y + Math.sin(a1) * OH_DIST - 4) + 'px';
+
+      const h2 = atoms[m * 3 + 2];
+      const a2 = rad + H_ANGLE;
+      h2.el.style.left = (pp.x + Math.cos(a2) * OH_DIST - 4) + 'px';
+      h2.el.style.top = (pp.y + Math.sin(a2) * OH_DIST - 4) + 'px';
+    }
+  }
+
+  slider.addEventListener('input', update);
+  update();
+})();
+</script>
+</body>
+</html>
