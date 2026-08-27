@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concave Lens Simulation</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #ffffff;
+    color: #222833;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+  h1 {
+    font-size: 1.8rem;
+    margin-bottom: 6px;
+    text-align: center;
+    color: #17223f;
+    text-shadow: 0 0 6px rgba(0,90,220,0.10);
+  }
+  .subtitle {
+    font-size: 0.82rem;
+    color: #4a6088;
+    margin-bottom: 16px;
+    text-align: center;
+    letter-spacing: 0.04em;
+  }
+  .container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 18px;
+    width: 100%;
+    max-width: 1400px;
+  }
+  .canvas-wrapper {
+    border: 2px solid #cdd8ec;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 0 20px rgba(0,80,200,0.08);
+    overflow: hidden;
+    width: 100%;
+    max-width: 900px;
+    position: relative;
+  }
+  .watermark {
+    position: absolute;
+    top: 10px;
+    right: 14px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: bold;
+    font-size: 0.95rem;
+    letter-spacing: 0.05em;
+    color: #2266cc;
+    background: rgba(255,255,255,0.75);
+    border: 1px solid #cdd8ec;
+    border-radius: 6px;
+    padding: 2px 9px;
+    pointer-events: none;
+    user-select: none;
+    z-index: 5;
+  }
+  canvas { 
+    display: block; 
+    width: 100%;
+    height: auto;
+    max-height: 520px;
+  }
+  .controls {
+    background: #f4f7fc;
+    border: 2px solid #cdd8ec;
+    border-radius: 12px;
+    padding: 20px;
+    min-width: 290px;
+    max-width: 320px;
+    box-shadow: 0 0 20px rgba(0,80,200,0.08);
+    flex: 1;
+  }
+  .control-group { margin-bottom: 18px; }
+  .control-group label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.88rem;
+    margin-bottom: 6px;
+    color: #2b3c63;
+  }
+  .inf-btn {
+    background: #eef2fb;
+    border: 1px solid #99aed8;
+    color: #2255bb;
+    font-weight: bold;
+    font-size: 0.82rem;
+    border-radius: 6px;
+    padding: 2px 9px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .inf-btn:hover { background: #dde8fb; }
+  .inf-btn.active {
+    background: #2255bb;
+    color: #ffffff;
+    border-color: #2255bb;
+  }
+  .slider-container { display: flex; align-items: center; gap: 10px; }
+  input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 7px;
+    background: #d7e0f2;
+    border-radius: 4px;
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px; height: 18px;
+    background: #3366dd;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 6px rgba(51,102,221,0.5);
+  }
+  .value-display {
+    min-width: 56px;
+    text-align: right;
+    font-family: monospace;
+    font-size: 0.95rem;
+    color: #2255bb;
+  }
+  .info-panel {
+    background: #ffffff;
+    border: 1px solid #cdd8ec;
+    border-radius: 8px;
+    padding: 14px;
+    margin-top: 8px;
+  }
+  .info-panel h3 { color: #2255bb; margin-bottom: 8px; font-size: 1rem; }
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    border-bottom: 1px solid #e5ebf7;
+    font-size: 0.84rem;
+    color: #333;
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-val { color: #1a4fa0; font-family: monospace; }
+  .image-status {
+    padding: 9px 10px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-weight: bold;
+    text-align: center;
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+  .real    { background: rgba(0,170,90,0.12);  color: #0a8a4a; border: 1px solid #0a8a4a; }
+  .virtual { background: rgba(230,90,30,0.12); color: #cc5522; border: 1px solid #cc5522; }
+  .infinity{ background: rgba(220,170,10,0.15); color: #9c7a00; border: 1px solid #9c7a00; }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+    font-size: 0.78rem;
+    color: #333;
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; }
+  .legend-line {
+    width: 20px; height: 3px; border-radius: 2px;
+    display: inline-block;
+  }
+  @media (max-width: 768px) {
+    .canvas-wrapper { max-width: 100%; }
+    canvas { max-height: 350px; }
+    .controls { max-width: 100%; min-width: unset; }
+  }
+</style>
+</head>
+<body>
+
+<h1>🔬 Concave Lens — Ray Optics</h1>
+<p class="subtitle">New Cartesian Sign Convention &nbsp;|&nbsp; Incident light travels left → right</p>
+
+<div class="container">
+  <div class="canvas-wrapper">
+    <div class="watermark">YV</div>
+    <canvas id="lensCanvas" width="1100" height="520"></canvas>
+  </div>
+
+  <div class="controls">
+    <div class="image-status virtual" id="imageStatus">Virtual · Upright · Diminished</div>
+
+    <div class="control-group">
+      <label>
+        <span>📏 |u| — Object Distance (cm)</span>
+        <button type="button" class="inf-btn" id="infinityBtn" title="Send object to infinity">∞</button>
+      </label>
+      <div class="slider-container">
+        <input type="range" id="objDist" min="20" max="600" value="150" step="1">
+        <span class="value-display" id="objDistVal">150</span>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label><span>🔍 |f| — Focal Length (cm)</span></label>
+      <div class="slider-container">
+        <input type="range" id="focalLen" min="30" max="180" value="80" step="1">
+        <span class="value-display" id="focalVal">80</span>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label><span>📐 Object Height (cm)</span></label>
+      <div class="slider-container">
+        <input type="range" id="objHeight" min="10" max="150" value="55" step="1">
+        <span class="value-display" id="objHeightVal">55</span>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <h3>📊 Lens Formula Results</h3>
+      <div class="info-row"><span>u (object dist)</span><span class="info-val" id="dispU">−150</span></div>
+      <div class="info-row"><span>f (focal length)</span><span class="info-val" id="dispF">−80</span></div>
+      <div class="info-row"><span>2f</span><span class="info-val" id="disp2F">−160</span></div>
+      <div class="info-row"><span>v (image dist)</span><span class="info-val" id="dispV">—</span></div>
+      <div class="info-row"><span>m = v/u</span><span class="info-val" id="dispM">—</span></div>
+      <div class="info-row"><span>Image height</span><span class="info-val" id="dispH">—</span></div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item"><div class="legend-line" style="background:#000000"></div>Principal Axis</div>
+      <div class="legend-item"><div class="legend-line" style="background:#009944"></div>Object</div>
+      <div class="legend-item"><div class="legend-line" style="background:#e68a00"></div>Image</div>
+      <div class="legend-item"><div class="legend-line" style="background:#ff0000"></div>Real Rays</div>
+      <div class="legend-item"><div class="legend-line" style="background:#ff0000; opacity:0.35"></div>Virtual ext.</div>
+      <div class="legend-item"><div class="legend-line" style="background:#2266cc"></div>F (focus)</div>
+      <div class="legend-item"><div class="legend-line" style="background:#aa44aa"></div>2F</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('lensCanvas');
+const ctx    = canvas.getContext('2d');
+
+const Ox = 450, Oy = 260;
+
+let absU = 150, absF = 80, objH = 55;
+let useInfinity = false;
+const INFINITY_U = 20000; // large stand-in for an object "at infinity"
+
+function getInputs() {
+  if (useInfinity) {
+    absU = INFINITY_U;
+  } else {
+    absU = parseFloat(document.getElementById('objDist').value);
+  }
+  absF = parseFloat(document.getElementById('focalLen').value);
+  objH = parseFloat(document.getElementById('objHeight').value);
+  document.getElementById('objDistVal').textContent = useInfinity ? '∞' : absU;
+  document.getElementById('focalVal').textContent   = absF;
+  document.getElementById('objHeightVal').textContent = objH;
+}
+
+function signedU() { return -absU; }
+function signedF() { return -absF; }   // concave lens: f is always negative
+
+// FIX: the lens formula is 1/v = 1/u + 1/f  =>  v = uf/(u+f)
+// (this is the SAME formula used for the convex lens — u and f already
+// carry their correct signs, so there is no separate "u - f" version).
+function calcImage() {
+  const u = signedU(), f = signedF();
+  const denom = u + f;
+  if (Math.abs(denom) < 0.001) return { v: Infinity, m: Infinity, hi: Infinity };
+  const v = (u * f) / denom;
+  const m = v / u;
+  const hi = m * objH;
+  return { v, m, hi };
+}
+
+function sx(d) { return Ox + d; }
+function sy(dy) { return Oy - dy; }
+
+// ─── Biconcave lens outline (bezier-based — thin at centre, thick at rim) ────
+const LENS_H = 160;  // half-height of the lens (aperture)
+const EDGE_W = 22;   // half-thickness at the top/bottom rim
+const MID_W  = 6;    // half-thickness at the vertical centre
+
+function drawLens() {
+  ctx.save();
+
+  ctx.beginPath();
+  ctx.moveTo(Ox + EDGE_W, Oy - LENS_H);
+  ctx.quadraticCurveTo(Ox + MID_W, Oy, Ox + EDGE_W, Oy + LENS_H);
+  ctx.lineTo(Ox - EDGE_W, Oy + LENS_H);
+  ctx.quadraticCurveTo(Ox - MID_W, Oy, Ox - EDGE_W, Oy - LENS_H);
+  ctx.closePath();
+
+  ctx.fillStyle = 'rgba(80,160,240,0.10)';
+  ctx.fill();
+
+  ctx.strokeStyle = 'rgba(40,110,210,0.75)';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  const tipTop = Oy - LENS_H;
+  const tipBot = Oy + LENS_H;
+  ctx.fillStyle = 'rgba(40,110,210,0.75)';
+
+  ctx.beginPath();
+  ctx.moveTo(Ox, tipTop - 12);
+  ctx.lineTo(Ox - 6, tipTop + 2);
+  ctx.lineTo(Ox + 6, tipTop + 2);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(Ox, tipBot + 12);
+  ctx.lineTo(Ox - 6, tipBot - 2);
+  ctx.lineTo(Ox + 6, tipBot - 2);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.fillStyle = '#2266cc';
+  ctx.font = 'bold 13px sans-serif';
+  ctx.fillText('Concave Lens', Ox - 42, tipTop - 18);
+
+  ctx.restore();
+}
+
+// ─── Ray utilities ──────────────────────────────────────────────────────────
+function drawSegment(x1,y1,x2,y2, color, width=1.8, dashed=false) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth   = width;
+  if (dashed) ctx.setLineDash([7,5]);
+  else        ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  ctx.restore();
+}
+
+function arrowHead(x,y, dx,dy, color, size=10) {
+  const len = Math.sqrt(dx*dx+dy*dy);
+  if (len < 1) return;
+  const ux=dx/len, uy=dy/len;
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(x,y);
+  ctx.lineTo(x - ux*size - uy*size*0.5, y - uy*size + ux*size*0.5);
+  ctx.lineTo(x - ux*size + uy*size*0.5, y - uy*size - ux*size*0.5);
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+
+function extendToEdge(x,y,dx,dy, maxLen=1200) {
+  let t = maxLen;
+  if (Math.abs(dx)>0.001) {
+    if (dx>0) t = Math.min(t,(canvas.width-x)/dx);
+    else      t = Math.min(t,-x/dx);
+  }
+  if (Math.abs(dy)>0.001) {
+    if (dy>0) t = Math.min(t,(canvas.height-y)/dy);
+    else      t = Math.min(t,-y/dy);
+  }
+  return {ex:x+dx*t, ey:y+dy*t};
+}
+
+function drawGrid() {
+  ctx.strokeStyle = 'rgba(150,165,200,0.25)';
+  ctx.lineWidth=1; ctx.setLineDash([]);
+  for(let x=0;x<=canvas.width;x+=50){
+    ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();
+  }
+  for(let y=0;y<=canvas.height;y+=50){
+    ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(canvas.width,y);ctx.stroke();
+  }
+}
+
+function drawAxis() {
+  ctx.save();
+  ctx.strokeStyle='#000000'; ctx.lineWidth=2; ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(0,Oy); ctx.lineTo(canvas.width,Oy); ctx.stroke();
+  ctx.fillStyle='#000000';
+  ctx.beginPath();
+  ctx.moveTo(canvas.width,Oy);
+  ctx.lineTo(canvas.width-14,Oy-5);
+  ctx.lineTo(canvas.width-14,Oy+5);
+  ctx.fill();
+  ctx.fillStyle='#000000'; ctx.font='13px sans-serif';
+  ctx.fillText('Principal Axis',canvas.width-130,Oy-10);
+  ctx.restore();
+}
+
+// FIX: place F1 (object-side focus) on the LEFT and F2 (image-side focus) on
+// the RIGHT, using |f| directly — this matches the convex diagram's layout
+// regardless of f's sign, instead of the old sx(-f)/sx(f) which put them on
+// the wrong sides for a negative f.
+function drawSpecialPoints() {
+  const absFocal = Math.abs(signedF());
+  const F1x = sx(-absFocal);
+  const F2x = sx(absFocal);
+  const TF1x = sx(-2*absFocal);
+  const TF2x = sx(2*absFocal);
+
+  ctx.save(); ctx.strokeStyle='rgba(120,130,165,0.35)'; ctx.lineWidth=1; ctx.setLineDash([4,4]);
+  [F1x, F2x, TF1x, TF2x, Ox].forEach(x=>{
+    ctx.beginPath(); ctx.moveTo(x,Oy-130); ctx.lineTo(x,Oy+130); ctx.stroke();
+  });
+  ctx.restore();
+
+  function dot(x,y,color,label,labelOff=15){
+    ctx.save();
+    ctx.fillStyle=color;
+    ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2); ctx.fill();
+    ctx.font='bold 15px sans-serif'; ctx.fillStyle=color;
+    ctx.fillText(label, x-5, y+labelOff+6);
+    ctx.restore();
+  }
+  dot(Ox, Oy,  '#222222',  'O');
+  dot(F1x, Oy,  '#2266cc',  'F₁');
+  dot(F2x, Oy,  '#2266cc',  'F₂');
+  dot(TF1x, Oy,  '#aa44aa',  '2F₁');
+  dot(TF2x, Oy,  '#aa44aa',  '2F₂');
+}
+
+function drawObject() {
+  if (useInfinity) {
+    const edgeX = 25;
+    const tipY = sy(objH);
+    ctx.save();
+    ctx.strokeStyle='#009944'; ctx.lineWidth=3; ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(edgeX,Oy); ctx.lineTo(edgeX,tipY); ctx.stroke();
+    ctx.fillStyle='#009944';
+    ctx.beginPath();
+    ctx.moveTo(edgeX,tipY);
+    ctx.lineTo(edgeX-6,tipY+11);
+    ctx.lineTo(edgeX+6,tipY+11);
+    ctx.fill();
+    ctx.beginPath(); ctx.moveTo(edgeX-7,Oy); ctx.lineTo(edgeX+7,Oy); ctx.stroke();
+    ctx.font='bold 12px sans-serif';
+    ctx.fillText('Object at ∞', edgeX-16, Oy+26);
+    ctx.restore();
+    return;
+  }
+
+  const objX = sx(signedU());
+  ctx.save();
+  ctx.strokeStyle='#009944'; ctx.lineWidth=3; ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(objX,Oy); ctx.lineTo(objX,sy(objH)); ctx.stroke();
+  ctx.fillStyle='#009944';
+  const tip = sy(objH);
+  ctx.beginPath();
+  ctx.moveTo(objX,tip);
+  ctx.lineTo(objX-6,tip+11);
+  ctx.lineTo(objX+6,tip+11);
+  ctx.fill();
+  ctx.beginPath(); ctx.moveTo(objX-7,Oy); ctx.lineTo(objX+7,Oy); ctx.stroke();
+  ctx.fillStyle='#009944'; ctx.font='bold 13px sans-serif';
+  ctx.fillText('Object',objX-22,Oy+26);
+  ctx.restore();
+}
+
+function drawImageArrow(v, hi) {
+  if (!isFinite(v)) return;
+  const imgX = sx(v);
+  if (imgX < -60 || imgX > canvas.width+60) return;
+
+  const isVirtual = v < 0;
+  const tipY = sy(hi);
+
+  ctx.save();
+  ctx.strokeStyle='#e68a00'; ctx.lineWidth=3;
+  ctx.setLineDash(isVirtual ? [9,5] : []);
+  ctx.beginPath(); ctx.moveTo(imgX,Oy); ctx.lineTo(imgX,tipY); ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.fillStyle='#e68a00';
+  // FIX: aDir must point the arrowhead AWAY from the axis, toward the tip
+  // (hi < 0 => tip is below the axis => arrowhead should point downward)
+  const aDir = hi < 0 ? 1 : -1;
+  ctx.beginPath();
+  ctx.moveTo(imgX, tipY);
+  ctx.lineTo(imgX-6, tipY - aDir*11);
+  ctx.lineTo(imgX+6, tipY - aDir*11);
+  ctx.fill();
+
+  ctx.beginPath(); ctx.moveTo(imgX-7,Oy); ctx.lineTo(imgX+7,Oy); ctx.stroke();
+
+  ctx.fillStyle='#e68a00'; ctx.font='bold 13px sans-serif';
+  ctx.fillText(isVirtual ? 'Virtual Image' : 'Real Image', imgX-34, Oy+26);
+  ctx.restore();
+}
+
+function drawRays(imgData) {
+  const u  = signedU(), f = signedF();
+  const v  = imgData.v;
+  const absFocal = Math.abs(f);
+  const F1x = sx(-absFocal); // object-side (left) focus
+  const F2x = sx(absFocal);  // image-side (right) focus
+
+  const objX = sx(u);
+  const objTipY = sy(objH);
+
+  const RAY_COLOR  = '#ff0000';
+  const VIRT_COLOR = 'rgba(255,0,0,0.35)';
+
+  // RAY 1: Parallel to axis → refracts as if diverging from F₁ (object side)
+  {
+    drawSegment(objX, objTipY, Ox, objTipY, RAY_COLOR, 2);
+    arrowHead(Ox, objTipY, Ox-objX, 0, RAY_COLOR);
+
+    // Direction from F1 through the lens hit point, continued forward (right)
+    const rdx = Ox - F1x, rdy = objTipY - Oy;
+    const rlen = Math.sqrt(rdx*rdx+rdy*rdy);
+    const rn = {dx:rdx/rlen, dy:rdy/rlen};
+
+    // FIX: the REAL solid ray continues FORWARD (away from F1, to the right),
+    // and the DASHED virtual line is the backward projection through F1.
+    const {ex,ey} = extendToEdge(Ox, objTipY, rn.dx, rn.dy);
+    drawSegment(Ox, objTipY, ex, ey, RAY_COLOR, 2);
+    arrowHead(ex, ey, rn.dx, rn.dy, RAY_COLOR);
+
+    const {ex:vx, ey:vy} = extendToEdge(Ox, objTipY, -rn.dx, -rn.dy, 400);
+    drawSegment(Ox, objTipY, vx, vy, VIRT_COLOR, 1.5, true);
+  }
+
+  // RAY 2: Aimed at F₂ (image side) → refracts parallel to the axis
+  {
+    const dx0 = F2x - objX, dy0 = Oy - objTipY;
+    const len0 = Math.sqrt(dx0*dx0+dy0*dy0);
+    const dn = {dx:dx0/len0, dy:dy0/len0};
+
+    const t = (Ox - objX) / dn.dx;
+    const hitY = objTipY + dn.dy * t;
+
+    if (Math.abs(hitY - Oy) <= LENS_H + 5) {
+      drawSegment(objX, objTipY, Ox, hitY, RAY_COLOR, 2);
+      arrowHead(Ox, hitY, dn.dx, dn.dy, RAY_COLOR);
+
+      // FIX: after the lens the REAL ray keeps travelling forward (right,
+      // parallel to the axis); the DASHED virtual line runs backward (left).
+      const rn = {dx: 1, dy: 0};
+      const {ex,ey} = extendToEdge(Ox, hitY, rn.dx, rn.dy);
+      drawSegment(Ox, hitY, ex, ey, RAY_COLOR, 2);
+      arrowHead(ex, ey, rn.dx, rn.dy, RAY_COLOR);
+
+      const {ex:vx, ey:vy} = extendToEdge(Ox, hitY, -1, 0, 400);
+      drawSegment(Ox, hitY, vx, vy, VIRT_COLOR, 1.5, true);
+    }
+  }
+
+  // RAY 3: Through optical centre O (undeviated)
+  {
+    const dx0 = Ox - objX, dy0 = Oy - objTipY;
+    const len0 = Math.sqrt(dx0*dx0+dy0*dy0);
+    const dn = {dx:dx0/len0, dy:dy0/len0};
+
+    drawSegment(objX, objTipY, Ox, Oy, RAY_COLOR, 2);
+    arrowHead(Ox, Oy, dn.dx, dn.dy, RAY_COLOR);
+
+    const {ex,ey} = extendToEdge(Ox, Oy, dn.dx, dn.dy);
+    drawSegment(Ox, Oy, ex, ey, RAY_COLOR, 2);
+    arrowHead(ex, ey, dn.dx, dn.dy, RAY_COLOR);
+
+    const {ex:vx, ey:vy} = extendToEdge(Ox, Oy, -dn.dx, -dn.dy, 400);
+    drawSegment(Ox, Oy, vx, vy, VIRT_COLOR, 1.5, true);
+  }
+}
+
+function updateInfo(img){
+  const u=signedU(), f=signedF();
+  document.getElementById('dispU').textContent = useInfinity ? '−∞' : u;
+  document.getElementById('dispF').textContent = f;
+  document.getElementById('disp2F').textContent = (2*f);
+
+  const st = document.getElementById('imageStatus');
+  if(!isFinite(img.v)){
+    document.getElementById('dispV').textContent = '∞';
+    document.getElementById('dispM').textContent = '∞';
+    document.getElementById('dispH').textContent = '∞';
+    st.textContent = 'Image at Infinity';
+    st.className='image-status infinity';
+    return;
+  }
+
+  document.getElementById('dispV').textContent = (img.v > 0 ? '+' : '') + img.v.toFixed(1);
+  document.getElementById('dispM').textContent = img.m.toFixed(3);
+  document.getElementById('dispH').textContent = Math.abs(img.hi).toFixed(1);
+
+  const realVirt = img.v > 0 ? 'Real' : 'Virtual';
+  const orient   = img.m < 0 ? 'Inverted' : 'Upright';
+  const size     = Math.abs(img.m)>1 ? 'Magnified' : Math.abs(img.m)<1 ? 'Diminished' : 'Same Size';
+  st.textContent = `${realVirt} · ${orient} · ${size}`;
+  st.className = img.v > 0 ? 'image-status real' : 'image-status virtual';
+}
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  drawGrid();
+  drawAxis();
+  drawSpecialPoints();
+  drawObject();
+  const img = calcImage();
+  drawRays(img);
+  drawImageArrow(img.v, img.hi);
+  drawLens();
+  updateInfo(img);
+}
+
+['objDist','focalLen','objHeight'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',()=>{
+    if (id === 'objDist' && useInfinity) {
+      useInfinity = false;
+      document.getElementById('infinityBtn').classList.remove('active');
+    }
+    getInputs(); draw();
+  });
+});
+
+document.getElementById('infinityBtn').addEventListener('click', () => {
+  useInfinity = !useInfinity;
+  document.getElementById('infinityBtn').classList.toggle('active', useInfinity);
+  getInputs();
+  draw();
+});
+
+getInputs();
+draw();
+</script>
+</body>
+</html>
