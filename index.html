@@ -22,6 +22,7 @@
             --accent-wave: #34d399;
             --accent-optics: #f5a623;
             --accent-water: #22d3ee;
+            --accent-semiconductor: #ef4444;
             --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 10px 30px rgba(0,0,0,0.35);
             --shadow-hover: 0 20px 50px rgba(0,0,0,0.55), 0 0 0 1px rgba(212,175,55,0.15);
         }
@@ -617,11 +618,11 @@
         <p>Interactive visualizations for waves, oscillations & sound</p>
         <div class="stats">
             <div class="stat">
-                <div class="stat-number">5</div>
+                <div class="stat-number">6</div>
                 <div class="stat-label">Topics</div>
             </div>
             <div class="stat">
-                <div class="stat-number">11</div>
+                <div class="stat-number">12</div>
                 <div class="stat-label">Simulations</div>
             </div>
             <div class="stat">
@@ -774,6 +775,16 @@
                 desc: "Explore how water's density behaves unusually between 0°C and 4°C compared to normal substances.",
                 accent: "var(--accent-water)",
                 icon: "💧"
+            },
+
+            // ─── Semiconductor ───
+            {
+                name: "PN Junction",
+                folder: "Semiconductor",
+                path: "Semiconductor/PN-Junction/index.html",
+                desc: "Explore depletion region formation, forward and reverse bias behavior in a PN junction diode.",
+                accent: "var(--accent-semiconductor)",
+                icon: "🔌"
             }
         ];
 
@@ -786,7 +797,8 @@
             "Sound": { icon: "🔊", title: "Sound", accent: "var(--accent-sound)" },
             "Superposition of Waves": { icon: "〰️", title: "Superposition of Waves", accent: "var(--accent-wave)" },
             "Optics": { icon: "🔍", title: "Optics", accent: "var(--accent-optics)" },
-            "Water": { icon: "💧", title: "Water", accent: "var(--accent-water)" }
+            "Water": { icon: "💧", title: "Water", accent: "var(--accent-water)" },
+            "Semiconductor": { icon: "🔌", title: "Semiconductor", accent: "var(--accent-semiconductor)" }
         };
 
         // ── Living-note persistence layer ──────────────────────────────
