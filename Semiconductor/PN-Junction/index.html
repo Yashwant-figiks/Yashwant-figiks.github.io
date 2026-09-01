@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Silicon PN Junction Simulator</title>
+<style>
+  * { box-sizing: border-box; font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive, sans-serif; }
+  body {
+    background: #ffffff;
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 14px 50px;
+  }
+  .main-card {
+    max-width: 1100px;
+    width: 100%;
+    background: #f0faff;
+    border-radius: 40px;
+    box-shadow: 0 16px 32px rgba(0,80,120,0.15);
+    padding: 22px 26px 34px;
+    border: 2px solid #b8dff0;
+  }
+  h1 {
+    text-align: center;
+    color: #0369a1;
+    margin: 4px 0 20px;
+    font-size: 1.9rem;
+    text-shadow: 2px 2px 0 #d4edfa;
+  }
+  .tab-box {
+    display: flex;
+    gap: 12px;
+    background: #e3f2fc;
+    border-radius: 50px;
+    padding: 10px;
+    margin-bottom: 22px;
+    border: 2px solid #b0daf0;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.03), 0 6px 0 #b0daf0;
+  }
+  .tab-item {
+    flex: 1;
+    background: #f5fcff;
+    border: none;
+    border-radius: 40px;
+    padding: 12px 6px;
+    text-align: center;
+    font-weight: bold;
+    color: #01537a;
+    font-size: 1.05rem;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #b0d0e0;
+    transition: all .12s;
+  }
+  .tab-item:hover { background: #e8f6ff; }
+  .tab-item.active {
+    background: #0381c7;
+    color: #fff;
+    box-shadow: 0 4px 0 #01537a, inset 0 0 0 2px #bfe8ff;
+    transform: translateY(2px);
+  }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .diagram-wrap {
+    background: #dcecf9;
+    border-radius: 40px;
+    padding: 14px;
+    border: 2px solid #b2d6ec;
+    box-shadow: inset 0 -4px 0 #9bbdd4;
+    display: flex;
+    justify-content: center;
+  }
+  canvas.junction { background: #ffffff; border-radius: 26px; box-shadow: 0 6px 0 #b0cfe0, inset 0 0 0 2px #c0def2; max-width: 100%; height: auto; }
+  .control-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 14px 28px;
+    margin: 18px 0 6px;
+  }
+  .btn-3d {
+    background: #b8e2f5;
+    border: 1px solid #c6edff;
+    border-radius: 40px;
+    padding: 10px 26px;
+    font-weight: bold;
+    font-size: 1.02rem;
+    color: #014364;
+    box-shadow: 0 7px 0 #6b9fc0, 0 6px 12px rgba(0,40,70,0.2);
+    cursor: pointer;
+    transform: translateY(0);
+    transition: all .05s ease-in;
+  }
+  .btn-3d:active:not(:disabled) { transform: translateY(6px); box-shadow: 0 1px 0 #4a7f9e, 0 6px 12px rgba(0,40,70,0.12); }
+  .btn-3d:disabled { opacity: .55; cursor: default; transform: translateY(4px); box-shadow: 0 3px 0 #6b9fc0; }
+  .slider-block {
+    display: flex; align-items: center; gap: 12px;
+    background: #e6f4fe; padding: 8px 22px 8px 18px; border-radius: 50px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.03), 0 4px 0 #b8d0e0;
+  }
+  .slider-block label { font-weight: bold; color: #02527a; white-space: nowrap; }
+  input[type="range"] {
+    width: 190px; height: 10px; -webkit-appearance: none; background: #bedcf0; border-radius: 20px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.12);
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 22px; height: 22px; background: #0381c7; border-radius: 50%;
+    box-shadow: 0 4px 0 #015a8a, 0 2px 6px rgba(0,0,0,.25); cursor: pointer; border: 2px solid #b0defa;
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 22px; height: 22px; background: #0381c7; border-radius: 50%; border: 2px solid #b0defa; cursor: pointer;
+  }
+  .badge { background: #2c6f96; color: #fff; border-radius: 40px; padding: 6px 16px; font-size: .92rem; box-shadow: inset 0 -2px 0 #12435e; font-weight: bold; }
+  .value-badge { background: #d2eafb; padding: 6px 18px; border-radius: 50px; font-weight: bold; color: #014d74; box-shadow: inset 0 -2px 0 #b0c8da; }
+  .lower-section {
+    display: flex; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 22px;
+    background: #e6f2fc; border-radius: 34px; padding: 18px; margin-top: 18px; border: 2px solid #b8d8ec;
+  }
+  .graph-box { background: #fff; border-radius: 24px; padding: 10px 10px 4px; box-shadow: 0 6px 0 #b0cce0; }
+  .graph-label { text-align: center; font-weight: bold; color: #015a7a; padding-bottom: 4px; }
+  .readouts { display: flex; flex-direction: column; gap: 10px; justify-content: center; align-items: center; min-width: 160px; }
+  .legend { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-top: 14px; font-size: .85rem; color: #024a68; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; background: #eef8fe; padding: 4px 12px; border-radius: 20px; border: 1px solid #cbe6f7; }
+  .legend .swatch { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
+  .note { text-align: center; color: #04688f; font-size: .88rem; margin-top: 10px; }
+  @media (max-width: 700px) {
+    .main-card { padding: 14px; border-radius: 26px; }
+    .tab-item { font-size: .82rem; padding: 10px 4px; }
+  }
+</style>
+</head>
+<body>
+<div class="main-card">
+  <h1>⚡ Silicon PN Junction Simulator</h1>
+
+  <div class="tab-box">
+    <button class="tab-item active" id="tabJunction" onclick="switchTab('junction')">🔷 PN Junction</button>
+    <button class="tab-item" id="tabForward" onclick="switchTab('forward')">▶ Forward Bias</button>
+    <button class="tab-item" id="tabReverse" onclick="switchTab('reverse')">◀ Reverse Bias</button>
+  </div>
+
+  <!-- ===================== PANEL 1: PN JUNCTION ===================== -->
+  <div class="panel active" id="panelJunction">
+    <div class="diagram-wrap"><canvas class="junction" id="cvJunction" width="600" height="300"></canvas></div>
+    <div class="control-bar">
+      <button class="btn-3d" id="btnRemoveWall" onclick="removeWall()">🧱 Remove Wall</button>
+      <button class="btn-3d" id="btnResetWall" onclick="resetWall()">🔁 Reset Wall</button>
+      <span class="badge" id="statusJunction">⛔ wall present</span>
+    </div>
+    <div class="note">The wall keeps holes (p-side) and electrons (n-side) apart. Remove it to let them meet at the junction and form a depletion region.</div>
+  </div>
+
+  <!-- ===================== PANEL 2: FORWARD BIAS ===================== -->
+  <div class="panel" id="panelForward">
+    <div class="diagram-wrap"><canvas class="junction" id="cvForward" width="600" height="360"></canvas></div>
+    <div class="control-bar">
+      <div class="slider-block">
+        <label id="lblForwardV">V = 0.00 V</label>
+        <input type="range" id="sliderForward" min="0" max="1.5" step="0.01" value="0">
+      </div>
+      <span class="badge" id="statusForward">⚖️ depletion at rest width</span>
+    </div>
+    <div class="lower-section">
+      <div><div class="graph-box"><canvas id="graphForward" width="300" height="210"></canvas></div><div class="graph-label">Complete Diode I–V Curve</div></div>
+      <div class="readouts">
+        <span class="value-badge" id="voltageForward">0.00 V</span>
+        <span class="value-badge" id="currentForward">0.000 mA</span>
+      </div>
+    </div>
+    <div class="note">Knee voltage ≈ 0.7 V for silicon. Beyond it, current rises sharply and the depletion region narrows.</div>
+  </div>
+
+  <!-- ===================== PANEL 3: REVERSE BIAS ===================== -->
+  <div class="panel" id="panelReverse">
+    <div class="diagram-wrap"><canvas class="junction" id="cvReverse" width="600" height="360"></canvas></div>
+    <div class="control-bar">
+      <div class="slider-block">
+        <label id="lblReverseV">V = 0.00 V</label>
+        <input type="range" id="sliderReverse" min="0" max="80" step="1" value="0">
+      </div>
+      <span class="badge" id="statusReverse">⚖️ depletion at rest width</span>
+    </div>
+    <div class="lower-section">
+      <div><div class="graph-box"><canvas id="graphReverse" width="300" height="210"></canvas></div><div class="graph-label">Complete Diode I–V Curve</div></div>
+      <div class="readouts">
+        <span class="value-badge" id="voltageReverse">0.00 V</span>
+        <span class="value-badge" id="currentReverse">0.000 mA</span>
+      </div>
+    </div>
+    <div class="note">Only a tiny leakage current flows until breakdown near −75 V, where reverse current surges toward −20 mA. Holes stay fixed in place — watch electrons drain from the N side and travel in from the left to form new pairs, column by column.</div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ===================== SHARED STATE ===================== */
+  let currentTab = 'junction';
+  let wallRemoved = false;
+  let wallAnim = 0;      // 0 -> 1 progress of depletion forming after wall removal
+  let animating = false;
+
+  const BASE_DEP = 70;     // equilibrium depletion width in px
+  const MIN_DEP  = 12;
+  const MAX_DEP  = 165;
+
+  let phase = 0; // animation phase for flowing charge dots
+
+  /* ===================== PHYSICS MODELS ===================== */
+  const REV_MAX_V = 80;    // reverse voltage scale, 0 to -80 V
+
+  function depletionWidthForward(v){
+    const w = BASE_DEP * (1 - v/1.0);
+    return Math.max(MIN_DEP, Math.min(BASE_DEP, w));
+  }
+  function depletionWidthReverse(v){
+    return Math.min(MAX_DEP, BASE_DEP + 63 * (v/REV_MAX_V));
+  }
+  function forwardCurrent_mA(v){
+    if (v <= 0) return 0;
+    const a = 0.001135, b = 0.15;
+    return Math.min(25, a * (Math.exp(v/b) - 1));
+  }
+  function reverseCurrent_mA(v){ // v = magnitude (0..80), returns negative mA
+    const leakage = -0.05;
+    const breakdown = -20 / (1 + Math.exp(-(v - 75) * 0.8));
+    return Math.max(-25, leakage + breakdown);
+  }
+
+  /* ===================== DIODE / JUNCTION DRAWING ===================== */
+  // Draws the p-n block, holes, electrons, wall/depletion, ions.
+  // opts: { blockTop, blockHeight, blockLeft, blockWidth, mode:'none'|'forward'|'reverse',
+  //         wallShown, depW, phase }
+  function drawDiode(ctx, opts){
+    const { blockTop, blockHeight, blockLeft, blockWidth, wallShown, depW,
+            mode = 'idle', V = 0, vMag = 0, showBuiltIn = false } = opts;
+    const cx = blockLeft + blockWidth/2;   // junction boundary (p and n touch here)
+    const pLeft = blockLeft, pRight = cx;
+    const nLeft = cx, nRight = blockLeft + blockWidth;
+
+    // p-type region
+    ctx.fillStyle = '#bdbec0';
+    ctx.fillRect(pLeft, blockTop, pRight - pLeft, blockHeight);
+    ctx.strokeStyle = '#7f8f9a'; ctx.lineWidth = 1.5;
+    ctx.strokeRect(pLeft, blockTop, pRight - pLeft, blockHeight);
+    // n-type region
+    ctx.fillStyle = '#e7e7e8';
+    ctx.fillRect(nLeft, blockTop, nRight - nLeft, blockHeight);
+    ctx.strokeStyle = '#9aa0a3';
+    ctx.strokeRect(nLeft, blockTop, nRight - nLeft, blockHeight);
+
+    // labels
+    ctx.fillStyle = '#4a4f52'; ctx.font = 'bold 16px "Comic Sans MS"';
+    ctx.fillText('P', pLeft + (pRight-pLeft)/2 - 6, blockTop - 8);
+    ctx.fillText('N', nLeft + (nRight-nLeft)/2 - 6, blockTop - 8);
+
+    const ROWS = 8, COLS = 5, margin = 14;
+    const X = 3, holeR = 5.4; // electron dot radius, hole dotted-circle radius
+    const pColX = (col) => pLeft + margin + col * ((pRight-pLeft-2*margin)/(COLS-1)); // 0=outer .. COLS-1=junction
+    const nColX = (col) => nLeft + margin + col * ((nRight-nLeft-2*margin)/(COLS-1)); // 0=junction .. COLS-1=outer
+    const rowY  = (row) => blockTop + margin + row * ((blockHeight-2*margin)/(ROWS-1));
+
+    function drawHole(x,y){
+      ctx.beginPath(); ctx.setLineDash([2,2]); ctx.strokeStyle = '#fd0031'; ctx.lineWidth = 1;
+      ctx.arc(x,y,holeR,0,Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
+    }
+    function drawElectron(x,y){
+      ctx.beginPath(); ctx.fillStyle = '#fd0031'; ctx.arc(x,y,X,0,Math.PI*2); ctx.fill();
+    }
+    function drawBandBackdrop(bandLeft, bandRight){
+      ctx.fillStyle = '#d9e8f3'; ctx.globalAlpha = 0.5;
+      ctx.fillRect(bandLeft, blockTop, bandRight-bandLeft, blockHeight);
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = '#7f9db3'; ctx.lineWidth = 1;
+      ctx.strokeRect(bandLeft, blockTop, bandRight-bandLeft, blockHeight);
+    }
+
+    if (mode === 'idle'){
+      const bandHalf = (wallShown ? 15 : depW/2);
+      const bandLeft = cx - bandHalf, bandRight = cx + bandHalf;
+
+      if (wallShown){
+        // wall present: everything fully populated, untouched
+        for (let row=0; row<ROWS; row++) for (let col=0; col<COLS; col++) drawHole(pColX(col), rowY(row));
+        for (let row=0; row<ROWS; row++) for (let col=0; col<COLS; col++) drawElectron(nColX(col), rowY(row));
+        ctx.fillStyle = '#7c3f9e';
+        ctx.shadowColor = '#4a2560'; ctx.shadowBlur = 10;
+        ctx.fillRect(cx - 1.875, blockTop, 3.75, blockHeight);
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#fff'; ctx.font = 'bold 16px "Comic Sans MS"';
+        ctx.fillText('⛔', cx - 9, blockTop + blockHeight/2 + 6);
+      } else {
+        // wall just removed: N1's electrons jump, in motion, toward the P5 hole.
+        const t = Math.min(1, wallAnim);
+        // P1-P4 always plain holes; P5 waits as a hole until the electron arrives.
+        for (let row=0; row<ROWS; row++) for (let col=0; col<COLS-1; col++) drawHole(pColX(col), rowY(row));
+        if (t >= 1){
+          for (let row=0; row<ROWS; row++) drawCombo(ctx, pColX(COLS-1), rowY(row), holeR, X);
+        } else {
+          for (let row=0; row<ROWS; row++) drawHole(pColX(COLS-1), rowY(row));
+        }
+        // N2-N5 untouched
+        for (let row=0; row<ROWS; row++) for (let col=1; col<COLS; col++) drawElectron(nColX(col), rowY(row));
+        // N1's electrons: in flight toward P5 until they arrive
+        if (t < 1){
+          const start = nColX(0), end = pColX(COLS-1);
+          for (let row=0; row<ROWS; row++) drawElectron(start + (end-start)*t, rowY(row));
+        }
+
+        drawBandBackdrop(bandLeft, bandRight);
+        if (showBuiltIn){
+          ctx.fillStyle = '#014f7a'; ctx.font = 'bold 13px "Comic Sans MS"';
+          const label = '0.7 V';
+          const tw = ctx.measureText(label).width;
+          ctx.fillText(label, cx - tw/2, blockTop + blockHeight + 22);
+          ctx.strokeStyle = '#014f7a'; ctx.lineWidth = 1.3;
+          ctx.beginPath();
+          ctx.moveTo(bandLeft, blockTop+blockHeight+8); ctx.lineTo(bandLeft, blockTop+blockHeight+14);
+          ctx.lineTo(bandRight, blockTop+blockHeight+14); ctx.lineTo(bandRight, blockTop+blockHeight+8);
+          ctx.stroke();
+        }
+      }
+
+    } else if (mode === 'forward'){
+      // baseline: P5 permanently combo, N1 empty until 0.7V is crossed.
+      for (let row=0; row<ROWS; row++) for (let col=0; col<COLS-1; col++) drawHole(pColX(col), rowY(row));
+      for (let row=0; row<ROWS; row++) drawCombo(ctx, pColX(COLS-1), rowY(row), holeR, X);
+      for (let row=0; row<ROWS; row++) for (let col=1; col<COLS; col++) drawElectron(nColX(col), rowY(row));
+
+      const refill = V >= 0.7;
+      const fillFrac = refill ? Math.min(1, (V-0.7)/0.8) : 0;
+      const fillCount = Math.floor(fillFrac * ROWS);
+      for (let row=0; row<fillCount; row++) drawElectron(nColX(0), rowY(row));
+
+      const bandHalf = depW/2;
+      drawBandBackdrop(cx-bandHalf, cx+bandHalf);
+
+      if (refill){
+        // continuous current: electrons stream from the very right (N5) all the way to the very left (P1)
+        const start = nColX(COLS-1), end = pColX(0);
+        const flyRows = [0,2,4,6];
+        flyRows.forEach((r,idx)=>{
+          const t = (phase*0.20*(0.5+fillFrac) + idx/flyRows.length) % 1;
+          const x = start + (end-start)*t, y = rowY(r);
+          ctx.globalAlpha = 0.35 + 0.65*fillFrac;
+          drawElectron(x,y);
+          ctx.globalAlpha = 1;
+        });
+      }
+
+    } else if (mode === 'reverse'){
+      const REV_STAGES = 4;
+      const REV_END = 79;
+      const stageLen = REV_END / REV_STAGES;
+      const nDrainOrder = [1,2,3,4];   // N2,N3,N4,N5 (0-indexed columns)
+      const pFillOrder  = [3,2,1,0];   // P4,P3,P2,P1 (0-indexed columns)
+      const surge = vMag >= REV_END;
+      const cs = surge ? REV_STAGES : Math.min(REV_STAGES-1, Math.floor(vMag/stageLen));
+      const t  = surge ? 1 : Math.min(1, Math.max(0, (vMag - cs*stageLen)/stageLen));
+
+      // N side: N1 always empty; N2..N5 drain (in their turn) toward the right and vanish.
+      for (let col=0; col<COLS; col++){
+        if (col === 0) continue; // always empty
+        const s = nDrainOrder.indexOf(col);
+        const drained = surge || s < cs;
+        const draining = !surge && s === cs;
+        if (drained) continue; // gone
+        for (let row=0; row<ROWS; row++){
+          const y = rowY(row);
+          if (draining){
+            ctx.globalAlpha = Math.max(0, 1 - t);
+            drawElectron(nColX(col) + t*40, y);
+            ctx.globalAlpha = 1;
+          } else {
+            drawElectron(nColX(col), y);
+          }
+        }
+      }
+
+      // P side: dotted circles (holes) never move from their fixed spot.
+      for (let col=0; col<COLS; col++){
+        const permanent = col === COLS-1 || surge || pFillOrder.indexOf(col) < cs;
+        for (let row=0; row<ROWS; row++){
+          const y = rowY(row);
+          if (permanent) drawCombo(ctx, pColX(col), y, holeR, X);
+          else drawHole(pColX(col), y);
+        }
+      }
+
+      // traveling electron: arrives from the left, docks at each hole in turn,
+      // then hops onward until it reaches this stage's target column.
+      if (!surge && cs < REV_STAGES && t > 0){
+        const tc = pFillOrder[cs];
+        if (tc === 0){
+          for (let row=0; row<ROWS; row++){
+            ctx.globalAlpha = 0.4 + 0.6*t;
+            drawCombo(ctx, pColX(0), rowY(row), holeR, X);
+            ctx.globalAlpha = 1;
+          }
+        } else {
+          const segPos = t*tc;
+          const segIndex = Math.min(tc-1, Math.floor(segPos));
+          const within = segPos - segIndex;
+          if (within < 0.7){
+            for (let row=0; row<ROWS; row++) drawCombo(ctx, pColX(segIndex), rowY(row), holeR, X);
+          } else {
+            const ht = (within-0.7)/0.3;
+            const x = pColX(segIndex) + (pColX(segIndex+1)-pColX(segIndex))*ht;
+            for (let row=0; row<ROWS; row++) drawElectron(x, rowY(row));
+          }
+        }
+      }
+
+      // once fully depleted, a massive surge of electrons floods left to right
+      if (surge){
+        const start = pColX(0), end = nColX(COLS-1);
+        const flyRows = [0,1,2,3,4,5,6,7];
+        flyRows.forEach((r,idx)=>{
+          const ft = (phase*0.5 + idx/flyRows.length) % 1;
+          const x = start + (end-start)*ft, y = rowY(r);
+          drawElectron(x,y);
+        });
+      }
+
+      const bandHalf = depW/2;
+      drawBandBackdrop(cx-bandHalf, cx+bandHalf);
+    }
+  }
+
+  function drawWatermark(ctx, w, h){
+    ctx.save();
+    ctx.font = 'bold 15px "Comic Sans MS"';
+    ctx.fillStyle = 'rgba(3,105,161,0.18)';
+    ctx.textAlign = 'right';
+    ctx.fillText('YV', w - 8, h - 8);
+    ctx.restore();
+  }
+
+  function drawCombo(ctx, x, y, holeR, elR){
+    ctx.beginPath(); ctx.setLineDash([2,2]); ctx.strokeStyle = '#fd0031'; ctx.lineWidth = 1.1;
+    ctx.arc(x, y, holeR, 0, Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); ctx.fillStyle = '#fd0031';
+    ctx.arc(x, y, elR, 0, Math.PI*2); ctx.fill();
+  }
+
+  /* ===================== CIRCUIT DRAWING (forward / reverse) ===================== */
+  function drawCircuit(ctx, opts){
+    const { blockTop, blockLeft, blockWidth, mode, currentVal, maxCurrent } = opts;
+    const cx = blockLeft + blockWidth/2;
+    const leftX = blockLeft, rightX = blockLeft + blockWidth;
+    const wireTopY = 40;
+
+    ctx.strokeStyle = '#014f7a'; ctx.lineWidth = 2.5;
+    // left wire
+    ctx.beginPath(); ctx.moveTo(leftX, blockTop); ctx.lineTo(leftX, wireTopY); ctx.stroke();
+    // right wire
+    ctx.beginPath(); ctx.moveTo(rightX, blockTop); ctx.lineTo(rightX, wireTopY); ctx.stroke();
+    // top wire (split around battery)
+    const battHalf = 26;
+    ctx.beginPath(); ctx.moveTo(leftX, wireTopY); ctx.lineTo(cx - battHalf, wireTopY); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx + battHalf, wireTopY); ctx.lineTo(rightX, wireTopY); ctx.stroke();
+
+    // battery plates
+    const plusLeft = (mode === 'forward');
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#222';
+    // long/thin plate = '+' , short/thick plate = '-'
+    if (plusLeft){
+      ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cx-battHalf+6, wireTopY-16); ctx.lineTo(cx-battHalf+6, wireTopY+16); ctx.stroke();
+      ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(cx+battHalf-6, wireTopY-9); ctx.lineTo(cx+battHalf-6, wireTopY+9); ctx.stroke();
+      ctx.fillStyle = '#014f7a'; ctx.font = 'bold 15px "Comic Sans MS"';
+      ctx.fillText('+', cx-battHalf-4, wireTopY-20);
+      ctx.fillText('−', cx+battHalf-6, wireTopY-14);
+    } else {
+      ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(cx-battHalf+6, wireTopY-9); ctx.lineTo(cx-battHalf+6, wireTopY+9); ctx.stroke();
+      ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cx+battHalf-6, wireTopY-16); ctx.lineTo(cx+battHalf-6, wireTopY+16); ctx.stroke();
+      ctx.fillStyle = '#014f7a'; ctx.font = 'bold 15px "Comic Sans MS"';
+      ctx.fillText('−', cx-battHalf-6, wireTopY-14);
+      ctx.fillText('+', cx+battHalf-4, wireTopY-20);
+    }
+    ctx.lineWidth = 2.5; ctx.strokeStyle = '#014f7a';
+    ctx.beginPath(); ctx.moveTo(cx-battHalf+6, wireTopY); ctx.lineTo(cx-battHalf+6, wireTopY); ctx.stroke();
+
+    // direction: forward => current flows down-left wire into p, right-through diode, up right wire.
+    //            reverse => negligible/leakage flows up-left wire, left-through diode (until breakdown, then stronger).
+    const forwardDir = (mode === 'forward');
+    const mag = Math.min(1, Math.abs(currentVal) / maxCurrent);
+
+    // arrowheads on side wires
+    drawArrow(ctx, leftX, (blockTop+wireTopY)/2, forwardDir ? 1 : -1, '#014f7a');
+    drawArrow(ctx, rightX, (blockTop+wireTopY)/2, forwardDir ? -1 : 1, '#014f7a');
+
+    // internal diode current arrow, thickness/opacity scaled with magnitude
+    const midY = blockTop + 80;
+    ctx.save();
+    ctx.globalAlpha = 0.35 + 0.65*mag;
+    ctx.strokeStyle = forwardDir ? '#0a7d2c' : '#c44536';
+    ctx.lineWidth = 2 + 6*mag;
+    ctx.beginPath();
+    if (forwardDir){ ctx.moveTo(leftX+14, midY); ctx.lineTo(rightX-14, midY); }
+    else { ctx.moveTo(rightX-14, midY); ctx.lineTo(leftX+14, midY); }
+    ctx.stroke();
+    // arrowhead
+    const ah = 7;
+    ctx.fillStyle = forwardDir ? '#0a7d2c' : '#c44536';
+    ctx.beginPath();
+    if (forwardDir){
+      ctx.moveTo(rightX-14, midY); ctx.lineTo(rightX-14-ah, midY-ah); ctx.lineTo(rightX-14-ah, midY+ah);
+    } else {
+      ctx.moveTo(leftX+14, midY); ctx.lineTo(leftX+14+ah, midY-ah); ctx.lineTo(leftX+14+ah, midY+ah);
+    }
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+
+    // flowing charge dots along the loop, speed/opacity scaled by magnitude
+    if (mag > 0.02){
+      const dotColor = forwardDir ? '#0a7d2c' : '#c44536';
+      const nDots = 3;
+      for (let i=0;i<nDots;i++){
+        const t = (phase*0.6 + i/nDots) % 1;
+        // parametrize loop: left wire (0-0.25) -> diode (0.25-0.75) -> right wire (0.75-1)
+        let x,y;
+        const dir = forwardDir ? 1 : -1;
+        const tt = dir === 1 ? t : (1-t);
+        if (tt < 0.25){
+          const s = tt/0.25; x = leftX; y = wireTopY + s*(blockTop-wireTopY);
+        } else if (tt < 0.75){
+          const s = (tt-0.25)/0.5; x = leftX + s*(rightX-leftX); y = midY;
+        } else {
+          const s = (tt-0.75)/0.25; x = rightX; y = blockTop - s*(blockTop-wireTopY);
+        }
+        ctx.beginPath(); ctx.fillStyle = dotColor; ctx.globalAlpha = 0.5 + 0.5*mag;
+        ctx.arc(x,y,3.2,0,Math.PI*2); ctx.fill(); ctx.globalAlpha = 1;
+      }
+    }
+  }
+
+  function drawArrow(ctx, x, y, dir, color){ // dir: 1 = downward, -1 = upward
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    if (dir === 1){ ctx.moveTo(x, y+7); ctx.lineTo(x-6, y-5); ctx.lineTo(x+6, y-5); }
+    else { ctx.moveTo(x, y-7); ctx.lineTo(x-6, y+5); ctx.lineTo(x+6, y+5); }
+    ctx.closePath(); ctx.fill();
+  }
+
+  /* ===================== GRAPH DRAWING ===================== */
+  // Full diode I-V characteristic, spanning both quadrant I (forward) and
+  // quadrant III (reverse) in one chart, with the current operating point marked.
+  function diodeI_mA(v){ return v >= 0 ? forwardCurrent_mA(v) : reverseCurrent_mA(-v); }
+
+  function drawFullGraph(ctx, currentV){
+    const w = ctx.canvas.width, h = ctx.canvas.height;
+    ctx.clearRect(0,0,w,h);
+    const pad = 26;
+    const plotW = w - pad*2, plotH = h - pad*2;
+    const domainPos = 1.5, domainNeg = 80, maxI = 25;
+    const ox = pad + plotW/2;   // V = 0
+    const oy = pad + plotH/2;   // I = 0
+    const sxPos = (plotW/2)/domainPos;
+    const sxNeg = (plotW/2)/domainNeg;
+    const sy = (plotH/2)/maxI;
+    const mapX = (v) => v >= 0 ? ox + v*sxPos : ox + v*sxNeg;
+
+    // axes
+    ctx.strokeStyle = '#94a9b4'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pad,oy); ctx.lineTo(w-pad,oy); ctx.moveTo(ox,pad); ctx.lineTo(ox,h-pad); ctx.stroke();
+    ctx.fillStyle = '#035a7a'; ctx.font = '10px "Comic Sans MS"';
+    ctx.fillText('+V', w-pad-16, oy-6);
+    ctx.fillText('−V', pad+2, oy-6);
+    ctx.fillText('+I', ox+4, pad+10);
+    ctx.fillText('−I', ox+4, h-pad-4);
+
+    // knee + breakdown markers
+    ctx.strokeStyle = '#dce9f0'; ctx.setLineDash([3,3]); ctx.lineWidth = 1;
+    const kneeX = mapX(0.7);
+    ctx.beginPath(); ctx.moveTo(kneeX,pad); ctx.lineTo(kneeX,h-pad); ctx.stroke();
+    const brX = mapX(-75);
+    ctx.beginPath(); ctx.moveTo(brX,pad); ctx.lineTo(brX,h-pad); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#8aa3ad'; ctx.font = '8px "Comic Sans MS"';
+    ctx.fillText('0.7V', kneeX-8, oy+12);
+    ctx.fillText('−75V', brX-14, oy+12);
+
+    // full reference curve (light), across whole domain
+    ctx.strokeStyle = '#cfe3ee'; ctx.lineWidth = 2; ctx.beginPath();
+    let first = true;
+    for (let v=-domainNeg; v<=domainPos; v += (v<0 ? 0.6 : 0.015)){
+      const i = diodeI_mA(v);
+      const x = mapX(v), y = oy-i*sy;
+      if (first){ ctx.moveTo(x,y); first=false; } else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+
+    // highlighted curve from 0 to the current operating voltage
+    ctx.strokeStyle = currentV >= 0 ? '#c44536' : '#2b6f8f'; ctx.lineWidth = 3; ctx.beginPath();
+    const step = currentV >= 0 ? 0.01 : -0.6;
+    let firstH = true;
+    for (let v=0; (currentV>=0 ? v<=currentV : v>=currentV); v+=step){
+      const i = diodeI_mA(v);
+      const x = mapX(v), y = oy-i*sy;
+      if (firstH){ ctx.moveTo(x,y); firstH=false; } else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+
+    // marker at current point
+    const I = diodeI_mA(currentV);
+    const mx = mapX(currentV), my = oy-I*sy;
+    ctx.fillStyle = currentV >= 0 ? '#b03a2e' : '#1c4a63';
+    ctx.beginPath(); ctx.arc(mx,my,4.5,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#c9d8e0'; ctx.setLineDash([2,2]);
+    ctx.beginPath(); ctx.moveTo(mx,my); ctx.lineTo(mx,oy); ctx.moveTo(mx,my); ctx.lineTo(ox,my); ctx.stroke();
+    ctx.setLineDash([]);
+
+    drawWatermark(ctx, w, h);
+  }
+
+  /* ===================== PANEL RENDERERS ===================== */
+  const cvJunction = document.getElementById('cvJunction');
+  const cvForward  = document.getElementById('cvForward');
+  const cvReverse  = document.getElementById('cvReverse');
+  const graphForwardCv = document.getElementById('graphForward');
+  const graphReverseCv = document.getElementById('graphReverse');
+
+  const sliderForward = document.getElementById('sliderForward');
+  const sliderReverse = document.getElementById('sliderReverse');
+
+  function renderJunctionPanel(){
+    const ctx = cvJunction.getContext('2d');
+    ctx.clearRect(0,0,600,300);
+    let wallShown = !wallRemoved;
+    const depW = wallRemoved ? BASE_DEP * wallAnim : 0;
+    const showBuiltIn = wallRemoved && wallAnim >= 0.999;
+    drawDiode(ctx, { blockTop:70, blockHeight:160, blockLeft:100, blockWidth:400, wallShown, depW, mode:'idle', showBuiltIn });
+    drawWatermark(ctx, 600, 300);
+
+    const statusEl = document.getElementById('statusJunction');
+    if (wallShown) statusEl.textContent = '⛔ wall present';
+    else if (wallAnim < 1) statusEl.textContent = '🔄 forming depletion region…';
+    else statusEl.textContent = '⚖️ equilibrium depletion region';
+
+    document.getElementById('btnRemoveWall').disabled = wallRemoved;
+  }
+
+  function renderForwardPanel(){
+    const V = parseFloat(sliderForward.value);
+    const ctx = cvForward.getContext('2d');
+    ctx.clearRect(0,0,600,360);
+    const depW = depletionWidthForward(V);
+    drawDiode(ctx, { blockTop:150, blockHeight:160, blockLeft:100, blockWidth:400, wallShown:false, depW, mode:'forward', V });
+    const I = forwardCurrent_mA(V);
+    drawCircuit(ctx, { blockTop:150, blockLeft:100, blockWidth:400, mode:'forward', currentVal:I, maxCurrent:25 });
+    drawWatermark(ctx, 600, 360);
+
+    document.getElementById('lblForwardV').textContent = 'V = ' + V.toFixed(2) + ' V';
+    document.getElementById('voltageForward').textContent = V.toFixed(2) + ' V';
+    document.getElementById('currentForward').textContent = I.toFixed(3) + ' mA';
+    const st = document.getElementById('statusForward');
+    st.textContent = V < 0.05 ? '⚖️ depletion at rest width' : (V < 0.7 ? '⬇️ depletion narrowing' : '⬇️⬇️ depletion very narrow — conducting');
+
+    drawFullGraph(graphForwardCv.getContext('2d'), V);
+  }
+
+  function renderReversePanel(){
+    const v = parseFloat(sliderReverse.value);
+    const ctx = cvReverse.getContext('2d');
+    ctx.clearRect(0,0,600,360);
+    const depW = depletionWidthReverse(v);
+    drawDiode(ctx, { blockTop:150, blockHeight:160, blockLeft:100, blockWidth:400, wallShown:false, depW, mode:'reverse', vMag:v });
+    const I = reverseCurrent_mA(v);
+    drawCircuit(ctx, { blockTop:150, blockLeft:100, blockWidth:400, mode:'reverse', currentVal:I, maxCurrent:25 });
+    drawWatermark(ctx, 600, 360);
+
+    document.getElementById('lblReverseV').textContent = 'V = ' + (-v).toFixed(0) + ' V';
+    document.getElementById('voltageReverse').textContent = (-v).toFixed(0) + ' V';
+    document.getElementById('currentReverse').textContent = I.toFixed(3) + ' mA';
+    const st = document.getElementById('statusReverse');
+    st.textContent = v < 2 ? '⚖️ depletion at rest width' : (v < 72 ? '⬆️ depletion widening' : '💥 near breakdown — surge current!');
+
+    drawFullGraph(graphReverseCv.getContext('2d'), -v);
+  }
+
+  function renderAll(){
+    renderJunctionPanel();
+    renderForwardPanel();
+    renderReversePanel();
+  }
+
+  /* ===================== TAB SWITCHING ===================== */
+  window.switchTab = function(tab){
+    currentTab = tab;
+    ['Junction','Forward','Reverse'].forEach(name => {
+      document.getElementById('panel'+name).classList.remove('active');
+      document.getElementById('tab'+name).classList.remove('active');
+    });
+    const cap = tab.charAt(0).toUpperCase()+tab.slice(1);
+    document.getElementById('panel'+cap).classList.add('active');
+    document.getElementById('tab'+cap).classList.add('active');
+    renderAll();
+  };
+
+  /* ===================== WALL REMOVAL ANIMATION ===================== */
+  window.removeWall = function(){
+    if (wallRemoved) return;
+    wallRemoved = true;
+    document.getElementById('btnRemoveWall').disabled = true;
+    animating = true;
+    wallAnim = 0;
+    const start = performance.now();
+    const duration = 900;
+    function step(t){
+      const p = Math.min(1, (t-start)/duration);
+      wallAnim = p;
+      renderJunctionPanel();
+      if (p < 1){ requestAnimationFrame(step); }
+      else { animating = false; }
+    }
+    requestAnimationFrame(step);
+  };
+
+  window.resetWall = function(){
+    wallRemoved = false;
+    wallAnim = 0;
+    animating = false;
+    document.getElementById('btnRemoveWall').disabled = false;
+    renderJunctionPanel();
+  };
+
+  /* ===================== EVENTS ===================== */
+  sliderForward.addEventListener('input', renderForwardPanel);
+  sliderReverse.addEventListener('input', renderReversePanel);
+
+  /* ===================== CONTINUOUS ANIMATION LOOP (for flowing charge dots) ===================== */
+  function loop(){
+    phase += 0.02;
+    if (currentTab === 'forward') renderForwardPanel();
+    else if (currentTab === 'reverse') renderReversePanel();
+    requestAnimationFrame(loop);
+  }
+
+  /* ===================== INIT ===================== */
+  renderAll();
+  requestAnimationFrame(loop);
+
+})();
+</script>
+</body>
+</html>
