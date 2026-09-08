@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Light: Particle vs Wave</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: "Comic Sans MS", "Comic Sans", cursive, sans-serif;
+    background: linear-gradient(135deg, #e8f5e9 0%, #ffffff 100%);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    overflow-x: hidden;
+  }
+
+  h1 {
+    color: #2e7d32;
+    text-shadow: 2px 2px 0px #a5d6a7;
+    margin-bottom: 10px;
+    font-size: 2.2rem;
+    text-align: center;
+  }
+
+  .tab-bar {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    background: #c8e6c9;
+    padding: 12px 30px;
+    border-radius: 50px;
+    box-shadow: 0 6px 0 #81c784, 0 10px 20px rgba(0,0,0,0.15);
+  }
+
+  .tab-btn {
+    font-family: "Comic Sans MS", "Comic Sans", cursive, sans-serif;
+    font-size: 1.1rem;
+    font-weight: bold;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    background: #ffffff;
+    color: #388e3c;
+    box-shadow: 0 5px 0 #a5d6a7, 0 6px 10px rgba(0,0,0,0.1);
+    transition: all 0.1s ease;
+    position: relative;
+    top: 0;
+  }
+
+  .tab-btn:hover {
+    background: #f1f8e9;
+    transform: translateY(-2px);
+    box-shadow: 0 7px 0 #a5d6a7, 0 8px 15px rgba(0,0,0,0.15);
+  }
+
+  .tab-btn:active {
+    top: 4px;
+    box-shadow: 0 1px 0 #a5d6a7, 0 2px 5px rgba(0,0,0,0.1);
+  }
+
+  .tab-btn.active {
+    background: #66bb6a;
+    color: white;
+    box-shadow: 0 5px 0 #388e3c, 0 6px 10px rgba(0,0,0,0.2);
+  }
+
+  .tab-btn.active:hover {
+    background: #57a85a;
+    box-shadow: 0 7px 0 #388e3c, 0 8px 15px rgba(0,0,0,0.2);
+  }
+
+  .tab-btn.active:active {
+    box-shadow: 0 1px 0 #388e3c, 0 2px 5px rgba(0,0,0,0.1);
+  }
+
+  .simulation-container {
+    position: relative;
+    width: 800px;
+    height: 500px;
+    background: linear-gradient(180deg, #f1f8e9 0%, #e8f5e9 100%);
+    border: 4px solid #81c784;
+    border-radius: 20px;
+    box-shadow: 0 10px 0 #66bb6a, 0 15px 30px rgba(0,0,0,0.15);
+    overflow: hidden;
+  }
+
+  .mirror-line {
+    position: absolute;
+    bottom: 83px;
+    left: 100px;
+    right: 100px;
+    height: 2px;
+    background: #37474f;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.25);
+    z-index: 6;
+  }
+
+  .mirror-hatch {
+    position: absolute;
+    bottom: 67px;
+    left: 100px;
+    right: 100px;
+    height: 16px;
+    background: repeating-linear-gradient(
+      -45deg,
+      #90a4ae,
+      #90a4ae 2px,
+      transparent 2px,
+      transparent 11px
+    );
+    z-index: 4;
+  }
+
+  .mirror-label {
+    position: absolute;
+    bottom: 55px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.9rem;
+    color: #546e7a;
+    font-weight: bold;
+  }
+
+  canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+  }
+
+  .controls {
+    margin-top: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+    justify-content: center;
+    max-width: 800px;
+  }
+
+  .control-btn {
+    font-family: "Comic Sans MS", "Comic Sans", cursive, sans-serif;
+    font-size: 1rem;
+    font-weight: bold;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    background: #81c784;
+    color: white;
+    box-shadow: 0 5px 0 #4caf50, 0 6px 10px rgba(0,0,0,0.15);
+    transition: all 0.1s ease;
+    position: relative;
+    top: 0;
+  }
+
+  .control-btn:hover {
+    background: #66bb6a;
+    transform: translateY(-2px);
+    box-shadow: 0 7px 0 #4caf50, 0 8px 15px rgba(0,0,0,0.2);
+  }
+
+  .control-btn:active {
+    top: 4px;
+    box-shadow: 0 1px 0 #4caf50, 0 2px 5px rgba(0,0,0,0.1);
+  }
+
+  .speed-slider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #c8e6c9;
+    padding: 8px 20px;
+    border-radius: 25px;
+    box-shadow: 0 4px 0 #a5d6a7;
+  }
+
+  .speed-slider label {
+    color: #2e7d32;
+    font-weight: bold;
+    font-size: 0.95rem;
+  }
+
+  .speed-slider input[type="range"] {
+    -webkit-appearance: none;
+    width: 120px;
+    height: 8px;
+    background: #a5d6a7;
+    border-radius: 4px;
+    outline: none;
+  }
+
+  .speed-slider input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    background: #66bb6a;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 3px 0 #388e3c, 0 3px 6px rgba(0,0,0,0.2);
+    transition: all 0.1s;
+  }
+
+  .speed-slider input[type="range"]::-webkit-slider-thumb:active {
+    box-shadow: 0 1px 0 #388e3c, 0 1px 3px rgba(0,0,0,0.2);
+    transform: translateY(2px);
+  }
+
+  .wavecount-group {
+    display: none;
+    gap: 10px;
+    background: #c8e6c9;
+    padding: 8px 16px;
+    border-radius: 25px;
+    box-shadow: 0 4px 0 #a5d6a7;
+  }
+
+  .wavecount-group.visible {
+    display: flex;
+  }
+
+  .wavecount-btn {
+    font-family: "Comic Sans MS", "Comic Sans", cursive, sans-serif;
+    font-size: 0.9rem;
+    font-weight: bold;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    background: #ffffff;
+    color: #388e3c;
+    box-shadow: 0 3px 0 #a5d6a7;
+    transition: all 0.1s ease;
+    position: relative;
+    top: 0;
+  }
+
+  .wavecount-btn:active {
+    top: 3px;
+    box-shadow: 0 0 0 #a5d6a7;
+  }
+
+  .wavecount-btn.active {
+    background: #66bb6a;
+    color: white;
+    box-shadow: 0 3px 0 #388e3c;
+  }
+
+  .info-box {
+    margin-top: 15px;
+    background: #ffffff;
+    border: 3px solid #a5d6a7;
+    border-radius: 15px;
+    padding: 15px 25px;
+    max-width: 800px;
+    text-align: center;
+    color: #33691e;
+    font-size: 1rem;
+    box-shadow: 0 6px 0 #81c784, 0 8px 20px rgba(0,0,0,0.1);
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .case-title {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #2e7d32;
+    background: rgba(255,255,255,0.9);
+    padding: 6px 16px;
+    border-radius: 15px;
+    border: 2px solid #81c784;
+    z-index: 20;
+  }
+</style>
+<base target="_blank">
+</head>
+<body>
+
+<h1>🔬 Light: Particle vs Wave</h1>
+
+<div class="tab-bar">
+  <button class="tab-btn active" id="tab-particle" onclick="switchTab('particle')">⚡ Light as Particle</button>
+  <button class="tab-btn" id="tab-wave" onclick="switchTab('wave')">🌊 Light as Wave</button>
+</div>
+
+<div class="simulation-container" id="simContainer">
+  <div class="case-title" id="caseTitle">⚡ Particle Nature</div>
+  <div class="mirror-hatch"></div>
+  <div class="mirror-line"></div>
+  <div class="mirror-label">Mirror Surface</div>
+  <canvas id="simCanvas" width="800" height="500"></canvas>
+</div>
+
+<div class="controls">
+  <button class="control-btn" id="btn-toggle" onclick="toggleSimulation()">⏸ Pause</button>
+  <button class="control-btn" onclick="resetSimulation()">🔄 Reset</button>
+  <div class="speed-slider">
+    <label>Speed:</label>
+    <input type="range" id="speedRange" min="1" max="10" value="5" oninput="updateSpeed(this.value)">
+  </div>
+  <div class="wavecount-group" id="waveCountGroup">
+    <button class="wavecount-btn active" id="wc-1" onclick="setWaveCount(1)">1 Wavefront</button>
+    <button class="wavecount-btn" id="wc-2" onclick="setWaveCount(2)">2 Wavefronts</button>
+    <button class="wavecount-btn" id="wc-5" onclick="setWaveCount(5)">5 Wavefronts</button>
+  </div>
+</div>
+
+<div class="info-box" id="infoBox">
+  Photons (light particles) travel in a straight-line ray. When one strikes the mirror, its velocity component perpendicular to the surface flips — so the angle of incidence (θᵢ) always equals the angle of reflection (θᵣ), both measured from the normal.
+</div>
+
+<script>
+  const canvas = document.getElementById('simCanvas');
+  const ctx = canvas.getContext('2d');
+
+  // ---------- Shared geometry: an oblique ray/beam hitting a flat mirror ----------
+  const mirrorY = 416;
+  const mirrorLeft = 100, mirrorRight = 700;
+
+  const angleIRad = 35 * Math.PI / 180;           // angle of incidence, measured from the normal
+  const H  = { x: 400, y: mirrorY };               // point of incidence
+  const di = { x: Math.sin(angleIRad), y:  Math.cos(angleIRad) }; // incident direction (unit vector)
+  const dr = { x: Math.sin(angleIRad), y: -Math.cos(angleIRad) }; // reflected direction (unit vector)
+  const perp = { x: Math.cos(angleIRad), y: -Math.sin(angleIRad) }; // direction along a wavefront (perpendicular to travel)
+
+  const sourceY = 68;
+  const sourceDist = (H.y - sourceY) / di.y;       // distance from source to H along di
+  const source = { x: H.x - sourceDist * di.x, y: sourceY };
+  const reflectedEnd = { x: H.x + sourceDist * dr.x, y: H.y + sourceDist * dr.y };
+
+  let currentMode = 'particle';
+  let isRunning = true;
+  let speedMultiplier = 5;
+  let animationId;
+  let time = 0;
+
+  // ---------- Particle (ray) system ----------
+  let photons = [];
+
+  function spawnPhotonBeam() {
+    // A single ball-like photon travelling the incident ray, like a bouncing ball.
+    photons.push({
+      x: source.x,
+      y: source.y,
+      vx: di.x, vy: di.y,
+      reflected: false,
+      life: 1.0,
+      size: 6,
+      central: true
+    });
+  }
+
+  function updateParticles() {
+    const spd = speedMultiplier * 0.45;
+    for (let i = photons.length - 1; i >= 0; i--) {
+      let p = photons[i];
+      p.x += p.vx * spd;
+      p.y += p.vy * spd;
+
+      // Law of reflection: the component of velocity perpendicular to the
+      // (horizontal) mirror simply reverses; the parallel component is unchanged.
+      if (!p.reflected && p.y >= mirrorY - 2 && p.x >= mirrorLeft && p.x <= mirrorRight) {
+        p.vy = -p.vy;
+        p.reflected = true;
+        p.y = mirrorY - 2;
+      }
+
+      p.life -= 0.0006 * speedMultiplier;
+      if (p.life <= 0 || p.x > 830 || p.x < -30 || p.y < -30) {
+        photons.splice(i, 1);
+      }
+    }
+  }
+
+  function drawParticles() {
+    for (const p of photons) {
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, p.life);
+      let grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 3);
+      grad.addColorStop(0, p.central ? '#fff176' : '#ffe082');
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * 0.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  // ---------- Wave system: Huygens' construction for reflection ----------
+  const halfWidth = 140;         // half-width of the beam, measured along a wavefront
+  const numSamples = 29;         // points sampled across each wavefront
+  const lambda = 45;             // spacing between successive wavefronts
+  const totalExtra = 480;        // extra travel allowed after reflection before a burst resets
+  let waveCount = 1;
+  let sGlobal = 0;
+  let pauseFrames = 0;
+
+  const samplesU = (() => {
+    const arr = [];
+    const step = (2 * halfWidth) / (numSamples - 1);
+    for (let i = 0; i < numSamples; i++) arr.push(-halfWidth + i * step);
+    return arr;
+  })();
+
+  function computeWavefrontPoints(s_k) {
+    const pts = [];
+    for (const u of samplesU) {
+      const P0 = { x: source.x + u * perp.x, y: source.y + u * perp.y };
+      const dHit = (mirrorY - P0.y) / di.y; // distance this point on the wavefront must travel to reach the mirror
+      let pos, reflected, mirrorHitX = P0.x + dHit * di.x;
+      if (s_k < dHit) {
+        pos = { x: P0.x + s_k * di.x, y: P0.y + s_k * di.y };
+        reflected = false;
+      } else {
+        const rd = s_k - dHit; // distance travelled since striking the mirror
+        pos = { x: mirrorHitX + rd * dr.x, y: mirrorY + rd * dr.y };
+        reflected = true;
+      }
+      pts.push({ x: pos.x, y: pos.y, reflected, mirrorHitX, reflectedDist: s_k - dHit });
+    }
+    return pts;
+  }
+
+  function resetWaveThreshold() {
+    return sourceDist + totalExtra + (waveCount - 1) * lambda;
+  }
+
+  function updateWaves() {
+    if (pauseFrames > 0) { pauseFrames--; return; }
+    sGlobal += speedMultiplier * 1.1;
+    if (sGlobal > resetWaveThreshold() + 40) {
+      sGlobal = 0;
+      pauseFrames = 30;
+    }
+  }
+
+  function drawWavefronts() {
+    for (let k = 0; k < waveCount; k++) {
+      const s_k = sGlobal - k * lambda;
+      if (s_k < 0) continue;
+      const pts = computeWavefrontPoints(s_k);
+
+      // The wavefront itself: straight while incident, bent at the mirror as
+      // each point in turn is reflected -- this bend IS the Huygens envelope.
+      ctx.save();
+      ctx.lineWidth = 3;
+      for (let i = 0; i < pts.length - 1; i++) {
+        const a = pts[i], b = pts[i + 1];
+        ctx.strokeStyle = (a.reflected && b.reflected)
+          ? 'rgba(76,175,80,0.9)'
+          : (!a.reflected && !b.reflected ? 'rgba(255,193,7,0.9)' : 'rgba(255,152,0,0.9)');
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // Secondary Huygens wavelets: every point on the mirror, the instant the
+      // wavefront reaches it, becomes a new source of a small circular wavelet.
+      ctx.save();
+      ctx.strokeStyle = 'rgba(46,125,50,0.55)';
+      ctx.lineWidth = 1.2;
+      for (let i = 0; i < pts.length; i += 2) {
+        const p = pts[i];
+        if (p.reflected && p.reflectedDist >= 0 && p.reflectedDist < 34 &&
+            p.mirrorHitX >= mirrorLeft && p.mirrorHitX <= mirrorRight) {
+          ctx.beginPath();
+          ctx.arc(p.mirrorHitX, mirrorY, Math.max(2, p.reflectedDist), Math.PI, 2 * Math.PI);
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
+
+      // Mark the secondary-source points themselves: a solid dot appears on the
+      // mirror exactly where (and the instant) this wavefront strikes it, and
+      // stays visible while its spherical wavelet is still expanding from it.
+      ctx.save();
+      for (let i = 0; i < pts.length; i++) {
+        const p = pts[i];
+        if (p.reflected && p.mirrorHitX >= mirrorLeft && p.mirrorHitX <= mirrorRight) {
+          const alpha = Math.max(0.15, 1 - p.reflectedDist / 220);
+          ctx.beginPath();
+          ctx.fillStyle = `rgba(230,74,25,${alpha})`;
+          ctx.arc(p.mirrorHitX, mirrorY, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      ctx.restore();
+    }
+  }
+
+  // ---------- Shared annotations ----------
+  function drawGuideRays() {
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,193,7,0.3)';
+    ctx.setLineDash([5, 5]);
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(source.x, source.y); ctx.lineTo(H.x, H.y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(H.x, H.y); ctx.lineTo(reflectedEnd.x, reflectedEnd.y); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+
+  function drawSourceIcon() {
+    ctx.save();
+    ctx.translate(source.x, source.y);
+    ctx.rotate(Math.atan2(di.y, di.x));
+    ctx.strokeStyle = '#546e7a';
+    ctx.lineWidth = 6;
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(0, -16); ctx.lineTo(0, 16); ctx.stroke();
+    ctx.strokeStyle = '#fdd835';
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(4, 0); ctx.lineTo(28, 0); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(28, 0); ctx.lineTo(19, -6); ctx.lineTo(19, 6); ctx.closePath();
+    ctx.fillStyle = '#fdd835';
+    ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    ctx.fillStyle = '#558b2f';
+    ctx.font = 'bold 12px "Comic Sans MS", cursive';
+    ctx.fillText('Ray source', source.x - 42, source.y - 20);
+    ctx.restore();
+  }
+
+  function drawNormalAndAngles() {
+    ctx.save();
+    ctx.setLineDash([6, 4]);
+    ctx.strokeStyle = '#78909c';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(H.x, H.y - 95);
+    ctx.lineTo(H.x, H.y + 15);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#546e7a';
+    ctx.font = 'bold 12px "Comic Sans MS", cursive';
+    ctx.fillText('normal', H.x + 6, H.y - 84);
+
+    const normalAngle = Math.atan2(-1, 0);
+    const inAngle = Math.atan2(source.y - H.y, source.x - H.x);
+    const outAngle = Math.atan2(reflectedEnd.y - H.y, reflectedEnd.x - H.x);
+    const r = 44;
+    ctx.strokeStyle = '#43a047';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(H.x, H.y, r, inAngle, normalAngle); ctx.stroke();
+    ctx.beginPath(); ctx.arc(H.x, H.y, r, normalAngle, outAngle); ctx.stroke();
+
+    ctx.fillStyle = '#2e7d32';
+    ctx.font = 'bold 14px "Comic Sans MS", cursive';
+    ctx.fillText('θᵢ', H.x - 40, H.y - 36);
+    ctx.fillText('θᵣ', H.x + 28, H.y - 36);
+    ctx.restore();
+  }
+
+  // ---------- UI wiring ----------
+  function switchTab(mode) {
+    currentMode = mode;
+    document.getElementById('tab-particle').classList.toggle('active', mode === 'particle');
+    document.getElementById('tab-wave').classList.toggle('active', mode === 'wave');
+    document.getElementById('caseTitle').textContent = mode === 'particle' ? '⚡ Particle Nature' : '🌊 Wave Nature';
+    document.getElementById('waveCountGroup').classList.toggle('visible', mode === 'wave');
+    document.getElementById('infoBox').textContent = mode === 'particle'
+      ? 'Photons (light particles) travel in a straight-line ray. When one strikes the mirror, its velocity component perpendicular to the surface flips — so the angle of incidence (θᵢ) always equals the angle of reflection (θᵣ), both measured from the normal.'
+      : 'By Huygens\u2019 principle, every point the wavefront reaches on the mirror (marked with a dot) becomes a source of a secondary spherical wavelet. The common tangent to these wavelets forms the reflected wavefront — bent exactly enough that θᵢ = θᵣ, the same law of reflection as for the particle picture.';
+    resetSimulation();
+  }
+
+  function updateSpeed(val) {
+    speedMultiplier = parseInt(val);
+  }
+
+  function toggleSimulation() {
+    isRunning = !isRunning;
+    document.getElementById('btn-toggle').textContent = isRunning ? '⏸ Pause' : '▶ Play';
+  }
+
+  function resetSimulation() {
+    photons = [];
+    sGlobal = 0;
+    pauseFrames = 0;
+    time = 0;
+  }
+
+  function setWaveCount(n) {
+    waveCount = n;
+    document.getElementById('wc-1').classList.toggle('active', n === 1);
+    document.getElementById('wc-2').classList.toggle('active', n === 2);
+    document.getElementById('wc-5').classList.toggle('active', n === 5);
+    sGlobal = 0;
+    pauseFrames = 0;
+  }
+
+  function loop() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    if (isRunning) {
+      time++;
+      if (currentMode === 'particle') {
+        if (time % Math.max(1, Math.floor(24 / speedMultiplier)) === 0) spawnPhotonBeam();
+        updateParticles();
+      } else {
+        updateWaves();
+      }
+    }
+
+    drawGuideRays();
+    if (currentMode === 'particle') {
+      drawParticles();
+    } else {
+      drawWavefronts();
+    }
+    drawSourceIcon();
+    drawNormalAndAngles();
+
+    animationId = requestAnimationFrame(loop);
+  }
+
+  loop();
+</script>
+
+</body>
+</html>
