@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚡ Electromagnetic Wave Simulator</title>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Comic Sans MS", "Comic Sans", cursive, sans-serif;
+    }
+
+    body {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        color: #fff;
+        overflow-x: hidden;
+    }
+
+    h1 {
+        font-size: clamp(1.4rem, 4vw, 2.4rem);
+        text-shadow: 3px 3px 0px #e94560, 6px 6px 10px rgba(0,0,0,0.5);
+        margin-bottom: 6px;
+        text-align: center;
+        animation: bounce 2s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-6px); }
+    }
+
+    .subtitle {
+        font-size: clamp(0.8rem, 2vw, 1.1rem);
+        color: #a8d8ea;
+        margin-bottom: 18px;
+        text-align: center;
+    }
+
+    /* ---------- 3D BUTTONS ---------- */
+    .controls {
+        display: flex;
+        gap: 18px;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .btn3d {
+        position: relative;
+        border: none;
+        padding: 14px 34px;
+        font-size: 1.05rem;
+        font-weight: bold;
+        color: #fff;
+        border-radius: 14px;
+        cursor: pointer;
+        outline: none;
+        transition: all 0.1s ease;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+        user-select: none;
+    }
+
+    .btn-start {
+        background: linear-gradient(180deg, #34e89e 0%, #0f9b6c 60%, #0b7a55 100%);
+        box-shadow: 0 7px 0 #064e37, 0 12px 18px rgba(0,0,0,0.45);
+    }
+    .btn-start:hover { filter: brightness(1.12); }
+    .btn-start:active {
+        transform: translateY(6px);
+        box-shadow: 0 1px 0 #064e37, 0 4px 8px rgba(0,0,0,0.45);
+    }
+
+    .btn-pause {
+        background: linear-gradient(180deg, #f7b733 0%, #e08e0b 60%, #b57108 100%);
+        box-shadow: 0 7px 0 #7a4c05, 0 12px 18px rgba(0,0,0,0.45);
+    }
+    .btn-pause:hover { filter: brightness(1.12); }
+    .btn-pause:active {
+        transform: translateY(6px);
+        box-shadow: 0 1px 0 #7a4c05, 0 4px 8px rgba(0,0,0,0.45);
+    }
+
+    .btn-stop {
+        background: linear-gradient(180deg, #fc4a67 0%, #e01e3f 60%, #b0132e 100%);
+        box-shadow: 0 7px 0 #6e0a1d, 0 12px 18px rgba(0,0,0,0.45);
+    }
+    .btn-stop:hover { filter: brightness(1.12); }
+    .btn-stop:active {
+        transform: translateY(6px);
+        box-shadow: 0 1px 0 #6e0a1d, 0 4px 8px rgba(0,0,0,0.45);
+    }
+
+    .btn3d:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        filter: grayscale(0.6);
+    }
+
+    /* ---------- SLIDERS PANEL ---------- */
+    .panel {
+        background: rgba(255,255,255,0.08);
+        border: 2px dashed rgba(255,255,255,0.25);
+        border-radius: 16px;
+        padding: 14px 22px;
+        margin-bottom: 18px;
+        display: flex;
+        gap: 28px;
+        flex-wrap: wrap;
+        justify-content: center;
+        backdrop-filter: blur(4px);
+    }
+
+    .slider-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .slider-group label {
+        font-size: 0.95rem;
+        color: #ffd460;
+    }
+
+    .slider-group span {
+        font-size: 0.85rem;
+        color: #7ee8fa;
+        font-weight: bold;
+    }
+
+    input[type="range"] {
+        -webkit-appearance: none;
+        width: 170px;
+        height: 10px;
+        border-radius: 10px;
+        background: linear-gradient(90deg, #e94560, #ffd460);
+        outline: none;
+        cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #fff;
+        border: 3px solid #e94560;
+        box-shadow: 0 3px 6px rgba(0,0,0,0.5);
+        cursor: grab;
+        transition: transform 0.15s;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+    /* ---------- CANVAS ---------- */
+    #waveCanvas {
+        background: radial-gradient(ellipse at center, #0d1b2a 0%, #050a12 100%);
+        border: 3px solid #e94560;
+        border-radius: 18px;
+        box-shadow: 0 0 30px rgba(233,69,96,0.35), inset 0 0 60px rgba(0,0,0,0.6);
+        cursor: crosshair;
+        max-width: 96vw;
+    }
+
+    /* ---------- LEGEND ---------- */
+    .legend {
+        display: flex;
+        gap: 24px;
+        margin-top: 16px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.95rem;
+        background: rgba(255,255,255,0.07);
+        padding: 8px 16px;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .swatch { width: 26px; height: 8px; border-radius: 6px; }
+    .sw-e { background: #00e5ff; box-shadow: 0 0 10px #00e5ff; }
+    .sw-b { background: #ff4d6d; box-shadow: 0 0 10px #ff4d6d; }
+    .sw-z { background: #ffd460; box-shadow: 0 0 10px #ffd460; }
+
+    .info {
+        margin-top: 14px;
+        font-size: 0.85rem;
+        color: #8f9bb3;
+        text-align: center;
+        max-width: 700px;
+        line-height: 1.5;
+    }
+</style>
+<base target="_blank">
+</head>
+<body>
+
+<h1>⚡ Electromagnetic Wave Simulator ⚡</h1>
+<p class="subtitle">E-field (x) ⟂ B-field (y) ⟂ Propagation (z)</p>
+
+<div class="controls">
+    <button class="btn3d btn-start" id="startBtn">▶ START</button>
+    <button class="btn3d btn-pause" id="pauseBtn" disabled>⏸ PAUSE</button>
+    <button class="btn3d btn-stop"  id="stopBtn"  disabled>⏹ STOP</button>
+</div>
+
+<div class="panel">
+    <div class="slider-group">
+        <label>🌊 Frequency</label>
+        <input type="range" id="freqSlider" min="1" max="8" step="0.5" value="3">
+        <span id="freqVal">3.0</span>
+    </div>
+    <div class="slider-group">
+        <label>📏 Amplitude</label>
+        <input type="range" id="ampSlider" min="20" max="120" step="5" value="70">
+        <span id="ampVal">70</span>
+    </div>
+    <div class="slider-group">
+        <label>🏎️ Speed</label>
+        <input type="range" id="speedSlider" min="0.5" max="4" step="0.1" value="1.5">
+        <span id="speedVal">1.5</span>
+    </div>
+    <div class="slider-group">
+        <label>🔍 Zoom</label>
+        <input type="range" id="zoomSlider" min="0.5" max="2" step="0.1" value="1">
+        <span id="zoomVal">1.0</span>
+    </div>
+</div>
+
+<canvas id="waveCanvas" width="1100" height="560"></canvas>
+
+<div class="legend">
+    <div class="legend-item"><div class="swatch sw-e"></div> Electric Field E → x direction</div>
+    <div class="legend-item"><div class="swatch sw-b"></div> Magnetic Field B → y direction</div>
+    <div class="legend-item"><div class="swatch sw-z"></div> Propagation → z direction</div>
+</div>
+
+<p class="info">
+    💡 <b>Maxwell says:</b> E × B points along the direction of propagation (+z).
+    Click anywhere on the canvas to toggle play / pause. Sliders work even while
+    paused — the frozen wave reshapes itself live! The wave pattern travels
+    through space at light speed — here slowed down so your eyes can enjoy it!
+</p>
+
+<script>
+(function () {
+    const canvas = document.getElementById("waveCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const startBtn = document.getElementById("startBtn");
+    const pauseBtn = document.getElementById("pauseBtn");
+    const stopBtn  = document.getElementById("stopBtn");
+
+    const freqSlider  = document.getElementById("freqSlider");
+    const ampSlider   = document.getElementById("ampSlider");
+    const speedSlider = document.getElementById("speedSlider");
+    const zoomSlider  = document.getElementById("zoomSlider");
+
+    const freqVal  = document.getElementById("freqVal");
+    const ampVal   = document.getElementById("ampVal");
+    const speedVal = document.getElementById("speedVal");
+    const zoomVal  = document.getElementById("zoomVal");
+
+    // ---------------- STATE ----------------
+    let running = false;      // is animation playing?
+    let phase = 0;            // wave phase offset (drives propagation)
+    let t = 0;                // global clock for glow pulsing
+    let animId = null;
+    let lastTime = null;
+
+    const params = {
+        freq:  parseFloat(freqSlider.value),
+        amp:   parseFloat(ampSlider.value),
+        speed: parseFloat(speedSlider.value),
+        zoom:  parseFloat(zoomSlider.value)
+    };
+
+    // ---------------- SLIDER WIRING ----------------
+    // KEY FIX: redraw on every slider change so the wave reshapes
+    // instantly even when PAUSED (or stopped). draw() is cheap and
+    // safe to call at any time since it only reads current params.
+    function refresh() {
+        if (!running) draw();
+    }
+
+    freqSlider.addEventListener("input", () => {
+        params.freq = parseFloat(freqSlider.value);
+        freqVal.textContent = params.freq.toFixed(1);
+        refresh();
+    });
+    ampSlider.addEventListener("input", () => {
+        params.amp = parseFloat(ampSlider.value);
+        ampVal.textContent = params.amp;
+        refresh();
+    });
+    speedSlider.addEventListener("input", () => {
+        params.speed = parseFloat(speedSlider.value);
+        speedVal.textContent = params.speed.toFixed(1);
+        refresh();
+    });
+    zoomSlider.addEventListener("input", () => {
+        params.zoom = parseFloat(zoomSlider.value);
+        zoomVal.textContent = params.zoom.toFixed(1);
+        refresh();
+    });
+
+    // ---------------- BUTTONS ----------------
+    function setButtonStates() {
+        startBtn.disabled = running;
+        pauseBtn.disabled = !running;
+        stopBtn.disabled  = !running && phase === 0 && t === 0;
+    }
+
+    startBtn.addEventListener("click", () => {
+        if (running) return;
+        running = true;
+        lastTime = null;
+        animId = requestAnimationFrame(loop);
+        setButtonStates();
+    });
+
+    pauseBtn.addEventListener("click", () => {
+        if (!running) return;
+        running = false;
+        cancelAnimationFrame(animId);
+        setButtonStates();   // keeps current frame visible = true PAUSE
+    });
+
+    stopBtn.addEventListener("click", () => {
+        running = false;
+        cancelAnimationFrame(animId);
+        phase = 0; t = 0;    // reset everything
+        draw();
+        setButtonStates();
+    });
+
+    // Click canvas = quick toggle play/pause
+    canvas.addEventListener("click", () => {
+        if (running) pauseBtn.click();
+        else startBtn.click();
+    });
+
+    // ---------------- 3D PROJECTION HELPERS ----------------
+    // Fake isometric-ish 3D: z runs right-and-up, x runs right-and-down,
+    // y runs left-and-down. Vectors projected from an origin.
+    const CX = canvas.width / 2;
+    const CY = canvas.height / 2 - 10;
+
+    function project(ox, oy, x, y, z) {
+        const s = params.zoom;
+        return {
+            x: ox + (z * 0.92 + x * 0.42) * s,
+            y: oy + (-z * 0.30 + x * 0.26 + y * 0.62) * s
+        };
+    }
+
+    function drawArrow(from, to, color, width) {
+        const dx = to.x - from.x, dy = to.y - from.y;
+        const len = Math.hypot(dx, dy);
+        if (len < 2) return;
+        const ux = dx / len, uy = dy / len;
+
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(from.x, from.y);
+        ctx.lineTo(to.x, to.y);
+        ctx.stroke();
+
+        // Arrowhead
+        const ah = 10 + width * 2;
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.moveTo(to.x, to.y);
+        ctx.lineTo(to.x - ux * ah - uy * ah * 0.5, to.y - uy * ah + ux * ah * 0.5);
+        ctx.lineTo(to.x - ux * ah + uy * ah * 0.5, to.y - uy * ah - ux * ah * 0.5);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    function drawAxis(ox, oy, vx, vy, vz, label, color) {
+        const end = project(ox, oy, vx, vy, vz);
+        const origin = { x: ox, y: oy };
+        drawArrow(origin, end, color, 2);
+        ctx.fillStyle = color;
+        ctx.font = "bold 16px 'Comic Sans MS', cursive";
+        ctx.fillText(label, end.x + 8, end.y + 5);
+    }
+
+    // ---------------- MAIN DRAW ----------------
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const ox = CX - 330 * params.zoom;
+        const oy = CY + 60;
+
+        // Faint grid backdrop
+        ctx.save();
+        ctx.strokeStyle = "rgba(255,255,255,0.05)";
+        ctx.lineWidth = 1;
+        for (let i = 0; i < canvas.width; i += 40) {
+            ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
+        }
+        for (let i = 0; i < canvas.height; i += 40) {
+            ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
+        }
+        ctx.restore();
+
+        // --- Axes (3D orientation guide) ---
+        drawAxis(ox, oy,  90,   0,   0, "x (E)", "#00e5ff");
+        drawAxis(ox, oy,   0, -90,   0, "y (B)", "#ff4d6d");
+        drawAxis(ox, oy,   0,   0, 680, "z (propagation) →", "#ffd460");
+
+        // --- Wave sampling ---
+        const N = 90;
+        const LEN = 640;               // z length in projection units
+        const k = params.freq * Math.PI * 2 / LEN;   // spatial frequency
+        const w = params.speed * 2.4;                // angular speed
+
+        const ePoints = [], bPoints = [];
+        const E = [], B = [];   // field values per sample
+
+        for (let i = 0; i <= N; i++) {
+            const z = (i / N) * LEN;
+            const ex = params.amp * Math.sin(k * z - w * phase);
+            const by = params.amp * Math.cos(k * z - w * phase); // B 90° out of phase
+            E.push(ex); B.push(by);
+            ePoints.push(project(ox, oy, ex, 0, z));
+            bPoints.push(project(ox, oy, 0, -by, z));
+        }
+
+        // --- Propagation axis (dashed center line) ---
+        ctx.save();
+        ctx.setLineDash([8, 8]);
+        ctx.strokeStyle = "rgba(255,212,96,0.35)";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        const a0 = project(ox, oy, 0, 0, 0), a1 = project(ox, oy, 0, 0, LEN);
+        ctx.moveTo(a0.x, a0.y); ctx.lineTo(a1.x, a1.y);
+        ctx.stroke();
+        ctx.restore();
+
+        // --- Glow trails (thick, translucent under-lines) ---
+        function glowTrail(points, color) {
+            ctx.save();
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 18 + 6 * Math.sin(t * 3);
+            ctx.strokeStyle = color;
+            ctx.globalAlpha = 0.28;
+            ctx.lineWidth = 9;
+            ctx.lineJoin = "round";
+            ctx.beginPath();
+            points.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
+            ctx.stroke();
+            ctx.restore();
+        }
+        glowTrail(ePoints, "#00e5ff");
+        glowTrail(bPoints, "#ff4d6d");
+
+        // --- Core wave lines ---
+        function coreLine(points, color) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 3;
+            ctx.lineJoin = "round";
+            ctx.beginPath();
+            points.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
+            ctx.stroke();
+        }
+        coreLine(ePoints, "#7ff5ff");
+        coreLine(bPoints, "#ff8ba0");
+
+        // --- Field vectors (arrows) every few samples ---
+        const STEP = 9;
+        for (let i = 0; i <= N; i += STEP) {
+            const z = (i / N) * LEN;
+            const base = project(ox, oy, 0, 0, z);
+            const tipE = project(ox, oy, E[i], 0, z);
+            const tipB = project(ox, oy, 0, -B[i], z);
+            drawArrow(base, tipE, "#00e5ff", 2.2);
+            drawArrow(base, tipB, "#ff4d6d", 2.2);
+        }
+
+        // --- Poynting vector marker: E × B = +z (moving light pulse) ---
+        const pulseZ = ((phase * w / k) % (LEN / 4) + LEN / 4) % LEN;
+        const pBase = project(ox, oy, 0, 0, pulseZ);
+        const pTip  = project(ox, oy, 0, 0, pulseZ + 55);
+        ctx.save();
+        ctx.shadowColor = "#ffd460";
+        ctx.shadowBlur = 22;
+        drawArrow(pBase, pTip, "#ffd460", 4);
+        ctx.restore();
+        ctx.fillStyle = "#ffd460";
+        ctx.font = "bold 13px 'Comic Sans MS', cursive";
+        ctx.fillText("E×B (energy flow)", pTip.x - 40, pTip.y - 18);
+
+        // --- Formula readout ---
+        ctx.fillStyle = "rgba(255,255,255,0.85)";
+        ctx.font = "15px 'Comic Sans MS', cursive";
+        const p = (v, d) => (+v).toFixed(d);
+        ctx.fillText("E(z,t) = E₀ sin(kz − ωt)  x̂", 24, 34);
+        ctx.fillText("B(z,t) = B₀ cos(kz − ωt)  ŷ", 24, 58);
+        ctx.fillStyle = "#8f9bb3";
+        ctx.font = "13px 'Comic Sans MS', cursive";
+        ctx.fillText("ω = " + p(params.speed * 2.4, 2) +
+                     "   k = " + p(k, 4) +
+                     "   λ = " + p((2 * Math.PI / k).toFixed(0), 0),
+                     24, 82);
+
+        // --- Status badge ---
+        ctx.font = "bold 15px 'Comic Sans MS', cursive";
+        ctx.fillStyle = running ? "#34e89e" : (phase === 0 ? "#fc4a67" : "#f7b733");
+        const status = running ? "● PLAYING" : (phase === 0 ? "■ STOPPED" : "❚❚ PAUSED");
+        ctx.fillText(status, canvas.width - 130, 34);
+    }
+
+    // ---------------- ANIMATION LOOP ----------------
+    function loop(now) {
+        if (!running) return;
+        if (lastTime !== null) {
+            const dt = Math.min((now - lastTime) / 1000, 0.05);
+            phase += dt;
+            t += dt;
+        }
+        lastTime = now;
+        draw();
+        animId = requestAnimationFrame(loop);
+    }
+
+    // ---------------- INIT ----------------
+    draw();
+    setButtonStates();
+})();
+</script>
+
+</body>
+</html>
