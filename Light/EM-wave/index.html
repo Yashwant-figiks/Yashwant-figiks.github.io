@@ -3,260 +3,147 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>⚡ Electromagnetic Wave Simulator</title>
+<title>Electromagnetic Wave — 3D Model</title>
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: "Comic Sans MS", "Comic Sans", cursive, sans-serif;
-    }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI", Arial, sans-serif; }
 
     body {
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        background: #0a0e17;
         min-height: 100vh;
         display: flex;
         flex-direction: column;
         align-items: center;
-        padding: 20px;
-        color: #fff;
-        overflow-x: hidden;
+        padding: 18px;
+        color: #e8ecf5;
     }
 
-    h1 {
-        font-size: clamp(1.4rem, 4vw, 2.4rem);
-        text-shadow: 3px 3px 0px #e94560, 6px 6px 10px rgba(0,0,0,0.5);
-        margin-bottom: 6px;
-        text-align: center;
-        animation: bounce 2s ease-in-out infinite;
-    }
+    h1 { font-size: clamp(1.3rem, 4vw, 2rem); text-align:center; margin-bottom:2px; font-weight:600; }
+    .subtitle { font-size: clamp(0.8rem, 2vw, 0.95rem); color:#7c8aa8; margin-bottom:14px; text-align:center; }
 
-    @keyframes bounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-6px); }
-    }
-
-    .subtitle {
-        font-size: clamp(0.8rem, 2vw, 1.1rem);
-        color: #a8d8ea;
-        margin-bottom: 18px;
-        text-align: center;
-    }
-
-    /* ---------- 3D BUTTONS ---------- */
-    .controls {
-        display: flex;
-        gap: 18px;
-        margin-bottom: 18px;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-
+    .controls { display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap; justify-content:center; }
     .btn3d {
-        position: relative;
-        border: none;
-        padding: 14px 34px;
-        font-size: 1.05rem;
-        font-weight: bold;
-        color: #fff;
-        border-radius: 14px;
-        cursor: pointer;
-        outline: none;
-        transition: all 0.1s ease;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
-        user-select: none;
+        border:none; padding:10px 24px; font-size:0.9rem; font-weight:600; color:#fff;
+        border-radius:9px; cursor:pointer; transition: transform 0.08s ease, filter 0.15s ease;
     }
+    .btn-start { background:#1f9e6d; box-shadow:0 3px 0 #106b48; }
+    .btn-pause { background:#c98a1c; box-shadow:0 3px 0 #855c10; }
+    .btn-stop  { background:#c0324a; box-shadow:0 3px 0 #7a1c2c; }
+    .btn3d:active:not(:disabled) { transform: translateY(3px); box-shadow:0 0 0 rgba(0,0,0,0.4); }
+    .btn3d:disabled { opacity:0.35; cursor:not-allowed; }
 
-    .btn-start {
-        background: linear-gradient(180deg, #34e89e 0%, #0f9b6c 60%, #0b7a55 100%);
-        box-shadow: 0 7px 0 #064e37, 0 12px 18px rgba(0,0,0,0.45);
-    }
-    .btn-start:hover { filter: brightness(1.12); }
-    .btn-start:active {
-        transform: translateY(6px);
-        box-shadow: 0 1px 0 #064e37, 0 4px 8px rgba(0,0,0,0.45);
-    }
-
-    .btn-pause {
-        background: linear-gradient(180deg, #f7b733 0%, #e08e0b 60%, #b57108 100%);
-        box-shadow: 0 7px 0 #7a4c05, 0 12px 18px rgba(0,0,0,0.45);
-    }
-    .btn-pause:hover { filter: brightness(1.12); }
-    .btn-pause:active {
-        transform: translateY(6px);
-        box-shadow: 0 1px 0 #7a4c05, 0 4px 8px rgba(0,0,0,0.45);
-    }
-
-    .btn-stop {
-        background: linear-gradient(180deg, #fc4a67 0%, #e01e3f 60%, #b0132e 100%);
-        box-shadow: 0 7px 0 #6e0a1d, 0 12px 18px rgba(0,0,0,0.45);
-    }
-    .btn-stop:hover { filter: brightness(1.12); }
-    .btn-stop:active {
-        transform: translateY(6px);
-        box-shadow: 0 1px 0 #6e0a1d, 0 4px 8px rgba(0,0,0,0.45);
-    }
-
-    .btn3d:disabled {
-        opacity: 0.45;
-        cursor: not-allowed;
-        filter: grayscale(0.6);
-    }
-
-    /* ---------- SLIDERS PANEL ---------- */
     .panel {
-        background: rgba(255,255,255,0.08);
-        border: 2px dashed rgba(255,255,255,0.25);
-        border-radius: 16px;
-        padding: 14px 22px;
-        margin-bottom: 18px;
-        display: flex;
-        gap: 28px;
-        flex-wrap: wrap;
-        justify-content: center;
-        backdrop-filter: blur(4px);
-    }
-
-    .slider-group {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .slider-group label {
-        font-size: 0.95rem;
-        color: #ffd460;
-    }
-
-    .slider-group span {
-        font-size: 0.85rem;
-        color: #7ee8fa;
-        font-weight: bold;
-    }
-
-    input[type="range"] {
-        -webkit-appearance: none;
-        width: 170px;
-        height: 10px;
-        border-radius: 10px;
-        background: linear-gradient(90deg, #e94560, #ffd460);
-        outline: none;
-        cursor: pointer;
-    }
-
-    input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        background: #fff;
-        border: 3px solid #e94560;
-        box-shadow: 0 3px 6px rgba(0,0,0,0.5);
-        cursor: grab;
-        transition: transform 0.15s;
-    }
-    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
-
-    /* ---------- CANVAS ---------- */
-    #waveCanvas {
-        background: radial-gradient(ellipse at center, #0d1b2a 0%, #050a12 100%);
-        border: 3px solid #e94560;
-        border-radius: 18px;
-        box-shadow: 0 0 30px rgba(233,69,96,0.35), inset 0 0 60px rgba(0,0,0,0.6);
-        cursor: crosshair;
-        max-width: 96vw;
-    }
-
-    /* ---------- LEGEND ---------- */
-    .legend {
-        display: flex;
-        gap: 24px;
-        margin-top: 16px;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-
-    .legend-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 0.95rem;
-        background: rgba(255,255,255,0.07);
-        padding: 8px 16px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.1);
         border-radius: 12px;
-        border: 1px solid rgba(255,255,255,0.15);
+        padding: 10px 20px;
+        margin-bottom: 12px;
+        display: flex;
+        gap: 22px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .slider-group { display:flex; flex-direction:column; align-items:center; gap:4px; }
+    .slider-group label { font-size:0.8rem; color:#e0b45a; }
+    .slider-group span { font-size:0.76rem; color:#5fc9e8; font-weight:600; }
+    input[type="range"] { width:135px; accent-color:#e94560; cursor:pointer; }
+
+    #canvasWrap {
+        position: relative;
+        width: 100%;
+        max-width: 980px;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.12);
+        box-shadow: 0 0 40px rgba(60,100,200,0.12);
+        background: radial-gradient(ellipse at 50% 40%, #101a2c 0%, #060910 100%);
+    }
+    #sceneCanvas { display:block; width:100%; height:auto; cursor: grab; touch-action: none; }
+    #sceneCanvas:active { cursor: grabbing; }
+
+    .hint {
+        position: absolute;
+        top: 10px; left: 12px;
+        font-size: 0.75rem;
+        color: rgba(255,255,255,0.55);
+        background: rgba(0,0,0,0.35);
+        padding: 5px 10px;
+        border-radius: 7px;
+        pointer-events: none;
     }
 
-    .swatch { width: 26px; height: 8px; border-radius: 6px; }
-    .sw-e { background: #00e5ff; box-shadow: 0 0 10px #00e5ff; }
-    .sw-b { background: #ff4d6d; box-shadow: 0 0 10px #ff4d6d; }
-    .sw-z { background: #ffd460; box-shadow: 0 0 10px #ffd460; }
-
-    .info {
-        margin-top: 14px;
-        font-size: 0.85rem;
-        color: #8f9bb3;
-        text-align: center;
-        max-width: 700px;
-        line-height: 1.5;
+    .status-badge {
+        position: absolute;
+        top: 10px; right: 12px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 5px 12px;
+        border-radius: 7px;
+        background: rgba(0,0,0,0.35);
     }
+
+    .legend { display:flex; gap:18px; margin-top:14px; flex-wrap:wrap; justify-content:center; }
+    .legend-item { display:flex; align-items:center; gap:8px; font-size:0.85rem; background:rgba(255,255,255,0.05); padding:7px 14px; border-radius:10px; }
+    .swatch { width:20px; height:7px; border-radius:5px; }
+    .sw-e { background:#3fd6ff; }
+    .sw-b { background:#ff5577; }
+    .sw-z { background:#ffcc55; }
+
+    .info { margin-top:12px; font-size:0.82rem; color:#8290ab; text-align:center; max-width:660px; line-height:1.5; }
 </style>
-<base target="_blank">
 </head>
 <body>
 
-<h1>⚡ Electromagnetic Wave Simulator ⚡</h1>
-<p class="subtitle">E-field (x) ⟂ B-field (y) ⟂ Propagation (z)</p>
+<h1>Electromagnetic Wave — 3D Model</h1>
+<p class="subtitle">Drag to rotate · Scroll or pinch to zoom</p>
 
 <div class="controls">
-    <button class="btn3d btn-start" id="startBtn">▶ START</button>
-    <button class="btn3d btn-pause" id="pauseBtn" disabled>⏸ PAUSE</button>
-    <button class="btn3d btn-stop"  id="stopBtn"  disabled>⏹ STOP</button>
+    <button class="btn3d btn-start" id="startBtn">▶ Start</button>
+    <button class="btn3d btn-pause" id="pauseBtn" disabled>⏸ Pause</button>
+    <button class="btn3d btn-stop"  id="stopBtn"  disabled>⏹ Stop</button>
 </div>
 
 <div class="panel">
     <div class="slider-group">
-        <label>🌊 Frequency</label>
-        <input type="range" id="freqSlider" min="1" max="8" step="0.5" value="3">
-        <span id="freqVal">3.0</span>
+        <label>Frequency</label>
+        <input type="range" id="freqSlider" min="1" max="6" step="0.5" value="2.5">
+        <span id="freqVal">2.5</span>
     </div>
     <div class="slider-group">
-        <label>📏 Amplitude</label>
-        <input type="range" id="ampSlider" min="20" max="120" step="5" value="70">
-        <span id="ampVal">70</span>
+        <label>Amplitude</label>
+        <input type="range" id="ampSlider" min="0.5" max="2.5" step="0.1" value="1.4">
+        <span id="ampVal">1.4</span>
     </div>
     <div class="slider-group">
-        <label>🏎️ Speed</label>
-        <input type="range" id="speedSlider" min="0.5" max="4" step="0.1" value="1.5">
-        <span id="speedVal">1.5</span>
-    </div>
-    <div class="slider-group">
-        <label>🔍 Zoom</label>
-        <input type="range" id="zoomSlider" min="0.5" max="2" step="0.1" value="1">
-        <span id="zoomVal">1.0</span>
+        <label>Speed</label>
+        <input type="range" id="speedSlider" min="0.3" max="3" step="0.1" value="1.2">
+        <span id="speedVal">1.2</span>
     </div>
 </div>
 
-<canvas id="waveCanvas" width="1100" height="560"></canvas>
+<div id="canvasWrap">
+    <canvas id="sceneCanvas"></canvas>
+    <div class="hint">🖱️ drag to orbit</div>
+    <div class="status-badge" id="statusBadge">■ STOPPED</div>
+</div>
 
 <div class="legend">
-    <div class="legend-item"><div class="swatch sw-e"></div> Electric Field E → x direction</div>
-    <div class="legend-item"><div class="swatch sw-b"></div> Magnetic Field B → y direction</div>
-    <div class="legend-item"><div class="swatch sw-z"></div> Propagation → z direction</div>
+    <div class="legend-item"><div class="swatch sw-e"></div> Electric field E</div>
+    <div class="legend-item"><div class="swatch sw-b"></div> Magnetic field B (perpendicular to E)</div>
+    <div class="legend-item"><div class="swatch sw-z"></div> Direction of travel</div>
 </div>
 
 <p class="info">
-    💡 <b>Maxwell says:</b> E × B points along the direction of propagation (+z).
-    Click anywhere on the canvas to toggle play / pause. Sliders work even while
-    paused — the frozen wave reshapes itself live! The wave pattern travels
-    through space at light speed — here slowed down so your eyes can enjoy it!
+    💡 This is a real 3D scene — drag it around with your mouse or finger to see the geometry
+    from any angle. Look straight down the yellow axis and you'll see E and B are always at
+    right angles to each other. Rotate to a side view and each field looks like a simple sine wave.
 </p>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 (function () {
-    const canvas = document.getElementById("waveCanvas");
-    const ctx = canvas.getContext("2d");
+    const canvas = document.getElementById("sceneCanvas");
+    const wrap = document.getElementById("canvasWrap");
+    const statusBadge = document.getElementById("statusBadge");
 
     const startBtn = document.getElementById("startBtn");
     const pauseBtn = document.getElementById("pauseBtn");
@@ -265,34 +152,243 @@
     const freqSlider  = document.getElementById("freqSlider");
     const ampSlider   = document.getElementById("ampSlider");
     const speedSlider = document.getElementById("speedSlider");
-    const zoomSlider  = document.getElementById("zoomSlider");
-
     const freqVal  = document.getElementById("freqVal");
     const ampVal   = document.getElementById("ampVal");
     const speedVal = document.getElementById("speedVal");
-    const zoomVal  = document.getElementById("zoomVal");
-
-    // ---------------- STATE ----------------
-    let running = false;      // is animation playing?
-    let phase = 0;            // wave phase offset (drives propagation)
-    let t = 0;                // global clock for glow pulsing
-    let animId = null;
-    let lastTime = null;
 
     const params = {
         freq:  parseFloat(freqSlider.value),
         amp:   parseFloat(ampSlider.value),
-        speed: parseFloat(speedSlider.value),
-        zoom:  parseFloat(zoomSlider.value)
+        speed: parseFloat(speedSlider.value)
     };
 
-    // ---------------- SLIDER WIRING ----------------
-    // KEY FIX: redraw on every slider change so the wave reshapes
-    // instantly even when PAUSED (or stopped). draw() is cheap and
-    // safe to call at any time since it only reads current params.
-    function refresh() {
-        if (!running) draw();
+    let running = false;
+    let phase = 0;
+
+    // ---------------- THREE.JS SETUP ----------------
+    const scene = new THREE.Scene();
+
+    const camera = new THREE.PerspectiveCamera(45, 2, 0.1, 100);
+    // Spherical camera orbit state
+    let camTheta = 0.9;   // horizontal angle
+    let camPhi = 1.15;    // vertical angle (from +y axis)
+    let camRadius = 11;
+
+    function updateCamera() {
+        camPhi = Math.max(0.25, Math.min(Math.PI - 0.25, camPhi));
+        const x = camRadius * Math.sin(camPhi) * Math.sin(camTheta);
+        const y = camRadius * Math.cos(camPhi);
+        const z = camRadius * Math.sin(camPhi) * Math.cos(camTheta);
+        camera.position.set(x, y, z);
+        camera.lookAt(0, 0, 0);
     }
+    updateCamera();
+
+    const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    function resize() {
+        const w = wrap.clientWidth;
+        const h = Math.round(w * 0.56);
+        renderer.setSize(w, h, false);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+    }
+    window.addEventListener("resize", resize);
+
+    // Lighting
+    scene.add(new THREE.AmbientLight(0x404060, 1.2));
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+    dirLight.position.set(4, 6, 4);
+    scene.add(dirLight);
+    const dirLight2 = new THREE.DirectionalLight(0x4488ff, 0.35);
+    dirLight2.position.set(-5, -2, -3);
+    scene.add(dirLight2);
+
+    // ---------------- GEOMETRY: AXES ----------------
+    const AXIS_LEN = 5.2;
+
+    function makeAxis(dir, color) {
+        const points = [new THREE.Vector3(0,0,0), dir.clone().multiplyScalar(AXIS_LEN)];
+        const geo = new THREE.BufferGeometry().setFromPoints(points);
+        const mat = new THREE.LineBasicMaterial({ color: color, transparent:true, opacity:0.55 });
+        return new THREE.Line(geo, mat);
+    }
+    scene.add(makeAxis(new THREE.Vector3(1,0,0), 0x3fd6ff));  // x = E
+    scene.add(makeAxis(new THREE.Vector3(0,1,0), 0xff5577));  // y = B
+    scene.add(makeAxis(new THREE.Vector3(0,0,1), 0xffcc55));  // z = propagation
+
+    function makeAxisCone(dir, color) {
+        const geo = new THREE.ConeGeometry(0.09, 0.28, 12);
+        const mat = new THREE.MeshStandardMaterial({ color: color, emissive: color, emissiveIntensity:0.4 });
+        const cone = new THREE.Mesh(geo, mat);
+        cone.position.copy(dir.clone().multiplyScalar(AXIS_LEN));
+        cone.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir);
+        scene.add(cone);
+        return cone;
+    }
+    makeAxisCone(new THREE.Vector3(1,0,0), 0x3fd6ff);
+    makeAxisCone(new THREE.Vector3(0,1,0), 0xff5577);
+    makeAxisCone(new THREE.Vector3(0,0,1), 0xffcc55);
+
+    // Axis labels via sprites
+    function makeLabel(text, color, pos) {
+        const cvs = document.createElement("canvas");
+        cvs.width = 128; cvs.height = 64;
+        const c2 = cvs.getContext("2d");
+        c2.font = "bold 32px Arial";
+        c2.fillStyle = color;
+        c2.textAlign = "center";
+        c2.fillText(text, 64, 40);
+        const tex = new THREE.CanvasTexture(cvs);
+        const mat = new THREE.SpriteMaterial({ map: tex, transparent:true });
+        const sprite = new THREE.Sprite(mat);
+        sprite.scale.set(1.1, 0.55, 1);
+        sprite.position.copy(pos);
+        scene.add(sprite);
+        return sprite;
+    }
+    makeLabel("E", "#3fd6ff", new THREE.Vector3(AXIS_LEN + 0.5, 0, 0));
+    makeLabel("B", "#ff5577", new THREE.Vector3(0, AXIS_LEN + 0.5, 0));
+    makeLabel("z", "#ffcc55", new THREE.Vector3(0, 0, AXIS_LEN + 0.6));
+
+    // Faint ground grid for depth reference
+    const grid = new THREE.GridHelper(12, 12, 0x223355, 0x14203a);
+    grid.position.y = -2.6;
+    scene.add(grid);
+
+    // ---------------- WAVE CURVES ----------------
+    const N = 160;
+    const ZLEN = AXIS_LEN * 1.55;
+
+    function buildCurve(color) {
+        const geo = new THREE.BufferGeometry();
+        const positions = new Float32Array((N + 1) * 3);
+        geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+        const mat = new THREE.LineBasicMaterial({ color: color, linewidth: 2 });
+        const line = new THREE.Line(geo, mat);
+        scene.add(line);
+        return line;
+    }
+    const eCurve = buildCurve(0x3fd6ff);
+    const bCurve = buildCurve(0xff5577);
+
+    // Field vector arrows (rods + tips) at intervals along z
+    const ARROW_COUNT = 18;
+    const eArrows = [], bArrows = [];
+
+    function buildArrow(color) {
+        const group = new THREE.Group();
+        const rodGeo = new THREE.CylinderGeometry(0.028, 0.028, 1, 8);
+        rodGeo.translate(0, 0.5, 0);
+        const rodMat = new THREE.MeshStandardMaterial({ color: color, emissive: color, emissiveIntensity: 0.35 });
+        const rod = new THREE.Mesh(rodGeo, rodMat);
+        const tipGeo = new THREE.ConeGeometry(0.075, 0.2, 10);
+        const tip = new THREE.Mesh(tipGeo, rodMat);
+        group.add(rod);
+        group.add(tip);
+        group.userData.rod = rod;
+        group.userData.tip = tip;
+        scene.add(group);
+        return group;
+    }
+    for (let i = 0; i < ARROW_COUNT; i++) {
+        eArrows.push(buildArrow(0x3fd6ff));
+        bArrows.push(buildArrow(0xff5577));
+    }
+
+    function orientArrow(group, base, tip, dirAxis) {
+        const v = new THREE.Vector3().subVectors(tip, base);
+        const len = v.length();
+        group.position.copy(base);
+        if (len < 0.001) {
+            group.visible = false;
+            return;
+        }
+        group.visible = true;
+        const dir = v.clone().normalize();
+        group.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir);
+        const rodLen = Math.max(len - 0.2, 0.001);
+        group.userData.rod.scale.set(1, rodLen, 1);
+        group.userData.tip.position.set(0, len - 0.1, 0);
+    }
+
+    // Poynting vector (energy flow) marker — travels along z
+    const poyntGeo = new THREE.ConeGeometry(0.13, 0.45, 12);
+    const poyntMat = new THREE.MeshStandardMaterial({ color: 0xffcc55, emissive: 0xffcc55, emissiveIntensity: 0.7 });
+    const poynt = new THREE.Mesh(poyntGeo, poyntMat);
+    poynt.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), new THREE.Vector3(0,0,1));
+    scene.add(poynt);
+
+    function updateWave() {
+        const k = params.freq * Math.PI * 2 / ZLEN;
+        const w = params.speed * 1.6;
+
+        const posAttrE = eCurve.geometry.attributes.position.array;
+        const posAttrB = bCurve.geometry.attributes.position.array;
+
+        for (let i = 0; i <= N; i++) {
+            const z = (i / N) * ZLEN - ZLEN / 2;
+            const ex = params.amp * Math.sin(k * z - w * phase);
+            const by = params.amp * Math.cos(k * z - w * phase);
+            posAttrE[i*3] = ex; posAttrE[i*3+1] = 0; posAttrE[i*3+2] = z;
+            posAttrB[i*3] = 0;  posAttrB[i*3+1] = by; posAttrB[i*3+2] = z;
+        }
+        eCurve.geometry.attributes.position.needsUpdate = true;
+        bCurve.geometry.attributes.position.needsUpdate = true;
+        eCurve.geometry.computeBoundingSphere();
+        bCurve.geometry.computeBoundingSphere();
+
+        for (let i = 0; i < ARROW_COUNT; i++) {
+            const z = (i / (ARROW_COUNT - 1)) * ZLEN - ZLEN / 2;
+            const ex = params.amp * Math.sin(k * z - w * phase);
+            const by = params.amp * Math.cos(k * z - w * phase);
+            const base = new THREE.Vector3(0, 0, z);
+            orientArrow(eArrows[i], base, new THREE.Vector3(ex, 0, z));
+            orientArrow(bArrows[i], base, new THREE.Vector3(0, by, z));
+        }
+
+        // Poynting marker slides along z at the wave's phase velocity
+        const pz = (((params.speed * 1.6 / k) * phase) % ZLEN + ZLEN/2) % ZLEN - ZLEN/2;
+        poynt.position.set(0, 0, pz);
+    }
+    updateWave();
+
+    // ---------------- ORBIT CONTROLS (manual, no extra deps) ----------------
+    let isDragging = false;
+    let lastX = 0, lastY = 0;
+
+    function pointerDown(x, y) { isDragging = true; lastX = x; lastY = y; }
+    function pointerMove(x, y) {
+        if (!isDragging) return;
+        const dx = x - lastX, dy = y - lastY;
+        camTheta -= dx * 0.006;
+        camPhi -= dy * 0.006;
+        updateCamera();
+        lastX = x; lastY = y;
+    }
+    function pointerUp() { isDragging = false; }
+
+    canvas.addEventListener("mousedown", e => pointerDown(e.clientX, e.clientY));
+    window.addEventListener("mousemove", e => pointerMove(e.clientX, e.clientY));
+    window.addEventListener("mouseup", pointerUp);
+
+    canvas.addEventListener("touchstart", e => {
+        if (e.touches.length === 1) pointerDown(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+    canvas.addEventListener("touchmove", e => {
+        if (e.touches.length === 1) { pointerMove(e.touches[0].clientX, e.touches[0].clientY); e.preventDefault(); }
+    }, { passive: false });
+    canvas.addEventListener("touchend", pointerUp);
+
+    canvas.addEventListener("wheel", e => {
+        e.preventDefault();
+        camRadius = Math.max(5, Math.min(20, camRadius + e.deltaY * 0.01));
+        updateCamera();
+    }, { passive: false });
+
+    // ---------------- UI WIRING ----------------
+    function refresh() { updateWave(); render(); }
 
     freqSlider.addEventListener("input", () => {
         params.freq = parseFloat(freqSlider.value);
@@ -301,7 +397,7 @@
     });
     ampSlider.addEventListener("input", () => {
         params.amp = parseFloat(ampSlider.value);
-        ampVal.textContent = params.amp;
+        ampVal.textContent = params.amp.toFixed(1);
         refresh();
     });
     speedSlider.addEventListener("input", () => {
@@ -309,238 +405,61 @@
         speedVal.textContent = params.speed.toFixed(1);
         refresh();
     });
-    zoomSlider.addEventListener("input", () => {
-        params.zoom = parseFloat(zoomSlider.value);
-        zoomVal.textContent = params.zoom.toFixed(1);
-        refresh();
-    });
 
-    // ---------------- BUTTONS ----------------
+    function setStatus() {
+        if (running) { statusBadge.textContent = "● PLAYING"; statusBadge.style.color = "#34e89e"; }
+        else if (phase === 0) { statusBadge.textContent = "■ STOPPED"; statusBadge.style.color = "#fc4a67"; }
+        else { statusBadge.textContent = "❚❚ PAUSED"; statusBadge.style.color = "#f7b733"; }
+    }
     function setButtonStates() {
         startBtn.disabled = running;
         pauseBtn.disabled = !running;
-        stopBtn.disabled  = !running && phase === 0 && t === 0;
+        stopBtn.disabled = !running && phase === 0;
+        setStatus();
     }
+
+    let animId = null, lastTime = null;
 
     startBtn.addEventListener("click", () => {
         if (running) return;
-        running = true;
-        lastTime = null;
+        running = true; lastTime = null;
         animId = requestAnimationFrame(loop);
         setButtonStates();
     });
-
     pauseBtn.addEventListener("click", () => {
-        if (!running) return;
         running = false;
-        cancelAnimationFrame(animId);
-        setButtonStates();   // keeps current frame visible = true PAUSE
+        if (animId) cancelAnimationFrame(animId);
+        setButtonStates();
     });
-
     stopBtn.addEventListener("click", () => {
         running = false;
-        cancelAnimationFrame(animId);
-        phase = 0; t = 0;    // reset everything
-        draw();
+        if (animId) cancelAnimationFrame(animId);
+        phase = 0;
+        refresh();
         setButtonStates();
     });
 
-    // Click canvas = quick toggle play/pause
-    canvas.addEventListener("click", () => {
-        if (running) pauseBtn.click();
-        else startBtn.click();
-    });
-
-    // ---------------- 3D PROJECTION HELPERS ----------------
-    // Fake isometric-ish 3D: z runs right-and-up, x runs right-and-down,
-    // y runs left-and-down. Vectors projected from an origin.
-    const CX = canvas.width / 2;
-    const CY = canvas.height / 2 - 10;
-
-    function project(ox, oy, x, y, z) {
-        const s = params.zoom;
-        return {
-            x: ox + (z * 0.92 + x * 0.42) * s,
-            y: oy + (-z * 0.30 + x * 0.26 + y * 0.62) * s
-        };
-    }
-
-    function drawArrow(from, to, color, width) {
-        const dx = to.x - from.x, dy = to.y - from.y;
-        const len = Math.hypot(dx, dy);
-        if (len < 2) return;
-        const ux = dx / len, uy = dy / len;
-
-        ctx.strokeStyle = color;
-        ctx.lineWidth = width;
-        ctx.lineCap = "round";
-        ctx.beginPath();
-        ctx.moveTo(from.x, from.y);
-        ctx.lineTo(to.x, to.y);
-        ctx.stroke();
-
-        // Arrowhead
-        const ah = 10 + width * 2;
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.moveTo(to.x, to.y);
-        ctx.lineTo(to.x - ux * ah - uy * ah * 0.5, to.y - uy * ah + ux * ah * 0.5);
-        ctx.lineTo(to.x - ux * ah + uy * ah * 0.5, to.y - uy * ah - ux * ah * 0.5);
-        ctx.closePath();
-        ctx.fill();
-    }
-
-    function drawAxis(ox, oy, vx, vy, vz, label, color) {
-        const end = project(ox, oy, vx, vy, vz);
-        const origin = { x: ox, y: oy };
-        drawArrow(origin, end, color, 2);
-        ctx.fillStyle = color;
-        ctx.font = "bold 16px 'Comic Sans MS', cursive";
-        ctx.fillText(label, end.x + 8, end.y + 5);
-    }
-
-    // ---------------- MAIN DRAW ----------------
-    function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        const ox = CX - 330 * params.zoom;
-        const oy = CY + 60;
-
-        // Faint grid backdrop
-        ctx.save();
-        ctx.strokeStyle = "rgba(255,255,255,0.05)";
-        ctx.lineWidth = 1;
-        for (let i = 0; i < canvas.width; i += 40) {
-            ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
-        }
-        for (let i = 0; i < canvas.height; i += 40) {
-            ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke();
-        }
-        ctx.restore();
-
-        // --- Axes (3D orientation guide) ---
-        drawAxis(ox, oy,  90,   0,   0, "x (E)", "#00e5ff");
-        drawAxis(ox, oy,   0, -90,   0, "y (B)", "#ff4d6d");
-        drawAxis(ox, oy,   0,   0, 680, "z (propagation) →", "#ffd460");
-
-        // --- Wave sampling ---
-        const N = 90;
-        const LEN = 640;               // z length in projection units
-        const k = params.freq * Math.PI * 2 / LEN;   // spatial frequency
-        const w = params.speed * 2.4;                // angular speed
-
-        const ePoints = [], bPoints = [];
-        const E = [], B = [];   // field values per sample
-
-        for (let i = 0; i <= N; i++) {
-            const z = (i / N) * LEN;
-            const ex = params.amp * Math.sin(k * z - w * phase);
-            const by = params.amp * Math.cos(k * z - w * phase); // B 90° out of phase
-            E.push(ex); B.push(by);
-            ePoints.push(project(ox, oy, ex, 0, z));
-            bPoints.push(project(ox, oy, 0, -by, z));
-        }
-
-        // --- Propagation axis (dashed center line) ---
-        ctx.save();
-        ctx.setLineDash([8, 8]);
-        ctx.strokeStyle = "rgba(255,212,96,0.35)";
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        const a0 = project(ox, oy, 0, 0, 0), a1 = project(ox, oy, 0, 0, LEN);
-        ctx.moveTo(a0.x, a0.y); ctx.lineTo(a1.x, a1.y);
-        ctx.stroke();
-        ctx.restore();
-
-        // --- Glow trails (thick, translucent under-lines) ---
-        function glowTrail(points, color) {
-            ctx.save();
-            ctx.shadowColor = color;
-            ctx.shadowBlur = 18 + 6 * Math.sin(t * 3);
-            ctx.strokeStyle = color;
-            ctx.globalAlpha = 0.28;
-            ctx.lineWidth = 9;
-            ctx.lineJoin = "round";
-            ctx.beginPath();
-            points.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
-            ctx.stroke();
-            ctx.restore();
-        }
-        glowTrail(ePoints, "#00e5ff");
-        glowTrail(bPoints, "#ff4d6d");
-
-        // --- Core wave lines ---
-        function coreLine(points, color) {
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 3;
-            ctx.lineJoin = "round";
-            ctx.beginPath();
-            points.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
-            ctx.stroke();
-        }
-        coreLine(ePoints, "#7ff5ff");
-        coreLine(bPoints, "#ff8ba0");
-
-        // --- Field vectors (arrows) every few samples ---
-        const STEP = 9;
-        for (let i = 0; i <= N; i += STEP) {
-            const z = (i / N) * LEN;
-            const base = project(ox, oy, 0, 0, z);
-            const tipE = project(ox, oy, E[i], 0, z);
-            const tipB = project(ox, oy, 0, -B[i], z);
-            drawArrow(base, tipE, "#00e5ff", 2.2);
-            drawArrow(base, tipB, "#ff4d6d", 2.2);
-        }
-
-        // --- Poynting vector marker: E × B = +z (moving light pulse) ---
-        const pulseZ = ((phase * w / k) % (LEN / 4) + LEN / 4) % LEN;
-        const pBase = project(ox, oy, 0, 0, pulseZ);
-        const pTip  = project(ox, oy, 0, 0, pulseZ + 55);
-        ctx.save();
-        ctx.shadowColor = "#ffd460";
-        ctx.shadowBlur = 22;
-        drawArrow(pBase, pTip, "#ffd460", 4);
-        ctx.restore();
-        ctx.fillStyle = "#ffd460";
-        ctx.font = "bold 13px 'Comic Sans MS', cursive";
-        ctx.fillText("E×B (energy flow)", pTip.x - 40, pTip.y - 18);
-
-        // --- Formula readout ---
-        ctx.fillStyle = "rgba(255,255,255,0.85)";
-        ctx.font = "15px 'Comic Sans MS', cursive";
-        const p = (v, d) => (+v).toFixed(d);
-        ctx.fillText("E(z,t) = E₀ sin(kz − ωt)  x̂", 24, 34);
-        ctx.fillText("B(z,t) = B₀ cos(kz − ωt)  ŷ", 24, 58);
-        ctx.fillStyle = "#8f9bb3";
-        ctx.font = "13px 'Comic Sans MS', cursive";
-        ctx.fillText("ω = " + p(params.speed * 2.4, 2) +
-                     "   k = " + p(k, 4) +
-                     "   λ = " + p((2 * Math.PI / k).toFixed(0), 0),
-                     24, 82);
-
-        // --- Status badge ---
-        ctx.font = "bold 15px 'Comic Sans MS', cursive";
-        ctx.fillStyle = running ? "#34e89e" : (phase === 0 ? "#fc4a67" : "#f7b733");
-        const status = running ? "● PLAYING" : (phase === 0 ? "■ STOPPED" : "❚❚ PAUSED");
-        ctx.fillText(status, canvas.width - 130, 34);
-    }
-
-    // ---------------- ANIMATION LOOP ----------------
     function loop(now) {
         if (!running) return;
         if (lastTime !== null) {
             const dt = Math.min((now - lastTime) / 1000, 0.05);
             phase += dt;
-            t += dt;
         }
         lastTime = now;
-        draw();
+        updateWave();
+        render();
         animId = requestAnimationFrame(loop);
     }
 
-    // ---------------- INIT ----------------
-    draw();
+    function render() {
+        renderer.render(scene, camera);
+    }
+
+    resize();
+    render();
     setButtonStates();
+    // Redraw on resize too
+    window.addEventListener("resize", () => { resize(); render(); });
 })();
 </script>
 
