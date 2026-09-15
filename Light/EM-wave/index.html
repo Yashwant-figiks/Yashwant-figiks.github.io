@@ -31,6 +31,28 @@
     .btn3d:active:not(:disabled) { transform: translateY(3px); box-shadow:0 0 0 rgba(0,0,0,0.4); }
     .btn3d:disabled { opacity:0.35; cursor:not-allowed; }
 
+    /* Field on/off toggle buttons */
+    .field-toggles { display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap; justify-content:center; }
+    .btn-field {
+        border:2px solid; padding:9px 20px; font-size:0.9rem; font-weight:700;
+        border-radius:9px; cursor:pointer; background:transparent; transition: all 0.15s ease;
+        display:flex; align-items:center; gap:8px;
+    }
+    .btn-field .dot { width:10px; height:10px; border-radius:50%; transition: all 0.15s ease; }
+    .btn-e { border-color:#3fd6ff; color:#3fd6ff; }
+    .btn-e.on { background:rgba(63,214,255,0.14); }
+    .btn-e .dot { background:#3fd6ff; box-shadow:0 0 8px #3fd6ff; }
+    .btn-e.off .dot { background:transparent; box-shadow:none; border:2px solid #3fd6ff; }
+    .btn-e.off { color:#5c7080; border-color:#2a3a4a; }
+    .btn-e.off .dot { border-color:#2a3a4a; }
+
+    .btn-b { border-color:#ff5577; color:#ff5577; }
+    .btn-b.on { background:rgba(255,85,119,0.14); }
+    .btn-b .dot { background:#ff5577; box-shadow:0 0 8px #ff5577; }
+    .btn-b.off .dot { background:transparent; box-shadow:none; border:2px solid #ff5577; }
+    .btn-b.off { color:#5c7080; border-color:#2a3a4a; }
+    .btn-b.off .dot { border-color:#2a3a4a; }
+
     .panel {
         background: rgba(255,255,255,0.04);
         border: 1px solid rgba(255,255,255,0.1);
@@ -46,6 +68,10 @@
     .slider-group label { font-size:0.8rem; color:#e0b45a; }
     .slider-group span { font-size:0.76rem; color:#5fc9e8; font-weight:600; }
     input[type="range"] { width:135px; accent-color:#e94560; cursor:pointer; }
+
+    .slider-group.rotate label { color:#ffcc55; }
+    .slider-group.rotate input[type="range"] { accent-color:#ffcc55; }
+    .slider-group.rotate span { color:#ffcc55; }
 
     #canvasWrap {
         position: relative;
@@ -102,6 +128,11 @@
     <button class="btn3d btn-stop"  id="stopBtn"  disabled>⏹ Stop</button>
 </div>
 
+<div class="field-toggles">
+    <button class="btn-field btn-e on" id="eToggleBtn"><span class="dot"></span>Electric field E</button>
+    <button class="btn-field btn-b on" id="bToggleBtn"><span class="dot"></span>Magnetic field B</button>
+</div>
+
 <div class="panel">
     <div class="slider-group">
         <label>Frequency</label>
@@ -117,6 +148,11 @@
         <label>Speed</label>
         <input type="range" id="speedSlider" min="0.3" max="3" step="0.1" value="1.2">
         <span id="speedVal">1.2</span>
+    </div>
+    <div class="slider-group rotate">
+        <label>Rotate (about z)</label>
+        <input type="range" id="rotSlider" min="0" max="360" step="1" value="0">
+        <span id="rotVal">0°</span>
     </div>
 </div>
 
@@ -136,6 +172,8 @@
     💡 This is a real 3D scene — drag it around with your mouse or finger to see the geometry
     from any angle. Look straight down the yellow axis and you'll see E and B are always at
     right angles to each other. Rotate to a side view and each field looks like a simple sine wave.
+    Use the "Rotate" slider to spin both fields together about the z-axis (the direction of travel) —
+    this is what it looks like when the wave's polarization angle changes.
 </p>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -149,18 +187,27 @@
     const pauseBtn = document.getElementById("pauseBtn");
     const stopBtn  = document.getElementById("stopBtn");
 
+    const eToggleBtn = document.getElementById("eToggleBtn");
+    const bToggleBtn = document.getElementById("bToggleBtn");
+
     const freqSlider  = document.getElementById("freqSlider");
     const ampSlider   = document.getElementById("ampSlider");
     const speedSlider = document.getElementById("speedSlider");
+    const rotSlider   = document.getElementById("rotSlider");
     const freqVal  = document.getElementById("freqVal");
     const ampVal   = document.getElementById("ampVal");
     const speedVal = document.getElementById("speedVal");
+    const rotVal   = document.getElementById("rotVal");
 
     const params = {
         freq:  parseFloat(freqSlider.value),
         amp:   parseFloat(ampSlider.value),
-        speed: parseFloat(speedSlider.value)
+        speed: parseFloat(speedSlider.value),
+        rotDeg: parseFloat(rotSlider.value)
     };
+
+    let showE = true;
+    let showB = true;
 
     let running = false;
     let phase = 0;
@@ -257,6 +304,14 @@
     grid.position.y = -2.6;
     scene.add(grid);
 
+    // ---------------- WAVE GROUP (rotates about z as a rigid whole) ----------------
+    // Everything that represents the fields (curves + arrows + poynting marker)
+    // lives inside this group. Rotating the group around its local z axis is
+    // exactly rotation about the z-axis (direction of travel) in world space,
+    // since the group's z axis is never itself reoriented.
+    const waveGroup = new THREE.Group();
+    scene.add(waveGroup);
+
     // ---------------- WAVE CURVES ----------------
     const N = 160;
     const ZLEN = AXIS_LEN * 1.55;
@@ -267,7 +322,7 @@
         geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
         const mat = new THREE.LineBasicMaterial({ color: color, linewidth: 2 });
         const line = new THREE.Line(geo, mat);
-        scene.add(line);
+        waveGroup.add(line);
         return line;
     }
     const eCurve = buildCurve(0x3fd6ff);
@@ -289,7 +344,7 @@
         group.add(tip);
         group.userData.rod = rod;
         group.userData.tip = tip;
-        scene.add(group);
+        waveGroup.add(group);
         return group;
     }
     for (let i = 0; i < ARROW_COUNT; i++) {
@@ -297,11 +352,11 @@
         bArrows.push(buildArrow(0xff5577));
     }
 
-    function orientArrow(group, base, tip, dirAxis) {
+    function orientArrow(group, base, tip, fieldOn) {
         const v = new THREE.Vector3().subVectors(tip, base);
         const len = v.length();
         group.position.copy(base);
-        if (len < 0.001) {
+        if (len < 0.001 || !fieldOn) {
             group.visible = false;
             return;
         }
@@ -318,7 +373,7 @@
     const poyntMat = new THREE.MeshStandardMaterial({ color: 0xffcc55, emissive: 0xffcc55, emissiveIntensity: 0.7 });
     const poynt = new THREE.Mesh(poyntGeo, poyntMat);
     poynt.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), new THREE.Vector3(0,0,1));
-    scene.add(poynt);
+    waveGroup.add(poynt);
 
     function updateWave() {
         const k = params.freq * Math.PI * 2 / ZLEN;
@@ -344,14 +399,23 @@
             const ex = params.amp * Math.sin(k * z - w * phase);
             const by = params.amp * Math.cos(k * z - w * phase);
             const base = new THREE.Vector3(0, 0, z);
-            orientArrow(eArrows[i], base, new THREE.Vector3(ex, 0, z));
-            orientArrow(bArrows[i], base, new THREE.Vector3(0, by, z));
+            orientArrow(eArrows[i], base, new THREE.Vector3(ex, 0, z), showE);
+            orientArrow(bArrows[i], base, new THREE.Vector3(0, by, z), showB);
         }
 
         // Poynting marker slides along z at the wave's phase velocity
         const pz = (((params.speed * 1.6 / k) * phase) % ZLEN + ZLEN/2) % ZLEN - ZLEN/2;
         poynt.position.set(0, 0, pz);
+
+        // Apply on/off visibility for the field curves
+        eCurve.visible = showE;
+        bCurve.visible = showB;
+
+        // Apply rotation about z (this is the wave group's local z axis,
+        // which always coincides with the yellow propagation axis)
+        waveGroup.rotation.z = params.rotDeg * Math.PI / 180;
     }
+
     updateWave();
 
     // ---------------- ORBIT CONTROLS (manual, no extra deps) ----------------
@@ -403,6 +467,24 @@
     speedSlider.addEventListener("input", () => {
         params.speed = parseFloat(speedSlider.value);
         speedVal.textContent = params.speed.toFixed(1);
+        refresh();
+    });
+    rotSlider.addEventListener("input", () => {
+        params.rotDeg = parseFloat(rotSlider.value);
+        rotVal.textContent = Math.round(params.rotDeg) + "°";
+        refresh();
+    });
+
+    eToggleBtn.addEventListener("click", () => {
+        showE = !showE;
+        eToggleBtn.classList.toggle("on", showE);
+        eToggleBtn.classList.toggle("off", !showE);
+        refresh();
+    });
+    bToggleBtn.addEventListener("click", () => {
+        showB = !showB;
+        bToggleBtn.classList.toggle("on", showB);
+        bToggleBtn.classList.toggle("off", !showB);
         refresh();
     });
 
