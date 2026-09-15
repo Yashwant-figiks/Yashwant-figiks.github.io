@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Refraction — Particle vs Wave</title>
+<style>
+  :root{
+    --bg:#f5fbf7;
+    --panel:#ffffff;
+    --panel-2:#f0f8f2;
+    --border:#c9dfcf;
+    --text:#173b27;
+    --text-dim:#5f7969;
+    --text-faint:#8aa293;
+    --green:#18864b;
+    --green-dark:#126638;
+    --green-soft:#d8f0df;
+    --amber:#ffb454;
+    --teal:#5eead4;
+    --pink:#f472b6;
+    --water:#38bdf8;
+    --yellow:#facc15;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 700px at 15% -10%, #e0f4e5 0%, transparent 60%),
+      radial-gradient(1000px 700px at 110% 10%, #eef9f0 0%, transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Comic Sans MS','Comic Sans',cursive;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{max-width:1180px;margin:0 auto;padding:28px 20px 60px;}
+  header{margin-bottom:22px;}
+  header h1{
+    font-family:'Comic Sans MS','Comic Sans',cursive;
+    font-weight:700;
+    font-size:clamp(1.5rem,3vw,2.05rem);
+    margin:0 0 6px;
+    letter-spacing:-0.01em;
+  }
+  header p{margin:0;color:var(--text-dim);font-size:.98rem;max-width:62ch;line-height:1.5;}
+
+  .tabs{display:flex;gap:8px;margin:22px 0 18px;background:var(--panel-2);border:1px solid var(--border);border-radius:999px;padding:5px;width:fit-content;max-width:100%;overflow-x:auto;}
+  .tab{
+    appearance:none;border:none;background:transparent;color:var(--text-dim);
+    font-family:'Comic Sans MS','Comic Sans',cursive;font-weight:600;font-size:.88rem;
+    padding:9px 18px;border-radius:999px;cursor:pointer;white-space:nowrap;
+    transition:background .2s ease, color .2s ease, transform .12s ease, box-shadow .12s ease;
+    box-shadow:0 4px 0 var(--border),0 7px 12px rgba(24,134,75,.14);
+  }
+  .tab.active{background:var(--green);color:#fff;box-shadow:inset 0 0 0 1px var(--green-dark),0 4px 0 var(--green-dark),0 7px 12px rgba(24,134,75,.2);}
+  .tab:hover:not(.active){color:var(--text);transform:translateY(-2px);box-shadow:0 6px 0 var(--border),0 10px 16px rgba(24,134,75,.18);}
+
+  .stage{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:start;}
+  @media (max-width:860px){ .stage{grid-template-columns:1fr;} }
+
+  .canvas-wrap{
+    position:relative;background:var(--panel-2);border:1px solid var(--border);
+    border-radius:var(--radius);padding:14px;
+  }
+  .canvas-box{position:relative;width:100%;aspect-ratio:1/1;border-radius:10px;overflow:hidden;background:#ffffff;}
+  canvas{display:block;width:100%;height:100%;}
+  .badge-row{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:10px;flex-wrap:wrap;}
+  .readout{
+    display:flex;gap:16px;flex-wrap:wrap;font-family:'Comic Sans MS','Comic Sans',cursive;font-size:.82rem;color:var(--text-dim);
+  }
+  .readout b{color:var(--text);font-weight:600;}
+  .tir-flag{
+    display:none;align-items:center;gap:6px;background:rgba(244,114,182,.08);
+    border:1px solid rgba(244,114,182,.4);color:#c43d82;
+    padding:5px 11px;border-radius:999px;font-size:.78rem;font-weight:600;font-family:'Comic Sans MS','Comic Sans',cursive;
+  }
+  .tir-flag.show{display:inline-flex;}
+
+  .panel{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+    padding:18px;display:flex;flex-direction:column;gap:16px;
+  }
+  .field{display:flex;flex-direction:column;gap:6px;}
+  .field label{font-size:.75rem;color:var(--text-dim);font-weight:600;letter-spacing:.01em;}
+  .field .val{color:var(--text);font-weight:600;font-family:'Comic Sans MS','Comic Sans',cursive;}
+  select, input[type=range]{width:100%;}
+  select{
+    background:#fff;color:var(--text);border:1px solid var(--border);
+    border-radius:8px;padding:8px 10px;font-family:'Comic Sans MS','Comic Sans',cursive;font-size:.88rem;
+  }
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;height:4px;border-radius:4px;
+    background:linear-gradient(90deg,var(--amber),var(--teal));outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+    background:#fff;border:3px solid var(--green);box-shadow:0 0 0 1px var(--border);cursor:pointer;
+  }
+  input[type=range]::-moz-range-thumb{
+    width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--green);cursor:pointer;
+  }
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .seg{display:flex;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:3px;}
+  .seg button{
+    flex:1;appearance:none;border:none;background:transparent;color:var(--text-dim);
+    padding:7px 6px;border-radius:6px;font-size:.8rem;font-weight:600;cursor:pointer;
+     font-family:'Comic Sans MS','Comic Sans',cursive;
+     box-shadow:0 3px 0 var(--border),0 5px 8px rgba(24,134,75,.1);
+  }
+  .seg button:hover{background:var(--green-soft);color:var(--green-dark);transform:translateY(-2px);box-shadow:0 5px 0 var(--green),0 8px 12px rgba(24,134,75,.16);}
+  .seg button.active{background:var(--green-soft);color:var(--green-dark);box-shadow:0 3px 0 var(--green);}
+  .btn-row{display:flex;gap:8px;}
+  .btn{
+    flex:1;appearance:none;border:1px solid var(--border);background:#fff;color:var(--text);
+    padding:10px 12px;border-radius:9px;font-family:'Comic Sans MS','Comic Sans',cursive;font-weight:600;font-size:.85rem;
+    cursor:pointer;transition:background .2s, border-color .2s, transform .12s ease, box-shadow .12s ease;display:flex;align-items:center;justify-content:center;gap:6px;
+    box-shadow:0 4px 0 var(--border),0 7px 12px rgba(24,134,75,.14);
+  }
+  .btn:hover{background:var(--green-soft);border-color:var(--green);transform:translateY(-2px);box-shadow:0 6px 0 var(--green),0 10px 16px rgba(24,134,75,.18);}
+  .btn.primary:hover{background:var(--green-dark);color:#fff;}
+  .btn:active,.tab:active,.seg button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--green-dark);}
+  .btn.primary{background:var(--green);border-color:var(--green-dark);color:#fff;box-shadow:0 4px 0 var(--green-dark),0 7px 12px rgba(24,134,75,.2);}
+  .seg button{transition:background .2s ease, color .2s ease, transform .12s ease, box-shadow .12s ease;}
+  button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid rgba(24,134,75,.35);outline-offset:2px;}
+  hr.div{border:none;border-top:1px solid var(--border);margin:2px 0;}
+  .legend{display:flex;flex-direction:column;gap:7px;font-size:.78rem;color:var(--text-dim);}
+  .legend div{display:flex;align-items:center;gap:8px;}
+  .dot{width:9px;height:9px;border-radius:50%;flex:none;}
+
+</style>
+<base target="_blank">
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Refraction — Particle vs Wave</h1>
+    <p>Two ways to picture the same bend in light's path: a single particle crossing between media in a square tank, and a wavefront built from point sources whose wavelets construct the new, refracted front.</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" data-mode="particle">⚛ Case 1 · Particle in a Tank</button>
+    <button class="tab" data-mode="wave">🌊 Case 2 · Wavefronts &amp; Huygens' Wavelets</button>
+  </div>
+
+  <div class="stage">
+    <div class="canvas-wrap">
+      <div class="canvas-box"><canvas id="cv"></canvas></div>
+      <div class="badge-row">
+        <div class="readout" id="readout"></div>
+        <span class="tir-flag" id="tirFlag">⚠ Total internal reflection</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="field">
+        <label>Medium 1 (incidence side)</label>
+        <select id="n1Select"></select>
+      </div>
+      <div class="field">
+        <label>Medium 2 (transmission side)</label>
+        <select id="n2Select"></select>
+      </div>
+
+      <div class="field">
+        <label>Angle of incidence · <span class="val" id="angleVal">35°</span></label>
+        <input type="range" id="angleSlider" min="5" max="80" step="1" value="35">
+      </div>
+
+      <div class="field" id="wavefrontField" style="display:none;">
+        <button class="btn" id="wavefrontToggleBtn" type="button">👁 Hide wavefront</button>
+      </div>
+
+      <div class="field">
+        <label>Speed · <span class="val" id="speedVal">1.0×</span></label>
+        <input type="range" id="speedSlider" min="0.4" max="2" step="0.1" value="1">
+      </div>
+
+      <div class="btn-row">
+        <button class="btn primary" id="playBtn">⏸ Pause</button>
+        <button class="btn" id="resetBtn">🔄 Reset</button>
+      </div>
+
+      <hr class="div">
+      <div class="legend" id="legend"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- Media presets ----------
+  const MEDIA = [
+    {name:'Vacuum', n:1.00},
+    {name:'Air',    n:1.00},
+    {name:'Water',  n:1.33},
+    {name:'Oil',    n:1.47},
+    {name:'Glass',  n:1.52},
+    {name:'Diamond',n:2.42},
+  ];
+
+  // ---------- State ----------
+  const state = {
+    mode:'particle',
+    n1:1.00, n2:1.33,
+    angleDeg:35,
+    speed:1,
+    playing:true,
+    showWavefront:true,
+    simTime:0,
+    lastTs:null,
+    phys:null,
+  };
+
+  // ---------- DOM ----------
+  const canvas = document.getElementById('cv');
+  const ctx = canvas.getContext('2d');
+  const tabs = document.querySelectorAll('.tab');
+  const n1Select = document.getElementById('n1Select');
+  const n2Select = document.getElementById('n2Select');
+  const angleSlider = document.getElementById('angleSlider');
+  const angleVal = document.getElementById('angleVal');
+  const speedSlider = document.getElementById('speedSlider');
+  const speedVal = document.getElementById('speedVal');
+  const playBtn = document.getElementById('playBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const wavefrontField = document.getElementById('wavefrontField');
+  const wavefrontToggleBtn = document.getElementById('wavefrontToggleBtn');
+  const readout = document.getElementById('readout');
+  const tirFlag = document.getElementById('tirFlag');
+  const legend = document.getElementById('legend');
+
+  function fillMediaSelect(sel, defaultN){
+    sel.innerHTML='';
+    MEDIA.forEach(m=>{
+      const o=document.createElement('option');
+      o.value=m.n; o.textContent=`${m.name} (n=${m.n.toFixed(2)})`;
+      if(Math.abs(m.n-defaultN)<0.001) o.selected=true;
+      sel.appendChild(o);
+    });
+  }
+  fillMediaSelect(n1Select, state.n1);
+  fillMediaSelect(n2Select, state.n2);
+
+  // ---------- Math helpers ----------
+  const D2R = Math.PI/180, R2D = 180/Math.PI;
+  const perp = v => [v[1], -v[0]];
+  const dist = (a,b) => Math.hypot(b[0]-a[0], b[1]-a[1]);
+  const dot = (a,b) => a[0]*b[0]+a[1]*b[1];
+
+  function derivePhysics(n1,n2,angleDeg){
+    const thetaI = angleDeg*D2R;
+    const si=Math.sin(thetaI), ci=Math.cos(thetaI);
+    const dir1=[si,ci], w1=perp(dir1);
+    const dirRefl=[si,-ci], wRefl=perp(dirRefl);
+    let tir=false, thetaR=null, dir2=null, w2=null, criticalDeg=null;
+    if(n1>n2) criticalDeg = Math.asin(Math.min(1,n2/n1))*R2D;
+    const sinR = (n1/n2)*si;
+    if(sinR>1){ tir=true; }
+    else{
+      thetaR = Math.asin(sinR);
+      const sr=Math.sin(thetaR), cr=Math.cos(thetaR);
+      dir2=[sr,cr]; w2=perp(dir2);
+    }
+    return {thetaI, thetaR, tir, criticalDeg, dir1, w1, dir2, w2, dirRefl, wRefl};
+  }
+
+  function rayRectExit(origin, dir, rect){
+    const ox=origin[0], oy=origin[1], dx=dir[0], dy=dir[1];
+    let tx=Infinity, ty=Infinity;
+    if(dx>1e-9) tx=(rect.right-ox)/dx; else if(dx<-1e-9) tx=(rect.left-ox)/dx;
+    if(dy>1e-9) ty=(rect.bottom-oy)/dy; else if(dy<-1e-9) ty=(rect.top-oy)/dy;
+    const t=Math.min(tx,ty);
+    return [ox+dx*t, oy+dy*t];
+  }
+
+  function kRangeForRect(anchor, dir, v, t, lambda, rect){
+    const corners=[[rect.left,rect.top],[rect.right,rect.top],[rect.left,rect.bottom],[rect.right,rect.bottom]];
+    const aProj = dot(anchor,dir);
+    let pmin=Infinity, pmax=-Infinity;
+    corners.forEach(c=>{ const p=dot(c,dir); if(p<pmin)pmin=p; if(p>pmax)pmax=p; });
+    const kA=(v*t-(pmax-aProj))/lambda;
+    const kB=(v*t-(pmin-aProj))/lambda;
+    return [Math.floor(Math.min(kA,kB))-1, Math.ceil(Math.max(kA,kB))+1];
+  }
+
+  // ---------- Canvas / geometry ----------
+  function resizeCanvas(){
+    const rect = canvas.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio||1, 2);
+    canvas.width = Math.max(1,Math.round(rect.width*dpr));
+    canvas.height = Math.max(1,Math.round(rect.height*dpr));
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  function getGeom(){
+    const rect = canvas.getBoundingClientRect();
+    const size = rect.width;
+    const margin = size*0.09;
+    const left=margin, right=size-margin, top=margin, bottom=size-margin;
+    const interfaceY=(top+bottom)/2;
+    const centerX=(left+right)/2;
+    return {size, margin, left, right, top, bottom, interfaceY, centerX};
+  }
+
+  function mediaLabel(n){
+    const m = MEDIA.find(m=>Math.abs(m.n-n)<0.001);
+    return (m? m.name : 'Custom') + ' · n=' + n.toFixed(2);
+  }
+
+  // ---------- Drawing primitives ----------
+  function drawDashed(p1,p2,color,width,dash){
+    ctx.save();
+    ctx.setLineDash(dash||[5,5]);
+    ctx.strokeStyle=color; ctx.lineWidth=width||1.5;
+    ctx.beginPath(); ctx.moveTo(p1[0],p1[1]); ctx.lineTo(p2[0],p2[1]); ctx.stroke();
+    ctx.restore();
+  }
+  function drawTank(p,size,color,dir){
+    // top-view tank sprite, size = half-length of the hull (2.5x the old square marker)
+    ctx.save();
+    const a = Math.atan2(dir[1],dir[0]);
+    ctx.translate(p[0],p[1]);
+    ctx.rotate(a);
+    const L=size, W=size*0.62;               // half-length, half-width
+    ctx.shadowColor='rgba(23,59,39,0.35)'; ctx.shadowBlur=8; ctx.shadowOffsetY=3;
+    // tracks (left & right strips)
+    ctx.fillStyle='#22352a';
+    ctx.fillRect(-L, -W, 2*L, W*0.30);
+    ctx.fillRect(-L,  W*0.70, 2*L, W*0.30);
+    ctx.shadowBlur=0; ctx.shadowOffsetY=0;
+    // track tread marks
+    ctx.strokeStyle='rgba(95,121,105,0.55)'; ctx.lineWidth=1;
+    for(let i=0;i<7;i++){
+      const x=-L*0.86 + i*(1.72*L/6);
+      ctx.beginPath(); ctx.moveTo(x,-W+1); ctx.lineTo(x,-W+W*0.30-1); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x, W*0.70+1); ctx.lineTo(x, W-1); ctx.stroke();
+    }
+    // hull (slightly tapered nose via path)
+    ctx.fillStyle=color;
+    ctx.beginPath();
+    ctx.moveTo(-L, -W*0.72);
+    ctx.lineTo( L*0.72, -W*0.72);
+    ctx.lineTo( L, -W*0.30);
+    ctx.lineTo( L,  W*0.30);
+    ctx.lineTo( L*0.72,  W*0.72);
+    ctx.lineTo(-L,  W*0.72);
+    ctx.closePath(); ctx.fill();
+    // hull detail line
+    ctx.strokeStyle='rgba(255,255,255,0.35)'; ctx.lineWidth=1.2;
+    ctx.beginPath();
+    ctx.moveTo(-L*0.9,-W*0.55); ctx.lineTo(L*0.55,-W*0.55);
+    ctx.moveTo(-L*0.9, W*0.55); ctx.lineTo(L*0.55, W*0.55);
+    ctx.stroke();
+    // turret (circle, offset toward rear like a real top-view tank)
+    const tx=-L*0.12, ty=0, tr=W*0.46;
+    ctx.fillStyle='#157a43';
+    ctx.beginPath(); ctx.arc(tx, ty, tr, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle='rgba(23,59,39,0.5)'; ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.arc(tx, ty, tr*0.62, 0, Math.PI*2); ctx.stroke();
+    // barrel pointing forward (+x)
+    ctx.strokeStyle='#157a43'; ctx.lineWidth=W*0.20; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(tx+tr*0.7, ty); ctx.lineTo(L*1.20, ty); ctx.stroke();
+    // muzzle brake
+    ctx.strokeStyle='#0f5c31'; ctx.lineWidth=W*0.30;
+    ctx.beginPath(); ctx.moveTo(L*1.12, ty); ctx.lineTo(L*1.24, ty); ctx.stroke();
+    // hatch dot
+    ctx.fillStyle='rgba(23,59,39,0.6)';
+    ctx.beginPath(); ctx.arc(tx, ty, W*0.10, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+  function smallDot(p,r,color,alpha){
+    ctx.save(); ctx.globalAlpha = alpha===undefined?1:alpha;
+    ctx.fillStyle=color; ctx.beginPath(); ctx.arc(p[0],p[1],r,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+  function angleOf(v){ return Math.atan2(v[1],v[0]); }
+  function drawAngleArc(center,r,a0,a1,color,label,labelSide){
+    let diff=a1-a0;
+    while(diff>Math.PI) diff-=2*Math.PI;
+    while(diff<-Math.PI) diff+=2*Math.PI;
+    ctx.save();
+    ctx.strokeStyle=color; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.arc(center[0],center[1],r,a0,a0+diff,diff<0); ctx.stroke();
+    if(label){
+      const mid=a0+diff/2;
+      const lx=center[0]+Math.cos(mid)*(r+18);
+      const ly=center[1]+Math.sin(mid)*(r+18);
+      ctx.fillStyle=color; ctx.font="600 13px 'Comic Sans MS','Comic Sans',cursive";
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(label,lx,ly);
+    }
+    ctx.restore();
+  }
+  function extendedLine(base, w, halfLen){
+    return [[base[0]-w[0]*halfLen, base[1]-w[1]*halfLen],[base[0]+w[0]*halfLen, base[1]+w[1]*halfLen]];
+  }
+
+  function drawTankBase(g){
+    ctx.clearRect(0,0,g.size,g.size);
+    // medium 1 fill
+    ctx.fillStyle='rgba(255,255,255,0.82)';
+    ctx.fillRect(g.left,g.top,g.right-g.left,g.interfaceY-g.top);
+    // medium 2 fill — tint scales gently with n2
+    const alpha = Math.min(0.12+(state.n2-1)*0.08, 0.30);
+    ctx.fillStyle=`rgba(72,187,120,${alpha.toFixed(3)})`;
+    ctx.fillRect(g.left,g.interfaceY,g.right-g.left,g.bottom-g.interfaceY);
+    // interface line
+    ctx.strokeStyle='rgba(24,134,75,0.55)'; ctx.lineWidth=1.4;
+    ctx.beginPath(); ctx.moveTo(g.left,g.interfaceY); ctx.lineTo(g.right,g.interfaceY); ctx.stroke();
+    // tank border
+    ctx.strokeStyle='rgba(24,134,75,0.55)'; ctx.lineWidth=3;
+    ctx.strokeRect(g.left+1.5,g.top+1.5,g.right-g.left-3,g.bottom-g.top-3);
+    // labels
+    ctx.font="600 12.5px 'Comic Sans MS','Comic Sans',cursive"; ctx.textAlign='left'; ctx.textBaseline='alphabetic';
+    ctx.fillStyle='#356448';
+    ctx.fillText(mediaLabel(state.n1), g.left+10, g.top+20);
+    ctx.fillText(mediaLabel(state.n2), g.left+10, g.bottom-10);
+    // normal
+    const nLen=g.size*0.10;
+    drawDashed([g.centerX,g.interfaceY-nLen],[g.centerX,g.interfaceY+nLen],'rgba(24,134,75,0.38)',1.4,[4,4]);
+  }
+
+  // ============================================================
+  // CASE 1 — PARTICLE IN A SQUARE TANK
+  // ============================================================
+  function drawParticleScene(g, dtInfo){
+    const phys = state.phys;
+    const O=[g.centerX, g.interfaceY];
+    const BASE_SPEED = g.size*0.30;
+    const v1 = BASE_SPEED/state.n1;
+    const start = rayRectExit(O, [-phys.dir1[0],-phys.dir1[1]], {left:g.left,right:g.right,top:g.top,bottom:g.interfaceY});
+    const L1 = dist(start,O);
+
+    let dirSecond, v2, endRect;
+    if(phys.tir){
+      dirSecond = phys.dirRefl; v2 = v1;
+      endRect = {left:g.left,right:g.right,top:g.top,bottom:g.interfaceY};
+    } else {
+      dirSecond = phys.dir2; v2 = BASE_SPEED/state.n2;
+      endRect = {left:g.left,right:g.right,top:g.interfaceY,bottom:g.bottom};
+    }
+    const end = rayRectExit(O, dirSecond, endRect);
+    const L2 = dist(O,end);
+
+    const t1=L1/v1, t2=L2/v2, pause=0.9;
+    const totalT = t1+t2+pause;
+    const lt = totalT>0 ? (state.simTime % totalT) : 0;
+
+    let pos, phase;
+    if(lt<t1){ phase='incident'; const f=lt/t1; pos=[start[0]+(O[0]-start[0])*f, start[1]+(O[1]-start[1])*f]; }
+    else if(lt<t1+t2){ phase='second'; const tt=lt-t1; pos=[O[0]+dirSecond[0]*v2*tt, O[1]+dirSecond[1]*v2*tt]; }
+    else { phase='paused'; pos=end; }
+
+    // traveled incident path
+    ctx.strokeStyle='rgba(255,180,84,0.9)'; ctx.lineWidth=3; ctx.lineCap='round';
+    ctx.beginPath(); ctx.moveTo(start[0],start[1]);
+    ctx.lineTo(phase==='incident'?pos[0]:O[0], phase==='incident'?pos[1]:O[1]);
+    ctx.stroke();
+
+    if(phase!=='incident'){
+      ctx.strokeStyle = phys.tir? 'rgba(244,114,182,0.9)' : 'rgba(94,234,212,0.9)';
+      ctx.beginPath(); ctx.moveTo(O[0],O[1]); ctx.lineTo(pos[0],pos[1]); ctx.stroke();
+    }
+
+    // angle arcs (always shown — geometry is fixed regardless of ball position)
+    const arcR = g.size*0.075;
+    const upAngle = angleOf([0,-1]), downAngle = angleOf([0,1]);
+    const negDir1Angle = angleOf([-phys.dir1[0],-phys.dir1[1]]);
+    drawAngleArc(O, arcR, upAngle, negDir1Angle, '#facc15', `θᵢ=${state.angleDeg.toFixed(0)}°`);
+    if(phys.tir){
+      const reflUpAngle = angleOf([phys.dirRefl[0],-phys.dirRefl[1]]);
+      drawAngleArc(O, arcR*0.72, upAngle, reflUpAngle, '#f472b6', 'TIR');
+    } else {
+      const dir2Angle = angleOf(phys.dir2);
+      drawAngleArc(O, arcR*0.72, downAngle, dir2Angle, '#5eead4', `θᵣ=${(phys.thetaR*R2D).toFixed(0)}°`);
+    }
+
+    // the particle is shown as a little tank driving along the light path
+    drawTank(pos, g.size*0.045, '#20a05a', phase==='incident' ? phys.dir1 : dirSecond);
+
+    // point of incidence marker
+    smallDot(O, 3, 'rgba(232,237,245,0.8)');
+  }
+
+  // ============================================================
+  // CASE 2 — WAVEFRONTS (Huygens' construction)
+  // ============================================================
+  function drawWaveScene(g){
+    drawWaveDetailed(g);
+  }
+
+  // ---- Detailed single-wavefront Huygens construction ----
+  function drawWaveDetailed(g){
+    const phys = state.phys;
+    const O=[g.centerX, g.interfaceY];
+    const BASE_SPEED = g.size*0.30;
+    const v1 = BASE_SPEED/state.n1;
+    const secondIsTir = phys.tir;
+    const v2 = secondIsTir ? v1 : BASE_SPEED/state.n2;
+    const dir2 = secondIsTir ? phys.dirRefl : phys.dir2;
+    const w2  = secondIsTir ? phys.wRefl   : phys.w2;
+    const secondRect = secondIsTir
+      ? {left:g.left,right:g.right,top:g.top,bottom:g.interfaceY}
+      : {left:g.left,right:g.right,top:g.interfaceY,bottom:g.bottom};
+    const firstRect = {left:g.left,right:g.right,top:g.top,bottom:g.interfaceY};
+
+    const N = 7, mid = 3;
+    const spacing = g.size*0.085;
+    const D0 = g.size*0.55;
+    const si=Math.sin(phys.thetaI), ci=Math.cos(phys.thetaI);
+
+    // touch time & touch x for each source
+    const touch = [];
+    for(let i=0;i<N;i++){
+      const off = i-mid;
+      const t_i = (D0 + off*spacing*si/ci)/v1;
+      const x_i = g.centerX + off*spacing/ci;
+      touch.push({t:t_i, x:x_i});
+    }
+    const tMid = touch[mid].t;
+    const tMin = Math.min(...touch.map(t=>t.t));
+    const tMax = Math.max(...touch.map(t=>t.t));
+    const totalT = tMax + 1.5 + 1.0; // grow time + pause
+    const t = totalT>0 ? (state.simTime % totalT) : 0;
+
+    // ---- incident wavefront line (through not-yet-touched sources) ----
+    const B = [O[0]+phys.dir1[0]*(v1*t-D0), O[1]+phys.dir1[1]*(v1*t-D0)];
+    if(state.showWavefront){
+      ctx.save();
+      ctx.beginPath(); ctx.rect(firstRect.left,firstRect.top,firstRect.right-firstRect.left,firstRect.bottom-firstRect.top); ctx.clip();
+      const [p1,p2] = extendedLine(B, phys.w1, g.size*0.6);
+      ctx.strokeStyle='#000000'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(p1[0],p1[1]); ctx.lineTo(p2[0],p2[1]); ctx.stroke();
+      ctx.restore();
+    }
+
+    // ---- point sources: dots while approaching, wavelets once touched ----
+    ctx.save();
+    ctx.beginPath(); ctx.rect(secondRect.left,secondRect.top,secondRect.right-secondRect.left,secondRect.bottom-secondRect.top); ctx.clip();
+    touch.forEach(tp=>{
+      if(t>tp.t){
+        const r = v2*(t-tp.t);
+        ctx.strokeStyle='rgba(24,134,75,0.7)'; ctx.lineWidth=1.4;
+        ctx.beginPath(); ctx.arc(tp.x, g.interfaceY, r, 0, Math.PI); ctx.stroke();
+        // construction radius line
+        const tan=[tp.x+dir2[0]*r, g.interfaceY+dir2[1]*r];
+        drawDashed([tp.x,g.interfaceY], tan, 'rgba(24,134,75,0.5)', 1.2, [3,3]);
+      }
+    });
+    ctx.restore();
+
+    // not-yet-touched and touched point sources are red
+    touch.forEach(tp=>{
+      if(t<=tp.t){
+        const off=(touch.indexOf(tp))-mid;
+        const pos=[B[0]+off*spacing*phys.w1[0], B[1]+off*spacing*phys.w1[1]];
+        smallDot(pos, g.size*0.008, '#e53935');
+      } else {
+        smallDot([tp.x,g.interfaceY], g.size*0.007, '#e53935', 0.95);
+      }
+    });
+
+    // ---- refracted / reflected envelope (new wavefront) ----
+    if(state.showWavefront && t>=tMin){
+      const Pt=[touch[mid].x+dir2[0]*v2*(t-tMid), g.interfaceY+dir2[1]*v2*(t-tMid)];
+      ctx.save();
+      ctx.beginPath(); ctx.rect(secondRect.left,secondRect.top,secondRect.right-secondRect.left,secondRect.bottom-secondRect.top); ctx.clip();
+      const [e1,e2] = extendedLine(Pt, w2, spacing*(N-1)*0.75);
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth=3;
+      ctx.shadowColor = ctx.strokeStyle; ctx.shadowBlur=8;
+      ctx.beginPath(); ctx.moveTo(e1[0],e1[1]); ctx.lineTo(e2[0],e2[1]); ctx.stroke();
+      ctx.restore();
+    }
+
+    // ---- angle arcs, once the mid (reference) source has reached the interface ----
+    if(t>=tMid){
+      const arcR = g.size*0.09;
+      const upAngle=angleOf([0,-1]), downAngle=angleOf([0,1]);
+      const negDir1Angle=angleOf([-phys.dir1[0],-phys.dir1[1]]);
+      drawAngleArc(O, arcR, upAngle, negDir1Angle, '#facc15', `θᵢ=${state.angleDeg.toFixed(0)}°`);
+      if(secondIsTir){
+        const reflAngle=angleOf([dir2[0],-dir2[1]]);
+        drawAngleArc(O, arcR*0.7, upAngle, reflAngle, '#f472b6', 'TIR');
+      } else {
+        const dir2Angle=angleOf(dir2);
+        drawAngleArc(O, arcR*0.7, downAngle, dir2Angle, '#5eead4', `θᵣ=${(phys.thetaR*R2D).toFixed(0)}°`);
+      }
+    }
+    smallDot(O,3,'rgba(232,237,245,0.7)');
+  }
+
+  // ---------- Main render / loop ----------
+  function render(){
+    const g = getGeom();
+    drawTankBase(g);
+    if(state.mode==='particle') drawParticleScene(g);
+    else drawWaveScene(g);
+    updateReadout();
+  }
+
+  function updateReadout(){
+    const phys=state.phys;
+    let html = `θᵢ: <b>${state.angleDeg.toFixed(0)}°</b>`;
+    if(phys.tir){
+      html += ` &nbsp; θc: <b>${phys.criticalDeg.toFixed(1)}°</b>`;
+      tirFlag.classList.add('show');
+      tirFlag.textContent = `⚠ Total internal reflection (θᵢ > θc = ${phys.criticalDeg.toFixed(1)}°)`;
+    } else {
+      html += ` &nbsp; θᵣ: <b>${(phys.thetaR*R2D).toFixed(1)}°</b>`;
+      tirFlag.classList.remove('show');
+    }
+    readout.innerHTML = html;
+  }
+
+  function loop(ts){
+    if(state.lastTs==null) state.lastTs=ts;
+    let dt=(ts-state.lastTs)/1000; state.lastTs=ts;
+    dt=Math.min(dt,0.05);
+    if(state.playing) state.simTime += dt*state.speed;
+    render();
+    requestAnimationFrame(loop);
+  }
+
+  // ---------- Legend / info per mode ----------
+  function renderLegend(){
+    if(state.mode==='particle'){
+      legend.innerHTML = `
+        <div><span class="dot" style="background:#ffb454"></span> Incident path</div>
+        <div><span class="dot" style="background:#5eead4"></span> Refracted path</div>
+        <div><span class="dot" style="background:#f472b6"></span> Reflected (if TIR)</div>`;
+    } else {
+      legend.innerHTML = `
+        <div><span class="dot" style="background:#000000"></span> Wavefront</div>
+        <div><span class="dot" style="background:#e53935"></span> Point sources</div>
+        <div><span class="dot" style="background:#18864b"></span> Visible wavelets</div>`;
+    }
+  }
+
+  // ---------- Events ----------
+  tabs.forEach(tb=>{
+    tb.addEventListener('click', ()=>{
+      tabs.forEach(x=>x.classList.remove('active'));
+      tb.classList.add('active');
+      state.mode = tb.dataset.mode;
+      wavefrontField.style.display = state.mode==='wave' ? 'flex' : 'none';
+      state.simTime = 0;
+      renderLegend();
+    });
+  });
+
+  n1Select.addEventListener('change', ()=>{ state.n1=parseFloat(n1Select.value); recompute(); });
+  n2Select.addEventListener('change', ()=>{ state.n2=parseFloat(n2Select.value); recompute(); });
+  angleSlider.addEventListener('input', ()=>{
+    state.angleDeg=parseFloat(angleSlider.value);
+    angleVal.textContent=state.angleDeg.toFixed(0)+'°';
+    recompute();
+  });
+  speedSlider.addEventListener('input', ()=>{
+    state.speed=parseFloat(speedSlider.value);
+    speedVal.textContent=state.speed.toFixed(1)+'×';
+  });
+  playBtn.addEventListener('click', ()=>{
+    state.playing=!state.playing;
+    playBtn.innerHTML = state.playing? '⏸ Pause' : '▶ Play';
+  });
+  resetBtn.addEventListener('click', ()=>{
+    state.simTime=0; state.playing=true; playBtn.innerHTML='⏸ Pause';
+  });
+  wavefrontToggleBtn.addEventListener('click', ()=>{
+    state.showWavefront=!state.showWavefront;
+    wavefrontToggleBtn.textContent = state.showWavefront ? '👁 Hide wavefront' : '👁 Show wavefront';
+  });
+
+  function recompute(){
+    state.phys = derivePhysics(state.n1, state.n2, state.angleDeg);
+    state.simTime = 0;
+  }
+
+  window.addEventListener('resize', resizeCanvas);
+
+  // ---------- Init ----------
+  angleVal.textContent = state.angleDeg.toFixed(0)+'°';
+  speedVal.textContent = state.speed.toFixed(1)+'×';
+  recompute();
+  renderLegend();
+  resizeCanvas();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
