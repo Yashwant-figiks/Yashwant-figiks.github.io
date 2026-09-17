@@ -5,22 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SHM — JEE Physics Lab</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
 
   :root {
-    --bg:       #08090d;
-    --surface:  #0e1017;
-    --card:     #13151d;
-    --border:   #1f2235;
-    --accent:   #4f8ef7;
-    --green:    #3ecf8e;
-    --red:      #f7604f;
-    --yellow:   #f7c94f;
-    --purple:   #a78bfa;
-    --text:     #dde1f0;
-    --muted:    #5a607a;
+    --bg:       #ffffff;
+    --surface:  #f4f5f8;
+    --card:     #ffffff;
+    --border:   #d8dae2;
+    --accent:   #2f6fe0;
+    --green:    #1e9e64;
+    --red:      #d94334;
+    --yellow:   #b9860a;
+    --purple:   #7c5cd6;
+    --text:     #14161f;
+    --muted:    #6b7086;
     --mono:     'JetBrains Mono', monospace;
-    --sans:     'Inter', sans-serif;
+    --sans:     'Comic Sans MS', 'Comic Sans', 'Chalkboard SE', cursive, sans-serif;
   }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -41,12 +41,13 @@
     align-items: baseline;
     gap: 16px;
     flex-wrap: wrap;
+    background: var(--bg);
   }
   header h1 {
     font-size: clamp(1.3rem, 3vw, 1.9rem);
-    font-weight: 600;
-    letter-spacing: -0.02em;
-    color: #fff;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: #111;
   }
   header h1 span { color: var(--accent); }
   .badge {
@@ -54,9 +55,9 @@
     font-size: 0.7rem;
     padding: 3px 9px;
     border-radius: 4px;
-    background: #1a2040;
+    background: #eaf0ff;
     color: var(--accent);
-    border: 1px solid #2a3560;
+    border: 1px solid #c3d6ff;
     letter-spacing: 0.06em;
   }
 
@@ -67,20 +68,22 @@
     border-bottom: 1px solid var(--border);
     padding: 0 24px;
     overflow-x: auto;
+    background: var(--surface);
   }
   .tab {
-    font-size: 0.82rem;
-    font-weight: 500;
+    font-size: 0.85rem;
+    font-weight: 600;
     padding: 12px 20px;
     cursor: pointer;
     color: var(--muted);
-    border-bottom: 2px solid transparent;
+    border-bottom: 3px solid transparent;
     white-space: nowrap;
     transition: color 0.2s, border-color 0.2s;
     background: none;
     border-top: none;
     border-left: none;
     border-right: none;
+    font-family: var(--sans);
   }
   .tab:hover { color: var(--text); }
   .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
@@ -102,18 +105,20 @@
     border: 1px solid var(--border);
     border-radius: 10px;
     overflow: hidden;
+    box-shadow: 0 2px 10px rgba(20,22,31,0.05);
   }
   .card-head {
     padding: 12px 16px;
     border-bottom: 1px solid var(--border);
     font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.07em;
+    font-weight: 700;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--muted);
     display: flex;
     align-items: center;
     gap: 8px;
+    background: var(--surface);
   }
   .card-head .dot {
     width: 7px; height: 7px; border-radius: 50%;
@@ -126,7 +131,8 @@
     display: block;
     width: 100%;
     border-radius: 6px;
-    background: #0a0b10;
+    background: #ffffff;
+    border: 1px solid var(--border);
   }
 
   /* ── Readouts ── */
@@ -181,7 +187,7 @@
     border-radius: 50%;
     background: var(--accent);
     cursor: pointer;
-    box-shadow: 0 0 6px rgba(79,142,247,0.5);
+    box-shadow: 0 0 6px rgba(47,111,224,0.4);
   }
   .slider-val {
     font-family: var(--mono);
@@ -191,21 +197,42 @@
     text-align: right;
   }
 
-  /* ── Buttons ── */
-  .btn-row { display: flex; gap: 8px; margin-top: 14px; }
+  /* ── Buttons (3D, interactive) ── */
+  .btn-row { display: flex; gap: 14px; margin-top: 16px; }
   button.btn {
-    padding: 8px 18px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    background: var(--surface);
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: 2px solid #1a1c24;
+    background: linear-gradient(180deg, #ffffff 0%, #e3e5ec 100%);
     color: var(--text);
-    font-size: 0.8rem;
+    font-size: 0.85rem;
+    font-weight: 700;
     font-family: var(--sans);
     cursor: pointer;
-    transition: background 0.2s, border-color 0.2s;
+    box-shadow: 0 5px 0 #b7bac6, 0 8px 12px rgba(20,22,31,0.18);
+    transform: translateY(0);
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
   }
-  button.btn:hover { background: #1c2035; border-color: var(--accent); }
-  button.btn.primary { background: #1a2a5e; border-color: var(--accent); color: var(--accent); }
+  button.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 0 #b7bac6, 0 10px 16px rgba(20,22,31,0.22);
+  }
+  button.btn:active {
+    transform: translateY(5px);
+    box-shadow: 0 0px 0 #b7bac6, 0 1px 3px rgba(20,22,31,0.2);
+  }
+  button.btn.primary {
+    background: linear-gradient(180deg, #5b96f7 0%, #2f6fe0 100%);
+    border-color: #163b7a;
+    color: #fff;
+    box-shadow: 0 5px 0 #163b7a, 0 8px 12px rgba(20,22,31,0.2);
+  }
+  button.btn.primary:hover {
+    box-shadow: 0 7px 0 #163b7a, 0 10px 16px rgba(20,22,31,0.24);
+  }
+  button.btn.primary:active {
+    box-shadow: 0 0px 0 #163b7a, 0 1px 3px rgba(20,22,31,0.2);
+  }
 
   /* ── Energy bar ── */
   .energy-bar-wrap { margin-top: 14px; }
@@ -233,12 +260,12 @@
     border-radius: 8px;
     padding: 12px 16px;
     margin-bottom: 16px;
-    font-family: 'Times New Roman', serif;
+    font-family: var(--sans);
     font-size: 0.95rem;
     line-height: 1.9;
-    color: #ccc;
+    color: #222;
   }
-  .eq-box .eqtitle { font-family: var(--sans); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .eq-box .eqtitle { font-family: var(--sans); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
   .eb { color: var(--accent); }
   .eg { color: var(--green); }
   .er { color: var(--red); }
@@ -252,9 +279,9 @@
     border-radius: 0 8px 8px 0;
     padding: 10px 14px;
     margin-top: 14px;
-    font-size: 0.82rem;
+    font-size: 0.85rem;
     line-height: 1.6;
-    color: #bbc;
+    color: #333;
   }
   .insight strong { color: var(--yellow); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; display: block; margin-bottom: 3px; }
 
@@ -274,7 +301,6 @@
   <button class="tab active" onclick="showTab('spring')">Spring-Mass</button>
   <button class="tab" onclick="showTab('pendulum')">Pendulum</button>
   <button class="tab" onclick="showTab('circle')">Circular Projection</button>
-  <button class="tab" onclick="showTab('phase')">Phase Space</button>
 </nav>
 
 <!-- ══════════════ TAB 1: SPRING-MASS ══════════════ -->
@@ -453,54 +479,6 @@
   </div>
 </div>
 
-<!-- ══════════════ TAB 4: PHASE SPACE ══════════════ -->
-<div id="tab-phase" class="page">
-  <div class="eq-box">
-    <div class="eqtitle">Phase Space Portrait  (x vs v)</div>
-    From energy conservation: &nbsp;
-    <span class="ep">x²/A² + v²/(Aω)² = 1</span> &nbsp;— an ellipse!<br>
-    Every point on the ellipse is a complete state of the oscillator. The oscillator traces this ellipse forever.
-  </div>
-  <div class="grid2">
-    <div class="card">
-      <div class="card-head"><span class="dot" style="background:var(--purple)"></span>Phase Portrait</div>
-      <div class="card-body">
-        <canvas id="cPhase" height="340"></canvas>
-        <div class="insight">
-          <strong>JEE Connection</strong>
-          The ellipse equation is just energy conservation written differently. At x=A, v=0 (top/bottom). At x=0, v=±Aω (left/right). If you change A, the ellipse scales. If you change ω, it stretches.
-        </div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-head"><span class="dot" style="background:var(--green)"></span>Live x–v Trace</div>
-      <div class="card-body">
-        <canvas id="cPhaseTrace" height="340"></canvas>
-        <div class="section-gap"></div>
-        <div class="slider-row">
-          <label>mass m (kg)</label>
-          <input type="range" id="slPM" min="0.1" max="5" step="0.1" value="1">
-          <span class="slider-val" id="lblPM">1.0</span>
-        </div>
-        <div class="slider-row">
-          <label>spring k (N/m)</label>
-          <input type="range" id="slPK" min="1" max="50" step="1" value="10">
-          <span class="slider-val" id="lblPK">10</span>
-        </div>
-        <div class="slider-row">
-          <label>amplitude A (m)</label>
-          <input type="range" id="slPA" min="0.05" max="0.5" step="0.01" value="0.2">
-          <span class="slider-val" id="lblPA">0.20</span>
-        </div>
-        <div class="btn-row">
-          <button class="btn primary" id="btnS4">⏸ Pause</button>
-          <button class="btn" id="btnR4">↺ Reset</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script>
 // ── Utility ──────────────────────────────────────────────
 function showTab(name) {
@@ -532,7 +510,7 @@ function arrow(ctx, x1, y1, x2, y2, color, lw=2) {
 }
 
 function grid(ctx, w, h) {
-  ctx.strokeStyle = '#12141c'; ctx.lineWidth = 1;
+  ctx.strokeStyle = '#eef0f5'; ctx.lineWidth = 1;
   for (let x=0; x<w; x+=40) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
   for (let y=0; y<h; y+=40) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
 }
@@ -547,7 +525,7 @@ function spring(ctx, x1, y1, x2, y2, coils=10, amp=12) {
     ctx.lineTo(px, py);
   }
   ctx.lineTo(x2, y2);
-  ctx.strokeStyle = '#3a4060'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.strokeStyle = '#000000'; ctx.lineWidth = 2; ctx.stroke();
 }
 
 // ── Shared state ─────────────────────────────────────────
@@ -555,7 +533,6 @@ const S = {
   spring: { t:0, play:true, m:1, k:10, A:0.2, data:[] },
   pend:   { t:0, play:true, L:1, theta0:10*(Math.PI/180), g:9.8, data:[] },
   circ:   { t:0, play:true, omega:2, R:1.2, data:[] },
-  phase:  { t:0, play:true, m:1, k:10, A:0.2, trace:[] },
 };
 
 // ── SPRING controls ──────────────────────────────────────
@@ -594,10 +571,6 @@ document.getElementById('slRadius').addEventListener('input', function() {
 document.getElementById('btnS3').onclick = function() { S.circ.play=!S.circ.play; this.textContent=S.circ.play?'⏸ Pause':'▶ Play'; };
 document.getElementById('btnR3').onclick = () => { S.circ.t=0; S.circ.data=[]; S.circ.play=true; document.getElementById('btnS3').textContent='⏸ Pause'; };
 
-bind('slPM','lblPM','m',S.phase,1,1); bind('slPK','lblPK','k',S.phase,1,0); bind('slPA','lblPA','A',S.phase,1,2);
-document.getElementById('btnS4').onclick = function() { S.phase.play=!S.phase.play; this.textContent=S.phase.play?'⏸ Pause':'▶ Play'; };
-document.getElementById('btnR4').onclick = () => { S.phase.t=0; S.phase.trace=[]; S.phase.play=true; document.getElementById('btnS4').textContent='⏸ Pause'; };
-
 // ── DRAW SPRING ──────────────────────────────────────────
 function drawSpring(ts) {
   const c = document.getElementById('cSpring'); resize(c);
@@ -626,20 +599,20 @@ function drawSpring(ts) {
   const bS=36;
 
   // floor
-  ctx.strokeStyle='#1f2235'; ctx.lineWidth=1.5;
+  ctx.strokeStyle='#000000'; ctx.lineWidth=1.5;
   ctx.beginPath(); ctx.moveTo(wallX,cy+bS/2+6); ctx.lineTo(w-10,cy+bS/2+6); ctx.stroke();
 
   // wall
-  ctx.fillStyle='#1a1d2e'; ctx.fillRect(wallX-8,cy-50,8,100);
-  ctx.strokeStyle='#2a2f4a'; ctx.lineWidth=1.5;
+  ctx.fillStyle='#333333'; ctx.fillRect(wallX-8,cy-50,8,100);
+  ctx.strokeStyle='#000000'; ctx.lineWidth=1.5;
   ctx.strokeRect(wallX-8,cy-50,8,100);
 
   // ticks
   for (let i=-4;i<=4;i++) {
     const tx=eqX+i*0.1*sc;
-    ctx.strokeStyle='#2a2f4a'; ctx.lineWidth=1;
+    ctx.strokeStyle='#bbbbbb'; ctx.lineWidth=1;
     ctx.beginPath(); ctx.moveTo(tx,cy+bS/2+6); ctx.lineTo(tx,cy+bS/2+13); ctx.stroke();
-    ctx.fillStyle='#3a4060'; ctx.font='9px JetBrains Mono,monospace'; ctx.textAlign='center';
+    ctx.fillStyle='#555555'; ctx.font='9px JetBrains Mono,monospace'; ctx.textAlign='center';
     ctx.fillText((i*0.1).toFixed(1),tx,cy+bS/2+22);
   }
 
@@ -647,24 +620,24 @@ function drawSpring(ts) {
 
   // block
   const grad = ctx.createLinearGradient(bX-bS/2,cy-bS/2,bX+bS/2,cy+bS/2);
-  grad.addColorStop(0,'#1a3a7a'); grad.addColorStop(1,'#0e2050');
+  grad.addColorStop(0,'#5b96f7'); grad.addColorStop(1,'#1a3a7a');
   ctx.fillStyle=grad;
   ctx.fillRect(bX-bS/2,cy-bS/2,bS,bS);
-  ctx.strokeStyle='#4f8ef7'; ctx.lineWidth=1.5;
+  ctx.strokeStyle='#000000'; ctx.lineWidth=1.5;
   ctx.strokeRect(bX-bS/2,cy-bS/2,bS,bS);
-  ctx.fillStyle='#8ab4ff'; ctx.font='bold 13px sans-serif'; ctx.textAlign='center';
+  ctx.fillStyle='#ffffff'; ctx.font='bold 13px sans-serif'; ctx.textAlign='center';
   ctx.fillText('m',bX,cy+5);
 
   // equilibrium
-  ctx.setLineDash([4,4]); ctx.strokeStyle='#2a2f4a'; ctx.lineWidth=1;
+  ctx.setLineDash([4,4]); ctx.strokeStyle='#999999'; ctx.lineWidth=1;
   ctx.beginPath(); ctx.moveTo(eqX,cy-bS/2-20); ctx.lineTo(eqX,cy+bS/2+8); ctx.stroke();
   ctx.setLineDash([]);
 
   // vectors
-  arrow(ctx,eqX,cy-bS/2-12,bX,cy-bS/2-12,'#4f8ef7');
-  ctx.fillStyle='#4f8ef7'; ctx.font='11px monospace'; ctx.fillText('x',bX+8,cy-bS/2-8);
-  arrow(ctx,bX,cy,bX+v*30,cy,'#3ecf8e',2.5);
-  arrow(ctx,bX,cy+bS/2+4,bX+a*8,cy+bS/2+4,'#f7604f',2.5);
+  arrow(ctx,eqX,cy-bS/2-12,bX,cy-bS/2-12,'#2f6fe0');
+  ctx.fillStyle='#2f6fe0'; ctx.font='11px monospace'; ctx.fillText('x',bX+8,cy-bS/2-8);
+  arrow(ctx,bX,cy,bX+v*30,cy,'#1e9e64',2.5);
+  arrow(ctx,bX,cy+bS/2+4,bX+a*8,cy+bS/2+4,'#d94334',2.5);
 }
 
 // ── DRAW GRAPH ───────────────────────────────────────────
@@ -676,9 +649,9 @@ function drawGraph() {
 
   ctx.clearRect(0,0,w,h); grid(ctx,w,h);
   const zy=h/2;
-  ctx.strokeStyle='#2a2f4a'; ctx.lineWidth=1;
+  ctx.strokeStyle='#999999'; ctx.lineWidth=1;
   ctx.beginPath(); ctx.moveTo(0,zy); ctx.lineTo(w,zy); ctx.stroke();
-  ctx.fillStyle='#3a4060'; ctx.font='10px monospace'; ctx.textAlign='right';
+  ctx.fillStyle='#555555'; ctx.font='10px monospace'; ctx.textAlign='right';
   ctx.fillText('t →',w-4,zy+12);
 
   if (data.length<2) return;
@@ -686,7 +659,7 @@ function drawGraph() {
   const gx=t=>w-((tend-t)/tw)*w;
   const gy=(v,mx)=>zy-(v/mx)*(h/2-16);
 
-  [[d=>d.x,A,'#4f8ef7'],[d=>d.v,maxV||.01,'#3ecf8e'],[d=>d.a,maxAc||.01,'#f7604f']].forEach(([fn,mx,col])=>{
+  [[d=>d.x,A,'#2f6fe0'],[d=>d.v,maxV||.01,'#1e9e64'],[d=>d.a,maxAc||.01,'#d94334']].forEach(([fn,mx,col])=>{
     ctx.beginPath(); ctx.strokeStyle=col; ctx.lineWidth=2;
     let first=true;
     for (const pt of data) {
@@ -697,7 +670,7 @@ function drawGraph() {
     ctx.stroke();
   });
 
-  const labels=[['x(t)','#4f8ef7',10],['v(t)','#3ecf8e',52],['a(t)','#f7604f',94]];
+  const labels=[['x(t)','#2f6fe0',10],['v(t)','#1e9e64',52],['a(t)','#d94334',94]];
   labels.forEach(([l,c,x])=>{ ctx.fillStyle=c; ctx.font='11px monospace'; ctx.textAlign='left'; ctx.fillText(l,x,16); });
 }
 
@@ -721,34 +694,34 @@ function drawPend() {
   const bx=px0+lPx*Math.sin(theta), by=py0+lPx*Math.cos(theta);
 
   // ceiling
-  ctx.fillStyle='#1a1d2e'; ctx.fillRect(px0-40,py0-8,80,8);
-  ctx.strokeStyle='#2a2f4a'; ctx.lineWidth=1.5;
+  ctx.fillStyle='#333333'; ctx.fillRect(px0-40,py0-8,80,8);
+  ctx.strokeStyle='#000000'; ctx.lineWidth=1.5;
   ctx.strokeRect(px0-40,py0-8,80,8);
 
   // pivot
-  ctx.fillStyle='#3a4060'; ctx.beginPath(); ctx.arc(px0,py0,4,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#000000'; ctx.beginPath(); ctx.arc(px0,py0,4,0,Math.PI*2); ctx.fill();
 
   // angle arc
   ctx.beginPath(); ctx.arc(px0,py0,30,Math.PI/2-theta0,Math.PI/2+theta0);
-  ctx.strokeStyle='#f7c94f44'; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.strokeStyle='#b9860a66'; ctx.lineWidth=1.5; ctx.stroke();
 
   // rod
-  ctx.strokeStyle='#3a4060'; ctx.lineWidth=2;
+  ctx.strokeStyle='#000000'; ctx.lineWidth=2;
   ctx.beginPath(); ctx.moveTo(px0,py0); ctx.lineTo(bx,by); ctx.stroke();
 
   // bob
   const gr=ctx.createRadialGradient(bx-3,by-3,2,bx,by,14);
   gr.addColorStop(0,'#7ab4ff'); gr.addColorStop(1,'#1a3a7a');
   ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(bx,by,13,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle='#4f8ef7'; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.strokeStyle='#000000'; ctx.lineWidth=1.5; ctx.stroke();
 
   // equilibrium line
-  ctx.setLineDash([3,3]); ctx.strokeStyle='#2a2f4a'; ctx.lineWidth=1;
+  ctx.setLineDash([3,3]); ctx.strokeStyle='#999999'; ctx.lineWidth=1;
   ctx.beginPath(); ctx.moveTo(px0,py0); ctx.lineTo(px0,py0+lPx+10); ctx.stroke();
   ctx.setLineDash([]);
 
   // theta label
-  ctx.fillStyle='#f7c94f'; ctx.font='12px Times New Roman,serif'; ctx.textAlign='left';
+  ctx.fillStyle='#b9860a'; ctx.font='12px Comic Sans MS,cursive'; ctx.textAlign='left';
   ctx.fillText('θ',px0+35,py0+18);
 }
 
@@ -758,13 +731,13 @@ function drawPendGraph() {
   const {theta0,data} = S.pend;
   ctx.clearRect(0,0,w,h); grid(ctx,w,h);
   const zy=h/2;
-  ctx.strokeStyle='#2a2f4a'; ctx.lineWidth=1;
+  ctx.strokeStyle='#999999'; ctx.lineWidth=1;
   ctx.beginPath(); ctx.moveTo(0,zy); ctx.lineTo(w,zy); ctx.stroke();
   if (data.length<2) return;
   const tw=8, tend=data[data.length-1].t, tst=Math.max(0,tend-tw);
   const gx=t=>w-((tend-t)/tw)*w;
   const gy=v=>zy-(v/((theta0||0.001)*1.2))*(h/2-16);
-  ctx.beginPath(); ctx.strokeStyle='#f7c94f'; ctx.lineWidth=2.5;
+  ctx.beginPath(); ctx.strokeStyle='#b9860a'; ctx.lineWidth=2.5;
   let first=true;
   for (const pt of data) {
     if (pt.t<tst) continue;
@@ -772,7 +745,7 @@ function drawPendGraph() {
     if (first){ctx.moveTo(px,py);first=false;}else ctx.lineTo(px,py);
   }
   ctx.stroke();
-  ctx.fillStyle='#f7c94f'; ctx.font='11px monospace'; ctx.textAlign='left';
+  ctx.fillStyle='#b9860a'; ctx.font='11px monospace'; ctx.textAlign='left';
   ctx.fillText('θ(t)',10,16);
 }
 
@@ -792,43 +765,43 @@ function drawCircle() {
   ctx.clearRect(0,0,w,h); grid(ctx,w,h);
 
   // axes
-  ctx.strokeStyle='#2a2f4a'; ctx.lineWidth=1.5;
+  ctx.strokeStyle='#999999'; ctx.lineWidth=1.5;
   ctx.beginPath(); ctx.moveTo(20,cy); ctx.lineTo(w-20,cy); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(cx,20); ctx.lineTo(cx,h-20); ctx.stroke();
-  ctx.fillStyle='#3a4060'; ctx.font='11px monospace'; ctx.textAlign='center';
+  ctx.fillStyle='#555555'; ctx.font='11px monospace'; ctx.textAlign='center';
   ctx.fillText('x',w-12,cy-5); ctx.fillText('y',cx+14,22);
 
   // circle
   ctx.beginPath(); ctx.arc(cx,cy,R*sc,0,Math.PI*2);
-  ctx.strokeStyle='#2a2f4a'; ctx.lineWidth=1.5; ctx.setLineDash([5,5]); ctx.stroke(); ctx.setLineDash([]);
+  ctx.strokeStyle='#999999'; ctx.lineWidth=1.5; ctx.setLineDash([5,5]); ctx.stroke(); ctx.setLineDash([]);
 
   // radius
-  arrow(ctx,cx,cy,cx+px*sc,cy-py*sc,'#f7c94f',2);
+  arrow(ctx,cx,cy,cx+px*sc,cy-py*sc,'#b9860a',2);
 
   // angle arc
   ctx.beginPath(); ctx.arc(cx,cy,28,0,-theta,theta<0);
-  ctx.strokeStyle='#f7c94f88'; ctx.lineWidth=1.5; ctx.stroke();
-  ctx.fillStyle='#f7c94f'; ctx.font='11px Times New Roman'; ctx.fillText('ωt',cx+36,cy-12);
+  ctx.strokeStyle='#b9860a88'; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.fillStyle='#b9860a'; ctx.font='11px Comic Sans MS,cursive'; ctx.fillText('ωt',cx+36,cy-12);
 
   // point
   const bx=cx+px*sc, by=cy-py*sc;
-  ctx.fillStyle='#4f8ef7'; ctx.beginPath(); ctx.arc(bx,by,7,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke();
-  ctx.fillStyle='#4f8ef7'; ctx.font='bold 12px sans-serif'; ctx.fillText('P',bx+10,by-8);
+  ctx.fillStyle='#2f6fe0'; ctx.beginPath(); ctx.arc(bx,by,7,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='#000000'; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.fillStyle='#2f6fe0'; ctx.font='bold 12px sans-serif'; ctx.fillText('P',bx+10,by-8);
 
   // projection line
-  ctx.setLineDash([3,3]); ctx.strokeStyle='#f7604f'; ctx.lineWidth=1.5;
+  ctx.setLineDash([3,3]); ctx.strokeStyle='#d94334'; ctx.lineWidth=1.5;
   ctx.beginPath(); ctx.moveTo(bx,by); ctx.lineTo(cx,by); ctx.stroke();
   ctx.setLineDash([]);
 
   // projection point
-  ctx.fillStyle='#f7604f'; ctx.beginPath(); ctx.arc(cx,by,6,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke();
-  ctx.fillStyle='#f7604f'; ctx.font='bold 12px sans-serif'; ctx.fillText("P'",cx-22,by-8);
+  ctx.fillStyle='#d94334'; ctx.beginPath(); ctx.arc(cx,by,6,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='#000000'; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.fillStyle='#d94334'; ctx.font='bold 12px sans-serif'; ctx.fillText("P'",cx-22,by-8);
 
   // velocity arrow (tangential)
   const vx=-omega*R*Math.sin(theta), vy=omega*R*Math.cos(theta), vs=22;
-  arrow(ctx,bx,by,bx+vx*vs,by-vy*vs,'#3ecf8e',2);
+  arrow(ctx,bx,by,bx+vx*vs,by-vy*vs,'#1e9e64',2);
 }
 
 function drawProj() {
@@ -837,10 +810,10 @@ function drawProj() {
   const {R,data} = S.circ;
   ctx.clearRect(0,0,w,h); grid(ctx,w,h);
   const zy=h/2;
-  ctx.strokeStyle='#2a2f4a'; ctx.lineWidth=1.5;
+  ctx.strokeStyle='#999999'; ctx.lineWidth=1.5;
   ctx.beginPath(); ctx.moveTo(30,zy); ctx.lineTo(w-10,zy); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(30,20); ctx.lineTo(30,h-20); ctx.stroke();
-  ctx.fillStyle='#3a4060'; ctx.font='10px monospace'; ctx.textAlign='center';
+  ctx.fillStyle='#555555'; ctx.font='10px monospace'; ctx.textAlign='center';
   ctx.fillText('t →',w-18,zy+14); ctx.fillText('y',22,26);
 
   if (data.length<2) return;
@@ -849,7 +822,7 @@ function drawProj() {
   const gx=t=>30+((t-tst)/tw)*(w-40);
   const gy=v=>zy-(v/(R*1.3))*(h/2-20);
 
-  ctx.beginPath(); ctx.strokeStyle='#4f8ef7'; ctx.lineWidth=2.5;
+  ctx.beginPath(); ctx.strokeStyle='#2f6fe0'; ctx.lineWidth=2.5;
   let first=true;
   for (const pt of data) {
     if (pt.t<tst) continue;
@@ -861,78 +834,13 @@ function drawProj() {
   // current point
   const last=data[data.length-1];
   const cpx=gx(last.t), cpy=gy(last.y);
-  ctx.fillStyle='#f7604f'; ctx.beginPath(); ctx.arc(cpx,cpy,6,0,Math.PI*2); ctx.fill();
-  ctx.setLineDash([3,3]); ctx.strokeStyle='#f7604f44'; ctx.lineWidth=1;
+  ctx.fillStyle='#d94334'; ctx.beginPath(); ctx.arc(cpx,cpy,6,0,Math.PI*2); ctx.fill();
+  ctx.setLineDash([3,3]); ctx.strokeStyle='#d9433444'; ctx.lineWidth=1;
   ctx.beginPath(); ctx.moveTo(cpx,cpy); ctx.lineTo(30,cpy); ctx.stroke();
   ctx.setLineDash([]);
 
-  ctx.fillStyle='#ccc'; ctx.font='13px Times New Roman,serif'; ctx.textAlign='left';
+  ctx.fillStyle='#333333'; ctx.font='13px Comic Sans MS,cursive'; ctx.textAlign='left';
   ctx.fillText('y = A sin(ωt)',w-140,28);
-}
-
-// ── PHASE SPACE ──────────────────────────────────────────
-function drawPhase() {
-  const c=document.getElementById('cPhase'); resize(c);
-  const ctx=c.getContext('2d'), w=c.width, h=c.height;
-  const {m,k,A} = S.phase;
-  const omega=Math.sqrt(k/m);
-  ctx.clearRect(0,0,w,h); grid(ctx,w,h);
-
-  const cx=w/2, cy=h/2;
-  const sx=Math.min(w,h)*0.75/(A*1.4);
-  const sy=Math.min(w,h)*0.75/(A*omega*1.4);
-
-  // axes
-  arrow(ctx,20,cy,w-20,cy,'#2a2f4a',1.5);
-  arrow(ctx,cx,h-20,cx,20,'#2a2f4a',1.5);
-  ctx.fillStyle='#3a4060'; ctx.font='11px monospace'; ctx.textAlign='center';
-  ctx.fillText('x →',w-22,cy-6); ctx.fillText('v ↑',cx+16,24);
-
-  // ellipse
-  ctx.beginPath();
-  ctx.ellipse(cx, cy, A*sx, A*omega*sy, 0, 0, 2*Math.PI);
-  ctx.strokeStyle='#4f8ef744'; ctx.lineWidth=1.5; ctx.setLineDash([4,4]); ctx.stroke(); ctx.setLineDash([]);
-
-  // labels
-  ctx.fillStyle='#4f8ef7'; ctx.font='10px monospace';
-  ctx.fillText('x=A',cx+A*sx+2,cy-6);
-  ctx.fillText('x=-A',cx-A*sx-30,cy-6);
-  ctx.fillStyle='#3ecf8e';
-  ctx.fillText('v=Aω',cx+6,cy-A*omega*sy+14);
-  ctx.fillText('v=-Aω',cx+6,cy+A*omega*sy-4);
-
-  // equation
-  ctx.fillStyle='#a78bfa'; ctx.font='13px Times New Roman,serif'; ctx.textAlign='center';
-  ctx.fillText('x²/A² + v²/(Aω)² = 1',cx,h-12);
-}
-
-function drawPhaseTrace() {
-  const c=document.getElementById('cPhaseTrace'); resize(c);
-  const ctx=c.getContext('2d'), w=c.width, h=c.height;
-  const {m,k,A,trace} = S.phase;
-  const omega=Math.sqrt(k/m);
-  ctx.clearRect(0,0,w,h); grid(ctx,w,h);
-
-  const cx=w/2, cy=h/2;
-  const sx=Math.min(w,h)*0.75/(A*1.4);
-  const sy=Math.min(w,h)*0.75/(A*omega*1.4);
-
-  arrow(ctx,20,cy,w-20,cy,'#2a2f4a',1.5);
-  arrow(ctx,cx,h-20,cx,20,'#2a2f4a',1.5);
-  ctx.fillStyle='#3a4060'; ctx.font='11px monospace';
-  ctx.textAlign='center'; ctx.fillText('x',w-18,cy-5); ctx.fillText('v',cx+16,22);
-
-  if (trace.length>1) {
-    ctx.beginPath(); ctx.strokeStyle='#3ecf8e'; ctx.lineWidth=2.5;
-    trace.forEach((pt,i)=>{
-      const px=cx+pt.x*sx, py=cy-pt.v*sy;
-      if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
-    });
-    ctx.stroke();
-    const last=trace[trace.length-1];
-    ctx.fillStyle='#f7604f'; ctx.beginPath();
-    ctx.arc(cx+last.x*sx,cy-last.v*sy,6,0,Math.PI*2); ctx.fill();
-  }
 }
 
 // ── ANIMATION LOOP ───────────────────────────────────────
@@ -964,24 +872,13 @@ function tick(ts) {
     if (S.circ.data.length>500) S.circ.data.shift();
   }
 
-  if (S.phase.play) {
-    S.phase.t+=dt;
-    const om=Math.sqrt(S.phase.k/S.phase.m);
-    S.phase.trace.push({
-      x:S.phase.A*Math.cos(om*S.phase.t),
-      v:-S.phase.A*om*Math.sin(om*S.phase.t)
-    });
-    if (S.phase.trace.length>500) S.phase.trace.shift();
-  }
-
   drawSpring(); drawGraph();
   drawPend(); drawPendGraph();
   drawCircle(); drawProj();
-  drawPhase(); drawPhaseTrace();
   requestAnimationFrame(tick);
 }
 requestAnimationFrame(tick);
 </script>
-<div style="position:fixed;bottom:10px;right:16px;font-family:'JetBrains Mono',monospace;font-size:33px;font-weight:600;letter-spacing:0.05em;color:rgba(221,225,240,0.12);pointer-events:none;z-index:9999;user-select:none;">YV</div>
+<div style="position:fixed;bottom:10px;right:16px;font-family:'Comic Sans MS',cursive;font-size:33px;font-weight:600;letter-spacing:0.05em;color:rgba(20,22,31,0.08);pointer-events:none;z-index:9999;user-select:none;">YV</div>
 </body>
 </html>
