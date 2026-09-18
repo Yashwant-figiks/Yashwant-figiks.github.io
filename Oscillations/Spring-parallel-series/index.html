@@ -6,26 +6,26 @@
 <title>Spring Stiffness: Series vs Parallel</title>
 <style>
   :root {
-    --bg: #12181f;
-    --bg-grid: #1a222b;
-    --panel-bg: #1a222c;
-    --panel-bg-2: #1e2833;
-    --text: #e8edf2;
-    --text-light: #8b98a6;
-    --text-dim: #5c6b7a;
-    --accent: #4fb0ff;
-    --accent-dark: #2f8fd8;
-    --series-color: #ff6b6b;
-    --parallel-color: #3ddc97;
-    --spring-steel: #cfd8e3;
-    --spring-copper: #e0975a;
-    --spring-alum: #9fb0bf;
-    --spring-rubber: #ff9f5a;
-    --border: #2a3543;
-    --border-soft: #232d39;
-    --shadow: 0 8px 30px rgba(0,0,0,0.35);
-    --mono: 'JetBrains Mono', 'SF Mono', Monaco, Consolas, monospace;
-    --sans: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    --bg: #eef2f8;
+    --bg-grid: #e4eaf2;
+    --panel-bg: #ffffff;
+    --panel-bg-2: #fbfdff;
+    --text: #24303d;
+    --text-light: #57697c;
+    --text-dim: #8695a6;
+    --accent: #2f8fd8;
+    --accent-dark: #1f6fac;
+    --series-color: #e0473f;
+    --parallel-color: #1fa672;
+    --spring-steel: #5b6b7d;
+    --spring-copper: #bd6a34;
+    --spring-alum: #7c8fa3;
+    --spring-rubber: #d97a30;
+    --border: #d7dfe9;
+    --border-soft: #e6ecf3;
+    --shadow: 0 8px 26px rgba(40,60,90,0.10);
+    --mono: 'Courier New', Courier, monospace;
+    --sans: 'Comic Sans MS', 'Comic Sans', 'Chalkboard SE', cursive, sans-serif;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -35,8 +35,8 @@
   body {
     font-family: var(--sans);
     background:
-      radial-gradient(ellipse 900px 500px at 20% -10%, rgba(79,176,255,0.08), transparent),
-      radial-gradient(ellipse 900px 500px at 80% 110%, rgba(61,220,151,0.06), transparent),
+      radial-gradient(ellipse 900px 500px at 20% -10%, rgba(47,143,216,0.07), transparent),
+      radial-gradient(ellipse 900px 500px at 80% 110%, rgba(31,166,114,0.06), transparent),
       var(--bg);
     color: var(--text);
     line-height: 1.5;
@@ -47,13 +47,12 @@
 
   .top-eyebrow {
     text-align: center;
-    font-size: 0.72rem;
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
-    color: var(--accent);
-    font-weight: 600;
+    font-size: 0.78rem;
+    letter-spacing: 1px;
+    color: var(--accent-dark);
+    font-weight: 700;
     margin-bottom: 10px;
-    opacity: 0.85;
+    opacity: 0.9;
   }
 
   h1 {
@@ -61,31 +60,30 @@
     margin-bottom: 8px;
     font-size: 2rem;
     font-weight: 700;
-    letter-spacing: -0.5px;
-    background: linear-gradient(135deg, #ffffff 0%, #b8c6d4 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    letter-spacing: 0px;
+    color: var(--text);
   }
 
   .subtitle {
     text-align: center;
     color: var(--text-light);
     margin-bottom: 32px;
-    font-size: 0.95rem;
+    font-size: 1rem;
   }
 
-  .main-grid {
+  /* ===== LAYOUT: panels left, sticky controls sidebar on the right ===== */
+  .page-layout {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    max-width: 1400px;
+    grid-template-columns: 1fr 1fr 300px;
+    gap: 20px;
+    max-width: 1500px;
     margin: 0 auto;
+    align-items: start;
   }
 
   .panel {
-    background: linear-gradient(180deg, var(--panel-bg-2) 0%, var(--panel-bg) 100%);
-    border-radius: 14px;
+    background: linear-gradient(180deg, var(--panel-bg) 0%, var(--panel-bg-2) 100%);
+    border-radius: 16px;
     box-shadow: var(--shadow);
     padding: 22px;
     border: 1px solid var(--border);
@@ -96,7 +94,7 @@
   }
 
   .panel:hover {
-    border-color: var(--border-soft);
+    border-color: var(--accent);
     transform: translateY(-2px);
   }
 
@@ -105,7 +103,7 @@
     align-items: center;
     gap: 12px;
     padding-bottom: 14px;
-    border-bottom: 1px solid var(--border);
+    border-bottom: 2px dashed var(--border);
   }
 
   .panel-icon {
@@ -116,23 +114,22 @@
     flex-shrink: 0;
   }
 
-  .series-icon { background: rgba(255,107,107,0.12); color: var(--series-color); border: 1px solid rgba(255,107,107,0.25); }
-  .parallel-icon { background: rgba(61,220,151,0.12); color: var(--parallel-color); border: 1px solid rgba(61,220,151,0.25); }
+  .series-icon { background: rgba(224,71,63,0.10); color: var(--series-color); border: 1px solid rgba(224,71,63,0.25); }
+  .parallel-icon { background: rgba(31,166,114,0.10); color: var(--parallel-color); border: 1px solid rgba(31,166,114,0.25); }
 
   .panel-title {
     font-size: 1.15rem;
-    font-weight: 600;
-    letter-spacing: -0.2px;
+    font-weight: 700;
   }
 
   .panel-note {
-    font-size: 0.78rem;
+    font-size: 0.82rem;
     padding: 3px 0 0;
     color: var(--text-light);
   }
 
-  .series-note { color: #ff9494; }
-  .parallel-note { color: #6ee6b4; }
+  .series-note { color: #c8443c; }
+  .parallel-note { color: #189063; }
 
   .canvas-wrap {
     position: relative;
@@ -141,9 +138,9 @@
     background:
       linear-gradient(var(--bg-grid) 1px, transparent 1px),
       linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px),
-      #0f1520;
+      #ffffff;
     background-size: 24px 24px, 24px 24px, auto;
-    border-radius: 10px;
+    border-radius: 12px;
     border: 1px solid var(--border-soft);
     overflow: hidden;
   }
@@ -161,66 +158,69 @@
   }
 
   .data-item {
-    background: rgba(255,255,255,0.03);
+    background: #f4f8fc;
     border: 1px solid var(--border-soft);
     padding: 9px 11px;
-    border-radius: 8px;
-    font-size: 0.82rem;
+    border-radius: 10px;
+    font-size: 0.84rem;
     transition: background 0.2s;
   }
 
   .data-item:hover {
-    background: rgba(255,255,255,0.05);
+    background: #eaf2fa;
   }
 
   .data-label {
     color: var(--text-dim);
-    font-size: 0.68rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-size: 0.7rem;
+    letter-spacing: 0.2px;
     margin-bottom: 3px;
-    font-weight: 600;
+    font-weight: 700;
   }
 
   .data-value {
-    font-weight: 600;
-    font-size: 0.94rem;
+    font-weight: 700;
+    font-size: 0.96rem;
     font-family: var(--mono);
     color: var(--text);
   }
 
-  .controls-section {
-    background: linear-gradient(180deg, var(--panel-bg-2) 0%, var(--panel-bg) 100%);
-    border-radius: 14px;
+  /* ===== CONTROLS SIDEBAR ===== */
+  .controls-sidebar {
+    background: linear-gradient(180deg, var(--panel-bg) 0%, var(--panel-bg-2) 100%);
+    border-radius: 16px;
     box-shadow: var(--shadow);
-    padding: 22px;
+    padding: 20px;
     border: 1px solid var(--border);
-    max-width: 1400px;
-    margin: 24px auto 0;
+    position: sticky;
+    top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
   }
 
-  .controls-section h3 {
-    font-size: 0.95rem;
-    font-weight: 600;
+  .controls-sidebar h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
     color: var(--text);
-    letter-spacing: -0.1px;
-  }
-
-  .controls-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 22px;
   }
 
   .control-group {
     display: flex;
     flex-direction: column;
-    gap: 7px;
+    gap: 8px;
+    padding-bottom: 16px;
+    border-bottom: 1px dashed var(--border);
+  }
+
+  .control-group:last-of-type {
+    border-bottom: none;
+    padding-bottom: 0;
   }
 
   .control-label {
-    font-size: 0.84rem;
-    font-weight: 500;
+    font-size: 0.86rem;
+    font-weight: 700;
     color: var(--text-light);
     display: flex;
     align-items: center;
@@ -229,35 +229,40 @@
 
   .control-label span:last-child {
     font-family: var(--mono);
-    color: var(--accent);
-    font-size: 0.8rem;
+    color: var(--accent-dark);
+    font-size: 0.82rem;
+    font-weight: 700;
   }
 
   .control-row {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+  }
+
+  .preset-row {
+    margin-top: 2px;
   }
 
   input[type="range"] {
     flex: 1;
-    height: 5px;
+    height: 6px;
     -webkit-appearance: none;
     appearance: none;
     background: var(--border);
-    border-radius: 3px;
+    border-radius: 4px;
     outline: none;
   }
 
   input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 16px; height: 16px;
+    width: 18px; height: 18px;
     border-radius: 50%;
     background: var(--accent);
     cursor: pointer;
-    border: 2px solid #0f1520;
-    box-shadow: 0 0 0 1px var(--accent), 0 2px 6px rgba(0,0,0,0.4);
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 0 1px var(--accent), 0 3px 5px rgba(30,60,100,0.35);
     transition: transform 0.15s;
   }
 
@@ -265,75 +270,98 @@
   input[type="range"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 
   input[type="number"] {
-    width: 68px;
-    padding: 5px 8px;
+    width: 64px;
+    padding: 6px 8px;
     border: 1px solid var(--border);
-    border-radius: 6px;
-    font-size: 0.82rem;
+    border-radius: 8px;
+    font-size: 0.84rem;
     font-family: var(--mono);
     text-align: right;
-    background: #0f1520;
+    background: #ffffff;
     color: var(--text);
+    flex-shrink: 0;
   }
 
   input[type="number"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 
   select {
-    padding: 5px 8px;
+    width: 100%;
+    padding: 7px 10px;
     border: 1px solid var(--border);
-    border-radius: 6px;
-    font-size: 0.78rem;
-    background: #0f1520;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-family: var(--sans);
+    background: #f4f8fc;
     color: var(--text-light);
     cursor: pointer;
   }
 
   .gravity-toggle {
     display: flex;
+    flex-direction: column;
     gap: 8px;
-    align-items: center;
+  }
+
+  /* ===== 3D INTERACTIVE BUTTONS ===== */
+  .btn-3d {
+    padding: 9px 16px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.86rem;
+    font-weight: 700;
+    font-family: var(--sans);
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
+    user-select: none;
   }
 
   .gravity-btn {
-    padding: 7px 14px;
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    background: #0f1520;
+    background: #f4f8fc;
     color: var(--text-light);
-    cursor: pointer;
-    font-size: 0.83rem;
-    transition: all 0.2s;
+    box-shadow:
+      0 4px 0 #c3ccd8,
+      0 6px 10px rgba(30,60,100,0.12);
   }
 
-  .gravity-btn:hover { border-color: var(--accent); color: var(--text); }
+  .gravity-btn:hover { color: var(--text); }
+
+  .gravity-btn:active,
+  .gravity-btn.active {
+    transform: translateY(3px);
+    box-shadow:
+      0 1px 0 #c3ccd8,
+      0 2px 4px rgba(30,60,100,0.15);
+  }
 
   .gravity-btn.active {
-    background: rgba(79,176,255,0.14);
-    color: var(--accent);
-    border-color: var(--accent);
+    background: #dceefd;
+    color: var(--accent-dark);
   }
 
   .formula-btn {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 16px;
     background: var(--accent);
-    color: #0b1118;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.83rem;
-    font-weight: 600;
-    transition: background 0.2s, transform 0.15s;
+    color: #ffffff;
+    box-shadow:
+      0 5px 0 var(--accent-dark),
+      0 8px 14px rgba(30,90,150,0.25);
   }
 
-  .formula-btn:hover { background: #6cbdff; transform: translateY(-1px); }
+  .formula-btn:hover { background: #4aa2e5; }
+
+  .formula-btn:active {
+    transform: translateY(4px);
+    box-shadow:
+      0 1px 0 var(--accent-dark),
+      0 2px 5px rgba(30,90,150,0.25);
+  }
 
   .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(5,8,12,0.65);
+    background: rgba(20,30,45,0.35);
     backdrop-filter: blur(4px);
     display: none;
     align-items: center;
@@ -345,44 +373,50 @@
   .modal-overlay.show { display: flex; }
 
   .modal {
-    background: var(--panel-bg-2);
+    background: #ffffff;
     border: 1px solid var(--border);
-    border-radius: 14px;
+    border-radius: 16px;
     max-width: 600px;
     width: 100%;
     max-height: 80vh;
     overflow-y: auto;
     padding: 26px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    box-shadow: 0 20px 60px rgba(20,30,45,0.25);
   }
 
   .modal h2 {
     margin-bottom: 16px;
-    font-size: 1.25rem;
+    font-size: 1.3rem;
     color: var(--text);
   }
 
-  .modal p { color: var(--text-light); font-size: 0.9rem; }
+  .modal p { color: var(--text-light); font-size: 0.92rem; }
   .modal p strong { color: var(--text); }
 
   .modal-close {
     float: right;
-    background: none;
+    background: #f4f8fc;
     border: none;
-    font-size: 1.4rem;
+    border-radius: 8px;
+    width: 30px;
+    height: 30px;
+    font-size: 1.2rem;
     cursor: pointer;
     color: var(--text-dim);
+    box-shadow: 0 3px 0 #c3ccd8;
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
   }
   .modal-close:hover { color: var(--text); }
+  .modal-close:active { transform: translateY(2px); box-shadow: 0 1px 0 #c3ccd8; }
 
   .formula-block {
-    background: #0f1520;
-    border-left: 3px solid var(--accent);
+    background: #f4f8fc;
+    border-left: 4px solid var(--accent);
     padding: 12px 16px;
     margin: 10px 0;
-    border-radius: 0 8px 8px 0;
+    border-radius: 0 10px 10px 0;
     font-family: var(--mono);
-    font-size: 0.88rem;
+    font-size: 0.9rem;
     color: var(--text);
   }
 
@@ -396,8 +430,11 @@
     gap: 18px;
     flex-wrap: wrap;
     margin-top: 10px;
-    font-size: 0.78rem;
+    font-size: 0.8rem;
     color: var(--text-dim);
+    max-width: 1500px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .legend-item {
@@ -414,9 +451,8 @@
   .footer-credit {
     text-align: center;
     margin-top: 28px;
-    font-size: 0.72rem;
+    font-size: 0.76rem;
     color: var(--text-dim);
-    letter-spacing: 0.3px;
   }
 
   /* Watermark */
@@ -427,9 +463,9 @@
     font-family: var(--sans);
     font-weight: 700;
     font-size: 0.78rem;
-    letter-spacing: 1.5px;
+    letter-spacing: 1px;
     color: var(--text-dim);
-    background: rgba(26,34,44,0.7);
+    background: rgba(255,255,255,0.8);
     border: 1px solid var(--border);
     padding: 6px 12px;
     border-radius: 8px;
@@ -443,9 +479,13 @@
     color: var(--accent);
   }
 
-  @media (max-width: 900px) {
-    .main-grid { grid-template-columns: 1fr; }
-    .controls-grid { grid-template-columns: 1fr; }
+  @media (max-width: 1100px) {
+    .page-layout { grid-template-columns: 1fr 1fr; }
+    .controls-sidebar { grid-column: 1 / -1; position: static; }
+  }
+
+  @media (max-width: 700px) {
+    .page-layout { grid-template-columns: 1fr; }
     h1 { font-size: 1.5rem; }
   }
 
@@ -460,7 +500,7 @@
 <h1>Spring Stiffness: Series vs Parallel</h1>
 <p class="subtitle">Adjust stiffness, mass, and gravity to see how spring arrangements behave</p>
 
-<div class="main-grid">
+<div class="page-layout">
   <!-- Series Panel -->
   <div class="panel">
     <div class="panel-header">
@@ -540,15 +580,14 @@
       </div>
     </div>
   </div>
-</div>
 
-<!-- Controls -->
-<div class="controls-section">
-  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
-    <h3>Controls</h3>
-    <button class="formula-btn" onclick="toggleModal()">ℹ️ Show Formulas</button>
-  </div>
-  <div class="controls-grid">
+  <!-- Controls Sidebar -->
+  <aside class="controls-sidebar">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h3>Controls</h3>
+      <button class="btn-3d formula-btn" onclick="toggleModal()">ℹ️ Formulas</button>
+    </div>
+
     <div class="control-group">
       <div class="control-label">
         <span>Spring 1 Stiffness (k₁)</span>
@@ -557,8 +596,10 @@
       <div class="control-row">
         <input type="range" id="k1-slider" min="10" max="500" value="200" step="5">
         <input type="number" id="k1-input" min="10" max="500" value="200" step="5">
+      </div>
+      <div class="control-row preset-row">
         <select id="k1-preset">
-          <option value="">Preset…</option>
+          <option value="">Choose a material preset…</option>
           <option value="400">Steel (400)</option>
           <option value="250">Copper (250)</option>
           <option value="150">Aluminum (150)</option>
@@ -575,8 +616,10 @@
       <div class="control-row">
         <input type="range" id="k2-slider" min="10" max="500" value="100" step="5">
         <input type="number" id="k2-input" min="10" max="500" value="100" step="5">
+      </div>
+      <div class="control-row preset-row">
         <select id="k2-preset">
-          <option value="">Preset…</option>
+          <option value="">Choose a material preset…</option>
           <option value="400">Steel (400)</option>
           <option value="250">Copper (250)</option>
           <option value="150">Aluminum (150)</option>
@@ -599,17 +642,17 @@
     <div class="control-group">
       <div class="control-label"><span>Gravity (g)</span></div>
       <div class="gravity-toggle">
-        <button class="gravity-btn active" id="g-earth" onclick="setGravity(9.8)">🌍 Earth (9.8 m/s²)</button>
-        <button class="gravity-btn" id="g-moon" onclick="setGravity(1.6)">🌙 Moon (1.6 m/s²)</button>
+        <button class="btn-3d gravity-btn active" id="g-earth" onclick="setGravity(9.8)">🌍 Earth (9.8 m/s²)</button>
+        <button class="btn-3d gravity-btn" id="g-moon" onclick="setGravity(1.6)">🌙 Moon (1.6 m/s²)</button>
       </div>
     </div>
-  </div>
+  </aside>
+</div>
 
-  <div class="legend">
-    <div class="legend-item"><div class="legend-swatch" style="background:var(--spring-steel);height:4px;"></div> Stiff (high k)</div>
-    <div class="legend-item"><div class="legend-swatch" style="background:var(--spring-rubber);height:2px;"></div> Soft (low k)</div>
-    <div class="legend-item">📐 Coil thickness & color indicate stiffness</div>
-  </div>
+<div class="legend">
+  <div class="legend-item"><div class="legend-swatch" style="background:var(--spring-steel);height:4px;"></div> Stiff (high k)</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:var(--spring-rubber);height:2px;"></div> Soft (low k)</div>
+  <div class="legend-item">📐 Coil thickness & color indicate stiffness</div>
 </div>
 
 <p class="footer-credit">F = k·x — Hooke's Law model · rendered in real time on canvas</p>
@@ -659,7 +702,7 @@ let state = {
   g: 9.8
 };
 
-// Target values for smooth animation
+// Target values for smooth numeric-readout animation
 let target = { ...state };
 let current = { ...state };
 
@@ -723,7 +766,7 @@ function toggleModal() {
   document.getElementById('modal').classList.toggle('show');
 }
 
-// ========== PHYSICS ==========
+// ========== PHYSICS (equilibrium values) ==========
 function computeSeries(k1, k2, m, g) {
   const keq = (k1 * k2) / (k1 + k2);
   const F = m * g;
@@ -742,12 +785,30 @@ function computeParallel(k1, k2, m, g) {
   return { keq, x1: x, x2: x, xtotal: x, F, F1, F2 };
 }
 
+// ========== SPRING-DAMPER OSCILLATOR (for real "boing" motion) ==========
+// Each tracked quantity has its own tiny mass-spring-damper system that
+// chases the true equilibrium extension, overshooting and settling —
+// just like a real spring reacts when the load or stiffness changes.
+function makeOsc(initial) {
+  return { pos: initial, vel: 0 };
+}
+function stepOsc(osc, targetVal, dt, k = 140, c = 11) {
+  const force = -k * (osc.pos - targetVal) - c * osc.vel;
+  osc.vel += force * dt;
+  osc.pos += osc.vel * dt;
+  return osc.pos;
+}
+
+const oscSeriesX1 = makeOsc(0);
+const oscSeriesX2 = makeOsc(0);
+const oscParallelX = makeOsc(0);
+
 // ========== DRAWING ==========
 function getSpringColor(k) {
-  if (k >= 350) return { color: '#cfd8e3', width: 3.5 };
-  if (k >= 200) return { color: '#e0975a', width: 2.8 };
-  if (k >= 80) return { color: '#9fb0bf', width: 2.2 };
-  return { color: '#ff9f5a', width: 1.6 };
+  if (k >= 350) return { color: '#5b6b7d', width: 3.5 };
+  if (k >= 200) return { color: '#bd6a34', width: 2.8 };
+  if (k >= 80) return { color: '#7c8fa3', width: 2.2 };
+  return { color: '#d97a30', width: 1.6 };
 }
 
 function drawSpring(ctx, x, y1, y2, k, coils, label) {
@@ -780,9 +841,9 @@ function drawSpring(ctx, x, y1, y2, k, coils, label) {
 }
 
 function drawAnchor(ctx, x, y, width) {
-  ctx.fillStyle = '#5c6b7a';
+  ctx.fillStyle = '#5b6b7d';
   ctx.fillRect(x - width / 2, y - 6, width, 6);
-  ctx.strokeStyle = '#5c6b7a';
+  ctx.strokeStyle = '#5b6b7d';
   ctx.lineWidth = 1;
   ctx.beginPath();
   for (let i = -width / 2; i < width / 2; i += 8) {
@@ -798,11 +859,11 @@ function drawMass(ctx, x, y, size, m) {
   grad.addColorStop(0, '#4fb0ff');
   grad.addColorStop(1, '#2f8fd8');
   ctx.fillStyle = grad;
-  ctx.strokeStyle = '#6cbdff';
+  ctx.strokeStyle = '#1f6fac';
   ctx.lineWidth = 1.5;
   ctx.fillRect(x - half, y, size, size);
   ctx.strokeRect(x - half, y, size, size);
-  ctx.fillStyle = '#0b1118';
+  ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 13px sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -833,7 +894,7 @@ function drawArrow(ctx, x1, y1, x2, y2, label, color) {
 }
 
 function drawRuler(ctx, x, y1, y2, label) {
-  ctx.strokeStyle = '#3a4756';
+  ctx.strokeStyle = '#9fb0c2';
   ctx.lineWidth = 1;
   ctx.setLineDash([3, 3]);
   ctx.beginPath();
@@ -841,14 +902,21 @@ function drawRuler(ctx, x, y1, y2, label) {
   ctx.lineTo(x, y2);
   ctx.stroke();
   ctx.setLineDash([]);
-  ctx.fillStyle = '#5c6b7a';
+  ctx.fillStyle = '#8695a6';
   ctx.font = '10px sans-serif';
   ctx.textAlign = 'center';
   ctx.fillText(label, x, y2 + 12);
 }
 
-// ========== RENDER ==========
-function render() {
+// ========== RENDER LOOP ==========
+let lastTime = null;
+
+function render(now) {
+  if (lastTime === null) lastTime = now;
+  let dt = (now - lastTime) / 1000;
+  dt = Math.min(dt, 0.05); // clamp so tab-switches don't cause a huge jump
+  lastTime = now;
+
   const ease = 0.15;
   current.k1 = lerp(current.k1, target.k1, ease);
   current.k2 = lerp(current.k2, target.k2, ease);
@@ -858,6 +926,12 @@ function render() {
   const { k1, k2, mass, g } = current;
   const series = computeSeries(k1, k2, mass, g);
   const parallel = computeParallel(k1, k2, mass, g);
+
+  // Advance the spring-damper oscillators toward the true equilibrium —
+  // this is what produces the little bounce/wobble when values change.
+  const visSeriesX1 = stepOsc(oscSeriesX1, series.x1, dt);
+  const visSeriesX2 = stepOsc(oscSeriesX2, series.x2, dt);
+  const visParallelX = stepOsc(oscParallelX, parallel.xtotal, dt);
 
   document.getElementById('series-keq').textContent = series.keq.toFixed(1) + ' N/m';
   document.getElementById('series-xtotal').textContent = (series.xtotal * 100).toFixed(2) + ' cm';
@@ -888,8 +962,10 @@ function render() {
   const maxPixelStretch = hS - anchorY - massSize - 40;
   const scale = maxPixelStretch / maxDisplayX;
 
-  const x1px = Math.min(series.x1, maxDisplayX) * scale;
-  const x2px = Math.min(series.x2, maxDisplayX) * scale;
+  // Clamp the *visual* (oscillating) extension for drawing, but allow small
+  // negative overshoot so a compression wobble reads too.
+  const x1px = Math.max(0, Math.min(visSeriesX1, maxDisplayX)) * scale;
+  const x2px = Math.max(0, Math.min(visSeriesX2, maxDisplayX)) * scale;
 
   const spring1Y1 = anchorY;
   const spring1Y2 = spring1Y1 + x1px + 40;
@@ -902,7 +978,7 @@ function render() {
   drawSpring(ctxS, centerX, spring2Y1, spring2Y2, k2, 8, 'k₂=' + Math.round(k2));
   drawMass(ctxS, centerX, massY, massSize, mass);
 
-  drawArrow(ctxS, centerX + massSize / 2 + 15, massY, centerX + massSize / 2 + 15, massY + massSize + 25, 'mg = ' + series.F.toFixed(1) + ' N', '#ff6b6b');
+  drawArrow(ctxS, centerX + massSize / 2 + 15, massY, centerX + massSize / 2 + 15, massY + massSize + 25, 'mg = ' + series.F.toFixed(1) + ' N', '#dc2626');
 
   drawRuler(ctxS, centerX - 60, spring1Y1, spring1Y2, 'x₁');
   drawRuler(ctxS, centerX - 60, spring2Y1, spring2Y2, 'x₂');
@@ -914,7 +990,7 @@ function render() {
   const hP = cp.height = cp.offsetHeight;
   ctxP.clearRect(0, 0, wP, hP);
 
-  const xPx = Math.min(parallel.xtotal, maxDisplayX) * scale;
+  const xPx = Math.max(0, Math.min(visParallelX, maxDisplayX)) * scale;
   const springLen = xPx + 40;
   const pMassY = anchorY + springLen;
   const spread = 55;
@@ -924,7 +1000,7 @@ function render() {
   drawSpring(ctxP, wP / 2 - spread, anchorY, pMassY, k1, 8, 'k₁=' + Math.round(k1));
   drawSpring(ctxP, wP / 2 + spread, anchorY, pMassY, k2, 8, 'k₂=' + Math.round(k2));
 
-  ctxP.strokeStyle = '#5c6b7a';
+  ctxP.strokeStyle = '#5b6b7d';
   ctxP.lineWidth = 3;
   ctxP.beginPath();
   ctxP.moveTo(wP / 2 - spread - 15, pMassY);
@@ -933,7 +1009,7 @@ function render() {
 
   drawMass(ctxP, wP / 2, pMassY, massSize, mass);
 
-  drawArrow(ctxP, wP / 2 + massSize / 2 + 15, pMassY, wP / 2 + massSize / 2 + 15, pMassY + massSize + 25, 'mg = ' + parallel.F.toFixed(1) + ' N', '#ff6b6b');
+  drawArrow(ctxP, wP / 2 + massSize / 2 + 15, pMassY, wP / 2 + massSize / 2 + 15, pMassY + massSize + 25, 'mg = ' + parallel.F.toFixed(1) + ' N', '#dc2626');
 
   drawRuler(ctxP, wP / 2 - spread - 50, anchorY, pMassY, 'x');
 
@@ -948,7 +1024,7 @@ syncControl(els.massSlider, els.massInput, els.massDisplay, 'kg', 'mass');
 setPreset(els.k1Preset, els.k1Slider, els.k1Input, els.k1Display, 'N/m', 'k1');
 setPreset(els.k2Preset, els.k2Slider, els.k2Input, els.k2Display, 'N/m', 'k2');
 
-render();
+requestAnimationFrame(render);
 </script>
 </body>
 </html>
