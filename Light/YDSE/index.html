@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Young's Double Slit Experiment</title>
+<style>
+  :root {
+    --font: "Comic Sans MS", "Comic Sans", "Chalkboard SE", "Comic Neue", "Comic Relief", cursive;
+    --sky: #8ed0ff;
+    --sky-2: #4db3f7;
+    --sky-deep: #2a8be0;
+    --pale: #eaf6ff;
+    --pale-2: #d6ecff;
+    --navy: #14406e;
+    --ink: #1d3a5c;
+    --coral: #ff7a59;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 22px 14px 48px;
+    font-family: var(--font);
+    color: var(--ink);
+    text-align: center;
+    background-color: #fff;
+    background-image:
+      linear-gradient(var(--pale) 1px, transparent 1px),
+      linear-gradient(90deg, var(--pale) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  h1 {
+    margin: 0 0 4px;
+    font-size: clamp(26px, 4.4vw, 40px);
+    color: var(--navy);
+    text-shadow: 3px 3px 0 var(--sky);
+  }
+  .subtitle { margin: 0 0 18px; font-size: 17px; color: #3f78ad; }
+
+  .stage {
+    display: inline-block;
+    max-width: 100%;
+    background: #fff;
+    border: 4px solid var(--navy);
+    border-radius: 22px;
+    box-shadow: 8px 8px 0 var(--sky);
+    padding: 10px;
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    max-width: 980px;
+    height: auto;
+    border-radius: 12px;
+    touch-action: none;
+    background: #fff;
+  }
+
+  .panel {
+    max-width: 1000px;
+    margin: 26px auto 0;
+    padding: 20px 20px 16px;
+    background: #fff;
+    border: 4px solid var(--navy);
+    border-radius: 22px;
+    box-shadow: 8px 8px 0 var(--sky);
+  }
+  .row { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 16px; margin-bottom: 4px; }
+
+  /* ---------- chunky 3D buttons ---------- */
+  .btn {
+    font-family: var(--font);
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    padding: 10px 18px;
+    margin-bottom: 8px;
+    border: 3px solid var(--navy);
+    border-radius: 16px;
+    cursor: pointer;
+    background: linear-gradient(#86d3ff, #3aa2ee);
+    text-shadow: 0 2px 0 rgba(20, 64, 110, .5);
+    box-shadow: 0 7px 0 var(--navy), 0 12px 12px rgba(20, 64, 110, .25);
+    transition: transform .06s ease, box-shadow .06s ease, filter .15s ease;
+    user-select: none;
+    touch-action: manipulation;
+  }
+  .btn:hover { filter: brightness(1.07); }
+  .btn:active { transform: translateY(6px); box-shadow: 0 1px 0 var(--navy), 0 3px 4px rgba(20, 64, 110, .25); }
+  .btn:focus-visible { outline: 4px solid var(--coral); outline-offset: 3px; }
+  .btn.deep { background: linear-gradient(#4aa6f0, #1f6fc0); }
+  .btn.white { background: linear-gradient(#ffffff, #dff0ff); color: var(--navy); text-shadow: none; }
+  .btn.tog[aria-pressed="false"] { background: linear-gradient(#ffffff, #dff0ff); color: var(--navy); text-shadow: none; }
+  .btn.tog[aria-pressed="true"] { background: linear-gradient(#86d3ff, #3aa2ee); }
+  .btn.tog.warn[aria-pressed="true"] { background: linear-gradient(#ff9e84, #f0603d); }
+
+  /* ---------- sliders ---------- */
+  .sliders {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 16px 30px;
+    margin-top: 10px;
+  }
+  .ctrl { display: flex; flex-direction: column; gap: 8px; text-align: left; font-size: 16px; }
+  .lab { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .chip {
+    min-width: 76px; text-align: center; font-weight: bold; color: var(--navy);
+    background: var(--pale); border: 2px solid var(--navy); border-radius: 10px; padding: 1px 8px;
+  }
+  input[type=range] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 26px; margin: 0; background: transparent; cursor: pointer;
+  }
+  input[type=range]:focus-visible { outline: 3px solid var(--coral); outline-offset: 4px; border-radius: 10px; }
+  input[type=range]::-webkit-slider-runnable-track {
+    height: 14px; border: 3px solid var(--navy); border-radius: 10px;
+    background: linear-gradient(var(--sky-2), var(--sky-2)) 0 / var(--p, 50%) 100% no-repeat, #fff;
+    box-shadow: 0 3px 0 var(--navy);
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 26px; height: 26px; margin-top: -6px;
+    border-radius: 50%; border: 3px solid var(--navy);
+    background: radial-gradient(circle at 35% 30%, #cfeaff, var(--sky-deep));
+    box-shadow: 0 4px 0 var(--navy);
+  }
+  input[type=range]::-moz-range-track {
+    height: 8px; border: 3px solid var(--navy); border-radius: 10px; background: #fff; box-shadow: 0 3px 0 var(--navy);
+  }
+  input[type=range]::-moz-range-progress { height: 8px; background: var(--sky-2); border-radius: 10px 0 0 10px; }
+  input[type=range]::-moz-range-thumb {
+    width: 20px; height: 20px; border-radius: 50%; border: 3px solid var(--navy);
+    background: var(--sky-deep); box-shadow: 0 4px 0 var(--navy);
+  }
+
+  /* ---------- readout ---------- */
+  .info {
+    max-width: 720px; min-height: 96px; margin: 18px auto 0; padding: 10px 16px;
+    background: var(--pale); border: 3px dashed var(--sky-deep); border-radius: 16px;
+    font-size: 17px; line-height: 1.5;
+  }
+  .info span { display: block; }
+  .info .l3 { font-weight: bold; color: var(--navy); font-size: 18px; }
+  .formulas { margin: 14px 0 0; font-size: 15px; color: #2d5d8f; }
+  .formulas b { color: var(--navy); }
+  #vFringe { color: #d9482b; }
+  .legend { margin: 10px 0 0; font-size: 14px; color: #3f78ad; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 22px; }
+  .sw { display: inline-block; width: 15px; height: 15px; border: 2px solid var(--navy); border-radius: 4px; vertical-align: -3px; margin-right: 6px; }
+  .hint { margin: 12px auto 0; max-width: 760px; font-size: 14px; color: #3f78ad; line-height: 1.55; }
+
+  @media (max-width: 600px) {
+    .btn { font-size: 14px; padding: 9px 13px; }
+    .panel { padding: 16px 12px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Young's Double Slit Experiment</h1>
+<p class="subtitle">Poke it, drag it, break it, then watch the fringes react.</p>
+
+<div class="stage">
+  <canvas id="cv" role="img" aria-label="Interactive simulation of Young's double slit experiment: light passes through two slits and forms bright and dark fringes on a screen"></canvas>
+</div>
+
+<div class="panel">
+  <div class="row">
+    <button id="btnPlay" class="btn">⏸ Pause</button>
+    <button id="btnReset" class="btn white">↺ Reset everything</button>
+    <button id="btnWalls" class="btn deep">🧱 Hide both walls</button>
+  </div>
+  <div class="row">
+    <button id="btnRings" class="btn tog" aria-pressed="true">〰 Wavefront rings</button>
+    <button id="btnMode" class="btn white">💡 Show brightness</button>
+    <button id="btnC1" class="btn tog warn" aria-pressed="false">🙈 Cover slit S1</button>
+    <button id="btnC2" class="btn tog warn" aria-pressed="false">🙈 Cover slit S2</button>
+  </div>
+
+  <div class="sliders">
+    <label class="ctrl"><span class="lab"><span>🌊 Wavelength λ</span><span class="chip" id="vLam"></span></span>
+      <input id="sLam" type="range" min="10" max="40" step="1"></label>
+    <label class="ctrl"><span class="lab"><span>↔ Slit spacing d</span><span class="chip" id="vD"></span></span>
+      <input id="sD" type="range" min="40" max="160" step="1"></label>
+    <label class="ctrl"><span class="lab"><span>📏 Screen distance D</span><span class="chip" id="vDist"></span></span>
+      <input id="sDist" type="range" min="240" max="520" step="1"></label>
+    <label class="ctrl"><span class="lab"><span>🚀 Wave speed</span><span class="chip" id="vSpd"></span></span>
+      <input id="sSpd" type="range" min="10" max="160" step="1"></label>
+  </div>
+
+  <div class="info" id="info"></div>
+
+  <p class="formulas">
+    Bright fringe: <b>d sinθ = nλ</b> &nbsp;&nbsp; Dark fringe: <b>d sinθ = (n + ½)λ</b> &nbsp;&nbsp;
+    Fringe spacing: <b>Δy ≈ λD/d</b> = <b id="vFringe">—</b> px
+  </p>
+  <div class="legend">
+    <span><span class="sw" style="background:#268ee8"></span>bright fringe (constructive)</span>
+    <span><span class="sw" style="background:#fff"></span>dark fringe (destructive)</span>
+    <span><span class="sw" style="background:#14406e"></span>wall</span>
+    <span><span class="sw" style="background:#ff7a59"></span>covered slit</span>
+  </div>
+  <p class="hint">
+    Drag slit S1 or S2 up and down to change d. Drag the screen C left or right to change D.
+    Click a slit to cover it. Click anywhere in the wave pattern to pin a probe point, and click again to release it.
+  </p>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const FONT = '"Comic Sans MS","Comic Sans","Chalkboard SE","Comic Neue","Comic Relief",cursive';
+  const NAVY = '#14406e', DEEP = '#2a8be0', CORAL = '#ff7a59', BLUEL = '#1f6fd1';
+  const W = 980, H = 460, cy = H / 2, xA = 110, xB = 300, CELL = 2, TAU = Math.PI * 2;
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+  const $ = id => document.getElementById(id);
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const frac = v => v - Math.floor(v);
+
+  const cv = $('cv'), ctx = cv.getContext('2d');
+  cv.width = W * DPR; cv.height = H * DPR;
+
+  // ---------- state ----------
+  const DEF = { lam: 20, d: 90, D: 440, speed: 45 };
+  const P = Object.assign({}, DEF);
+  let xC = xB + P.D;
+  let phase = 0;                                  // wave phase in turns
+  let running = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let wallsOn = true, wallA = 1;                  // wallA animates 0..1
+  let rings = true, mode = 'waves', c1 = false, c2 = false;
+  let pin = null, hover = null, drag = null;
+  let dirty = true, fieldDirty = true;
+  let lastInfo = '';
+
+  // ---------- lookup tables ----------
+  const SINT = new Float32Array(4096), COST = new Float32Array(4096);
+  for (let i = 0; i < 4096; i++) { SINT[i] = Math.sin(TAU * i / 4096); COST[i] = Math.cos(TAU * i / 4096); }
+
+  // palette: white -> pale sky -> strong blue
+  const PAL = new Uint32Array(256), PALCSS = [];
+  const stops = [[0, 255, 255, 255], [0.5, 196, 232, 255], [1, 38, 142, 232]];
+  for (let i = 0; i < 256; i++) {
+    const u = i / 255, k = u < 0.5 ? 0 : 1, a = stops[k], b = stops[k + 1], f = (u - a[0]) / (b[0] - a[0]);
+    const r = Math.round(a[1] + (b[1] - a[1]) * f);
+    const g = Math.round(a[2] + (b[2] - a[2]) * f);
+    const bl = Math.round(a[3] + (b[3] - a[3]) * f);
+    PAL[i] = (255 << 24) | (bl << 16) | (g << 8) | r;
+    PALCSS[i] = 'rgb(' + r + ',' + g + ',' + bl + ')';
+  }
+
+  // ---------- wave field layers (precomputed distances, one sin per source per cell) ----------
+  const layers = {};
+  function layer(key, x0, x1, srcs) {
+    const w = Math.ceil((x1 - x0) / CELL), h = Math.ceil(H / CELL);
+    let L = layers[key];
+    if (!L || L.w !== w || L.n !== srcs.length) {
+      const cvs = document.createElement('canvas'); cvs.width = w; cvs.height = h;
+      const c = cvs.getContext('2d'), img = c.createImageData(w, h);
+      L = layers[key] = {
+        w, h, n: srcs.length, cvs, c, img,
+        u32: new Uint32Array(img.data.buffer),
+        f: srcs.map(() => new Float32Array(w * h)),
+        idx: new Uint8Array(w * h)
+      };
+    }
+    for (let s = 0; s < srcs.length; s++) {
+      const sx = srcs[s][0], sy = srcs[s][1], f = L.f[s];
+      let n = 0;
+      for (let j = 0; j < h; j++) {
+        const dy = (j + 0.5) * CELL - sy, dy2 = dy * dy;
+        for (let i = 0; i < w; i++, n++) {
+          const dx = x0 + (i + 0.5) * CELL - sx;
+          f[n] = frac(Math.sqrt(dx * dx + dy2) / P.lam);
+        }
+      }
+    }
+    return L;
+  }
+
+  function paintLayer(L, ph) {
+    const N = L.w * L.h, u = L.u32;
+    if (mode === 'waves') {
+      const f0 = L.f[0];
+      if (L.n === 2) {
+        const f1 = L.f[1], o0 = !c1, o1 = !c2;
+        for (let n = 0; n < N; n++) {
+          let a = 0;
+          if (o0) a += SINT[((f0[n] - ph + 1) * 4096 | 0) & 4095];
+          if (o1) a += SINT[((f1[n] - ph + 1) * 4096 | 0) & 4095];
+          u[n] = PAL[((a + 2) * 63.75) | 0];
+        }
+      } else {
+        for (let n = 0; n < N; n++) {
+          const a = SINT[((f0[n] - ph + 1) * 4096 | 0) & 4095];
+          u[n] = PAL[((a + 2) * 63.75) | 0];
+        }
+      }
+    } else {
+      const ix = L.idx;
+      for (let n = 0; n < N; n++) u[n] = PAL[ix[n]];
+    }
+    L.c.putImageData(L.img, 0, 0);
+  }
+
+  // ---------- screen (fringe strip, graph, markers) ----------
+  let F = null, Lf = null, S = null;
+
+  function pathDiff(y) {                       // r1 - r2 at the screen, y measured from centre
+    const D = P.D, d = P.d;
+    return Math.hypot(D, y + d / 2) - Math.hypot(D, y - d / 2);
+  }
+  function solve(target) {
+    let lo = -4000, hi = 4000;
+    for (let k = 0; k < 42; k++) { const m = (lo + hi) / 2; if (pathDiff(m) < target) lo = m; else hi = m; }
+    return cy + (lo + hi) / 2;
+  }
+
+  function buildScreen() {
+    const sw = 14, both = !c1 && !c2, gw = 90;
+    if (!S) {
+      const cvs = document.createElement('canvas'); cvs.width = sw; cvs.height = H;
+      const c = cvs.getContext('2d');
+      S = { cvs, c, img: c.createImageData(sw, H) };
+    }
+    const u = new Uint32Array(S.img.data.buffer), I = new Float32Array(H);
+    for (let y = 0; y < H; y++) {
+      const v = both ? Math.pow(Math.cos(Math.PI * pathDiff(y + 0.5 - cy) / P.lam), 2) : (c1 && c2 ? 0 : 0.25);
+      I[y] = v;
+      const col = PAL[Math.round(v * 255)];
+      for (let x = 0; x < sw; x++) u[y * sw + x] = col;
+    }
+    S.c.putImageData(S.img, 0, 0);
+    const line = new Path2D(), area = new Path2D();
+    line.moveTo(I[0] * gw, 0); area.moveTo(0, 0); area.lineTo(I[0] * gw, 0);
+    for (let y = 2; y <= H; y += 2) { const v = I[Math.min(y, H - 1)] * gw; line.lineTo(v, y); area.lineTo(v, y); }
+    area.lineTo(0, H); area.closePath();
+    S.line = line; S.area = area;
+    const marks = [];
+    if (both) {
+      for (let n = -40; n <= 40; n++) {
+        for (const half of [0, 0.5]) {
+          const tg = (n + half) * P.lam;
+          if (Math.abs(tg) < P.d - 1e-6) {
+            const y = solve(tg);
+            if (y > 8 && y < H - 8) marks.push({ n: n, y: y, max: half === 0 });
+          }
+        }
+      }
+    }
+    S.marks = marks;
+  }
+
+  function rebuild() {
+    xC = xB + P.D;
+    Lf = layer('L', xA, xB, [[xA, cy]]);
+    Lf.idx.fill(64);
+    F = layer('R', xB, xC, [[xB, cy - P.d / 2], [xB, cy + P.d / 2]]);
+    const N = F.w * F.h, f1 = F.f[0], f2 = F.f[1];
+    if (!c1 && !c2) {
+      for (let n = 0; n < N; n++) F.idx[n] = Math.round((0.5 + 0.5 * COST[((f1[n] - f2[n] + 1) * 4096 | 0) & 4095]) * 255);
+    } else {
+      F.idx.fill(c1 && c2 ? 0 : 64);
+    }
+    buildScreen();
+    $('vFringe').textContent = (P.lam * P.D / P.d).toFixed(1);
+    fieldDirty = true; dirty = true;
+  }
+
+  // ---------- drawing helpers ----------
+  function rr(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function tag(x, y, txt, sub) {
+    ctx.font = 'bold 15px ' + FONT;
+    const w1 = ctx.measureText(txt).width;
+    let w2 = 0;
+    if (sub) { ctx.font = 'bold 11px ' + FONT; w2 = ctx.measureText(sub).width; }
+    const w = w1 + w2 + 14, h = 22;
+    rr(x - w / 2, y - h / 2, w, h, 9);
+    ctx.fillStyle = '#fff'; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = NAVY; ctx.stroke();
+    ctx.fillStyle = NAVY; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+    ctx.font = 'bold 15px ' + FONT; ctx.fillText(txt, x - w / 2 + 7, y + 1);
+    if (sub) { ctx.font = 'bold 11px ' + FONT; ctx.fillText(sub, x - w / 2 + 7 + w1, y + 6); }
+  }
+
+  function drawBeam(ph) {
+    const y0 = cy - 100, hh = 200;
+    for (let x = 0; x < xA - 5; x += 2) {
+      const idx = mode === 'waves'
+        ? (((SINT[((frac((x + 1) / P.lam) - ph + 1) * 4096 | 0) & 4095]) + 2) * 63.75) | 0
+        : 64;
+      ctx.fillStyle = PALCSS[idx];
+      ctx.fillRect(x, y0, 2, hh);
+    }
+    ctx.strokeStyle = NAVY; ctx.lineWidth = 2; ctx.setLineDash([6, 5]);
+    ctx.beginPath(); ctx.moveTo(0, y0); ctx.lineTo(xA - 5, y0); ctx.moveTo(0, y0 + hh); ctx.lineTo(xA - 5, y0 + hh); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  function ringsFrom(sx, sy, x0, x1, ph) {
+    ctx.save();
+    ctx.beginPath(); ctx.rect(x0, 0, x1 - x0, H); ctx.clip();
+    const Rmax = 640; ctx.lineWidth = 1.5;
+    for (let r = ((ph + 0.25) % 1) * P.lam; r < Rmax; r += P.lam) {
+      ctx.strokeStyle = 'rgba(20,64,110,' + (0.3 * (1 - r / Rmax)).toFixed(3) + ')';
+      ctx.beginPath(); ctx.arc(sx, sy, r, 0, TAU); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawWall(x, centers, hh, a) {
+    if (a < 0.995) {                               // ghost line marks where the wall is when hidden
+      ctx.save();
+      ctx.setLineDash([6, 6]); ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgba(20,64,110,' + (0.4 * (1 - a)).toFixed(3) + ')';
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+      ctx.restore();
+    }
+    if (a < 0.01) return;
+    const segs = []; let top = 0;
+    centers.forEach(c => { segs.push([top, c - hh]); top = c + hh; });
+    segs.push([top, H]);
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, a * 1.4);
+    ctx.shadowColor = 'rgba(42,139,224,.55)'; ctx.shadowOffsetX = 5 * DPR; ctx.shadowOffsetY = 0; ctx.shadowBlur = 0;
+    segs.forEach((s, i) => {
+      const len = s[1] - s[0]; if (len <= 0) return;
+      let yy = s[0], h2 = len;
+      if (i === 0) yy = s[0] - (1 - a) * len;
+      else if (i === segs.length - 1) yy = s[0] + (1 - a) * len;
+      else { h2 = len * a; yy = s[0] + (len - h2) / 2; }
+      ctx.fillStyle = NAVY; ctx.fillRect(x - 5, yy, 10, h2);
+    });
+    ctx.shadowColor = 'transparent';
+    ctx.fillStyle = 'rgba(255,255,255,.35)';
+    segs.forEach((s, i) => {
+      const len = s[1] - s[0]; if (len <= 0) return;
+      let yy = s[0], h2 = len;
+      if (i === 0) yy = s[0] - (1 - a) * len;
+      else if (i === segs.length - 1) yy = s[0] + (1 - a) * len;
+      else { h2 = len * a; yy = s[0] + (len - h2) / 2; }
+      ctx.fillRect(x - 5, yy, 3, h2);
+    });
+    ctx.restore();
+  }
+
+  function handleAt(x, y, covered) {
+    ctx.fillStyle = NAVY;
+    ctx.beginPath(); ctx.moveTo(x, y - 19); ctx.lineTo(x - 5, y - 13); ctx.lineTo(x + 5, y - 13); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x, y + 19); ctx.lineTo(x - 5, y + 13); ctx.lineTo(x + 5, y + 13); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.arc(x, y, 8, 0, TAU);
+    ctx.fillStyle = covered ? CORAL : '#fff'; ctx.fill();
+    ctx.lineWidth = 3; ctx.strokeStyle = NAVY; ctx.stroke();
+    if (covered) {
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5; ctx.beginPath();
+      ctx.moveTo(x - 3.5, y - 3.5); ctx.lineTo(x + 3.5, y + 3.5);
+      ctx.moveTo(x + 3.5, y - 3.5); ctx.lineTo(x - 3.5, y + 3.5); ctx.stroke();
+    }
+  }
+
+  function drawSources() {
+    const y1 = cy - P.d / 2, y2 = cy + P.d / 2;
+    ctx.beginPath(); ctx.arc(xA, cy, 5, 0, TAU); ctx.fillStyle = '#fff'; ctx.fill();
+    ctx.lineWidth = 3; ctx.strokeStyle = NAVY; ctx.stroke();
+    handleAt(xB, y1, c1); handleAt(xB, y2, c2);
+    tag(xA + 24, cy - 28, 'S', '0');
+    tag(xB + 26, y1, 'S', '1');
+    tag(xB + 26, y2, 'S', '2');
+    tag(xA, 16, 'A'); tag(xB, 16, 'B'); tag(xC, 16, 'C');
+    tag(44, cy - 118, 'Light');
+  }
+
+  function drawScreen() {
+    ctx.drawImage(S.cvs, xC - 7, 0);
+    ctx.lineWidth = 3; ctx.strokeStyle = NAVY; ctx.strokeRect(xC - 8.5, 1.5, 17, H - 3);
+    ctx.font = 'bold 13px ' + FONT; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+    S.marks.forEach(m => {
+      ctx.beginPath(); ctx.arc(xC, m.y, m.max ? 4.5 : 3.5, 0, TAU);
+      ctx.lineWidth = 2; ctx.strokeStyle = NAVY;
+      if (m.max) {
+        ctx.fillStyle = '#fff'; ctx.fill(); ctx.stroke();
+        if (Math.abs(m.n) <= 3) { ctx.fillStyle = NAVY; ctx.fillText('n=' + m.n, xC + 13, m.y + 1); }
+      } else ctx.stroke();
+    });
+    // intensity graph
+    ctx.save();
+    ctx.translate(xC + 62, 0);
+    ctx.fillStyle = 'rgba(142,208,255,.45)'; ctx.fill(S.area);
+    ctx.strokeStyle = DEEP; ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.stroke(S.line);
+    ctx.strokeStyle = NAVY; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, H); ctx.stroke();
+    ctx.restore();
+    tag(xC + 62 + 52, 16, 'Brightness');
+    // grab handle for dragging the screen
+    const py = H - 34;
+    rr(xC - 12, py - 10, 24, 20, 8); ctx.fillStyle = '#fff'; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = NAVY; ctx.stroke();
+    ctx.fillStyle = NAVY;
+    ctx.beginPath(); ctx.moveTo(xC - 8, py); ctx.lineTo(xC - 3, py - 4); ctx.lineTo(xC - 3, py + 4); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(xC + 8, py); ctx.lineTo(xC + 3, py - 4); ctx.lineTo(xC + 3, py + 4); ctx.closePath(); ctx.fill();
+  }
+
+  function probePt() {
+    const p = pin || hover;
+    return (p && p.x > xB + 1 && p.x < xC - 1 && p.y >= 0 && p.y <= H) ? p : null;
+  }
+
+  function drawProbe() {
+    const p = probePt(); if (!p) return;
+    const y1 = cy - P.d / 2, y2 = cy + P.d / 2;
+    ctx.lineWidth = 2.5; ctx.setLineDash([7, 5]);
+    ctx.strokeStyle = BLUEL; ctx.beginPath(); ctx.moveTo(xB, y1); ctx.lineTo(p.x, p.y); ctx.stroke();
+    ctx.strokeStyle = CORAL; ctx.beginPath(); ctx.moveTo(xB, y2); ctx.lineTo(p.x, p.y); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath(); ctx.arc(p.x, p.y, pin ? 8 : 7, 0, TAU);
+    ctx.fillStyle = pin ? NAVY : '#fff'; ctx.fill();
+    ctx.lineWidth = 3; ctx.strokeStyle = pin ? '#fff' : NAVY; ctx.stroke();
+    if (pin) { ctx.beginPath(); ctx.arc(p.x, p.y, 10.5, 0, TAU); ctx.lineWidth = 2; ctx.strokeStyle = NAVY; ctx.stroke(); }
+    if (!(c1 || c2)) {
+      const r1 = Math.hypot(p.x - xB, p.y - y1), r2 = Math.hypot(p.x - xB, p.y - y2);
+      const tx = p.x > xC - 110 ? p.x - 72 : p.x + 72, ty = p.y < 30 ? p.y + 26 : p.y - 26;
+      tag(tx, ty, 'Δ = ' + ((r1 - r2) / P.lam).toFixed(2) + ' λ');
+    }
+  }
+
+  function drawScene() {
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = '#e4f2fd'; ctx.lineWidth = 1; ctx.beginPath();
+    for (let x = 0; x <= W; x += 40) { ctx.moveTo(x + 0.5, 0); ctx.lineTo(x + 0.5, H); }
+    for (let y = 0; y <= H; y += 40) { ctx.moveTo(0, y + 0.5); ctx.lineTo(W, y + 0.5); }
+    ctx.stroke();
+
+    drawBeam(phase);
+    ctx.save(); ctx.beginPath(); ctx.rect(xA, 0, xB - xA, H); ctx.clip();
+    ctx.drawImage(Lf.cvs, 0, 0, Lf.w, Lf.h, xA, 0, Lf.w * CELL, Lf.h * CELL); ctx.restore();
+    ctx.save(); ctx.beginPath(); ctx.rect(xB, 0, xC - xB, H); ctx.clip();
+    ctx.drawImage(F.cvs, 0, 0, F.w, F.h, xB, 0, F.w * CELL, F.h * CELL); ctx.restore();
+
+    if (rings) {
+      ringsFrom(xA, cy, xA, xB, phase);
+      if (!c1) ringsFrom(xB, cy - P.d / 2, xB, xC, phase);
+      if (!c2) ringsFrom(xB, cy + P.d / 2, xB, xC, phase);
+    }
+    drawWall(xA, [cy], 7, wallA);
+    drawWall(xB, [cy - P.d / 2, cy + P.d / 2], 6, wallA);
+    drawSources();
+    drawScreen();
+    drawProbe();
+  }
+
+  // ---------- readout ----------
+  function updateInfo() {
+    const p = probePt(); let html;
+    if (c1 && c2) {
+      html = '<span class="l3">Both slits are covered</span><span>No light gets through, so the screen stays dark.</span>';
+    } else if (c1 || c2) {
+      html = '<span class="l3">Slit ' + (c1 ? 'S1' : 'S2') + ' is covered</span>' +
+             '<span>With one source there is nothing to interfere with, so the fringes vanish and the screen is evenly lit.</span>';
+    } else if (p) {
+      const r1 = Math.hypot(p.x - xB, p.y - (cy - P.d / 2)), r2 = Math.hypot(p.x - xB, p.y - (cy + P.d / 2));
+      const fr = (r1 - r2) / P.lam, nn = Math.round(fr);
+      const dInt = Math.abs(fr - nn), dHalf = Math.abs(fr - (Math.floor(fr) + 0.5));
+      const bright = Math.round(100 * Math.pow(Math.cos(Math.PI * fr), 2));
+      let verdict;
+      if (dInt < 0.1) verdict = '😀 Bright fringe (constructive), order n = ' + nn;
+      else if (dHalf < 0.1) verdict = '🌑 Dark fringe (destructive)';
+      else verdict = '🤔 In between, brightness ' + bright + '%';
+      html = '<span>' + (pin ? '📌 Pinned point (click to release)' : 'Probe point') + '</span>' +
+        '<span>r<sub>1</sub> = ' + (r1 / P.lam).toFixed(2) + ' λ &nbsp;&nbsp; r<sub>2</sub> = ' + (r2 / P.lam).toFixed(2) + ' λ &nbsp;&nbsp; Δ = r<sub>1</sub> − r<sub>2</sub> = <b>' + fr.toFixed(2) + ' λ</b></span>' +
+        '<span class="l3">' + verdict + '</span>';
+    } else {
+      html = '<span class="l3">Try the probe</span><span>Hover over the wave pattern to compare the two path lengths. Click to pin a point.</span>';
+    }
+    if (html !== lastInfo) { $('info').innerHTML = html; lastInfo = html; }
+  }
+
+  // ---------- render / loop ----------
+  function render() {
+    if (fieldDirty || (running && mode === 'waves')) { paintLayer(F, phase); paintLayer(Lf, phase); }
+    drawScene();
+    updateInfo();
+  }
+
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(now - last, 50); last = now;
+    if (running) phase = frac(phase + dt / 1000 * P.speed / P.lam);
+    let moving = false;
+    const tgt = wallsOn ? 1 : 0;
+    if (wallA !== tgt) {
+      wallA += (tgt - wallA) * (1 - Math.exp(-dt / 85));
+      if (Math.abs(tgt - wallA) < 0.004) wallA = tgt;
+      moving = true;
+    }
+    if (running || moving || dirty || fieldDirty) { render(); dirty = false; fieldDirty = false; }
+    requestAnimationFrame(frame);
+  }
+
+  // ---------- controls ----------
+  const sl = { lam: $('sLam'), d: $('sD'), D: $('sDist'), speed: $('sSpd') };
+  const vv = { lam: $('vLam'), d: $('vD'), D: $('vDist'), speed: $('vSpd') };
+
+  function syncSliders() {
+    Object.keys(sl).forEach(k => {
+      const el = sl[k], mn = +el.min, mx = +el.max;
+      el.value = P[k];
+      el.style.setProperty('--p', ((P[k] - mn) / (mx - mn) * 100) + '%');
+      vv[k].textContent = P[k] + (k === 'speed' ? ' px/s' : ' px');
+    });
+  }
+  function syncButtons() {
+    $('btnPlay').textContent = running ? '⏸ Pause' : '▶ Play';
+    $('btnWalls').textContent = wallsOn ? '🧱 Hide both walls' : '🧱 Show both walls';
+    $('btnRings').setAttribute('aria-pressed', String(rings));
+    $('btnMode').textContent = mode === 'waves' ? '💡 Show brightness' : '🌊 Show waves';
+    $('btnC1').setAttribute('aria-pressed', String(c1));
+    $('btnC2').setAttribute('aria-pressed', String(c2));
+  }
+  function apply() { syncSliders(); rebuild(); }
+
+  Object.keys(sl).forEach(k => {
+    sl[k].addEventListener('input', e => {
+      P[k] = +e.target.value;
+      if (k === 'speed') { syncSliders(); dirty = true; } else apply();
+    });
+  });
+
+  $('btnPlay').onclick = () => { running = !running; syncButtons(); dirty = true; };
+  $('btnWalls').onclick = () => { wallsOn = !wallsOn; syncButtons(); dirty = true; };
+  $('btnRings').onclick = () => { rings = !rings; syncButtons(); dirty = true; };
+  $('btnMode').onclick = () => { mode = mode === 'waves' ? 'bright' : 'waves'; syncButtons(); fieldDirty = true; dirty = true; };
+  $('btnC1').onclick = () => { c1 = !c1; syncButtons(); rebuild(); };
+  $('btnC2').onclick = () => { c2 = !c2; syncButtons(); rebuild(); };
+  $('btnReset').onclick = () => {
+    Object.assign(P, DEF);
+    c1 = c2 = false; pin = null; wallsOn = true; rings = true; mode = 'waves'; phase = 0;
+    syncButtons(); apply();
+  };
+
+  // ---------- pointer interaction on the canvas ----------
+  function pt(e) {
+    const r = cv.getBoundingClientRect();
+    return { x: (e.clientX - r.left) * W / r.width, y: (e.clientY - r.top) * H / r.height };
+  }
+  function hit(p) {
+    if (Math.abs(p.x - xB) < 16) {
+      if (Math.hypot(p.x - xB, p.y - (cy - P.d / 2)) < 16) return 'slit1';
+      if (Math.hypot(p.x - xB, p.y - (cy + P.d / 2)) < 16) return 'slit2';
+    }
+    if (Math.abs(p.x - xC) < 14) return 'screen';
+    return null;
+  }
+  const inField = p => p.x > xB && p.x < xC && p.y >= 0 && p.y <= H;
+  const clampPt = p => ({ x: clamp(p.x, xB + 2, xC - 2), y: clamp(p.y, 0, H) });
+  function cursorFor(p) {
+    const h = hit(p);
+    return h === 'screen' ? 'ew-resize' : h ? 'ns-resize' : inField(p) ? 'crosshair' : 'default';
+  }
+
+  cv.addEventListener('pointerdown', e => {
+    const p = pt(e);
+    cv.setPointerCapture(e.pointerId);
+    const h = hit(p);
+    drag = { kind: h || 'probe', sx: p.x, sy: p.y, moved: false, had: !!pin };
+    cv.style.cursor = cursorFor(p);
+    dirty = true;
+  });
+  cv.addEventListener('pointermove', e => {
+    const p = pt(e);
+    if (drag) {
+      if (Math.hypot(p.x - drag.sx, p.y - drag.sy) > 4) drag.moved = true;
+      if (drag.moved) {
+        if (drag.kind === 'slit1' || drag.kind === 'slit2') { P.d = clamp(Math.round(Math.abs(p.y - cy) * 2), 40, 160); apply(); }
+        else if (drag.kind === 'screen') { P.D = clamp(Math.round(p.x - xB), 240, 520); apply(); }
+        else pin = clampPt(p);
+      }
+    } else {
+      hover = p;
+      cv.style.cursor = cursorFor(p);
+    }
+    dirty = true;
+  });
+  cv.addEventListener('pointerup', e => {
+    if (!drag) return;
+    const p = pt(e);
+    if (!drag.moved) {
+      if (drag.kind === 'slit1') { c1 = !c1; syncButtons(); rebuild(); }
+      else if (drag.kind === 'slit2') { c2 = !c2; syncButtons(); rebuild(); }
+      else if (drag.kind === 'probe') { pin = drag.had ? null : (inField(p) ? p : null); }
+    }
+    drag = null;
+    if (e.pointerType !== 'mouse') hover = null;
+    dirty = true;
+  });
+  cv.addEventListener('pointercancel', () => { drag = null; dirty = true; });
+  cv.addEventListener('pointerleave', () => { if (!drag) { hover = null; dirty = true; } });
+
+  // ---------- start ----------
+  syncButtons();
+  syncSliders();
+  rebuild();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
