@@ -24,6 +24,7 @@
             --accent-water: #22d3ee;
             --accent-semiconductor: #ef4444;
             --accent-light: #facc15;
+            --accent-std10: #f472b6;
             --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 10px 30px rgba(0,0,0,0.35);
             --shadow-hover: 0 20px 50px rgba(0,0,0,0.55), 0 0 0 1px rgba(212,175,55,0.15);
         }
@@ -68,7 +69,6 @@
             pointer-events: none;
         }
 
-        /* YV watermark — large faint monogram behind the title */
         .yv-watermark {
             position: absolute;
             top: 50%;
@@ -213,7 +213,7 @@
 
         .search-icon {
             position: absolute;
-            left: 20px;
+            left: 38px;
             top: 50%;
             transform: translateY(-50%);
             color: var(--text-muted);
@@ -319,7 +319,6 @@
             padding: 54px 20px 90px;
         }
 
-        /* Section */
         .section {
             margin-bottom: 54px;
         }
@@ -362,7 +361,6 @@
             font-weight: 500;
         }
 
-        /* Cards Grid */
         .cards-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(285px, 1fr));
@@ -578,7 +576,6 @@
             display: block;
         }
 
-        /* Footer */
         footer {
             text-align: center;
             padding: 34px 20px;
@@ -595,7 +592,6 @@
 
         footer a:hover { text-decoration: underline; }
 
-        /* Responsive */
         @media (max-width: 600px) {
             header h1 { font-size: 2.2rem; }
             .yv-watermark { font-size: 8rem; }
@@ -605,8 +601,7 @@
             .card { padding: 22px; }
         }
     </style>
-<base target="_blank">
-<base target="_blank">
+    <base target="_blank">
 </head>
 <body>
 
@@ -617,14 +612,14 @@
             <span class="brand-kicker">Est. Physics Lab</span>
         </div>
         <h1>Physics Simulations</h1>
-        <p>Interactive visualizations for waves, oscillations, sound & many more</p>
+        <p>Interactive visualizations for waves, oscillations, sound &amp; many more</p>
         <div class="stats">
             <div class="stat">
-                <div class="stat-number" id="topicCount">7</div>
+                <div class="stat-number" id="topicCount">8</div>
                 <div class="stat-label">Topics</div>
             </div>
             <div class="stat">
-                <div class="stat-number" id="simCount">13</div>
+                <div class="stat-number" id="simCount">17</div>
                 <div class="stat-label">Simulations</div>
             </div>
             <div class="stat">
@@ -669,19 +664,17 @@
     </div>
 
     <footer>
-        <p>Build with &#10084;&#65039; for future Engineers/Scientists/Doctors</p> 
+        <p>Build with &#10084;&#65039; for future Engineers/Scientists/Doctors</p>
         <p>See you in Class &#128521; </p>
         <a href="https://github.com/" target="_blank">View on GitHub</a>
-        <div style="margin-top:6px; font-size:0.78rem;">Notes, favorites and visit history are saved on this device/session only.</div>
+        <div style="margin-top:6px; font-size:0.78rem;">Notes, favorites and visit history are saved on this device/browser only.</div>
     </footer>
 
     <script>
         // ═══════════════════════════════════════════════════════════════
-        //  ADD NEW SIMULATIONS HERE — just copy a line and edit it!
-        //  (the "path" field must stay exactly as-is — it's the real
-        //   link that opens each simulation file. It can be a relative
-        //   path within this repo, OR a full https:// URL to an
-        //   externally-hosted simulation.)
+        //  ADD NEW SIMULATIONS HERE — copy a block and edit it.
+        //  IMPORTANT: every block must end with a comma, except the last.
+        //  "folder" must match a key in the `sections` object below.
         // ═══════════════════════════════════════════════════════════════
         const simulations = [
             // ─── Oscillations ───
@@ -825,70 +818,62 @@
                 accent: "var(--accent-semiconductor)",
                 icon: "🔌"
             },
-            //---Std-10---
+
+            // ─── Std-10 ───
             {
-                name: "Snell's law",
-                folder:"Std-10",
-                path:"https://yashwant-figiks.github.io/Std-10/refration/index.html",
-                desc: "Explore how light bends when medium changed",
-                accent: "var(--accent-Std-10)",
+                name: "Snell's Law",
+                folder: "Std-10",
+                path: "https://yashwant-figiks.github.io/Std-10/refration/index.html",
+                desc: "Explore how light bends when the medium changes.",
+                accent: "var(--accent-std10)",
                 icon: "🔦"
             }
         ];
 
         // ═══════════════════════════════════════════════════════════════
-        //  RENDER LOGIC — you don't need to touch anything below
+        //  SECTIONS — each key must be unique and match a "folder" above.
+        //  The order here is the order shown on the page.
         // ═══════════════════════════════════════════════════════════════
-
         const sections = {
-            "Oscillations": { icon: "🔄", title: "Oscillations", accent: "var(--accent-osc)" },
-            "Sound": { icon: "🔊", title: "Sound", accent: "var(--accent-sound)" },
+            "Oscillations":           { icon: "🔄", title: "Oscillations",           accent: "var(--accent-osc)" },
+            "Sound":                  { icon: "🔊", title: "Sound",                  accent: "var(--accent-sound)" },
             "Superposition of Waves": { icon: "〰️", title: "Superposition of Waves", accent: "var(--accent-wave)" },
-            "Ray Optics": { icon: "🔍", title: "Ray Optics", accent: "var(--accent-optics)" },
-            "Wave Optics": { icon: "💡", title: "Wave Optics", accent: "var(--accent-light)" },
-            "Water": { icon: "💧", title: "Water", accent: "var(--accent-water)" },
-            "Semiconductor": { icon: "🔌", title: "Semiconductor", accent: "var(--accent-semiconductor)" },
-            "Std-10": { icon: "🔦", title: "Std-10", accent: "var(--accent-Std-10)" }
+            "Ray Optics":             { icon: "🔍", title: "Ray Optics",             accent: "var(--accent-optics)" },
+            "Wave Optics":            { icon: "💡", title: "Wave Optics",            accent: "var(--accent-light)" },
+            "Water":                  { icon: "💧", title: "Water",                  accent: "var(--accent-water)" },
+            "Semiconductor":          { icon: "🔌", title: "Semiconductor",          accent: "var(--accent-semiconductor)" },
+            "Std-10":                 { icon: "🔦", title: "Std-10",                 accent: "var(--accent-std10)" }
         };
 
-        // Keep the header stat cards in sync with the data above automatically.
+        // Keep the header stat cards in sync with the data automatically.
         document.addEventListener('DOMContentLoaded', () => {
-            const topicEl = document.getElementById('topicCount');
-            const simEl = document.getElementById('simCount');
-            if (topicEl) topicEl.textContent = Object.keys(sections).length;
-            if (simEl) simEl.textContent = simulations.length;
+            document.getElementById('topicCount').textContent = Object.keys(sections).length;
+            document.getElementById('simCount').textContent = simulations.length;
         });
 
-        // ── Living-note persistence layer ──────────────────────────────
-        // Uses window.storage when available (persists across visits).
-        // Falls back to an in-memory store for the current session only
-        // if storage isn't available in this environment.
-        const hasRealStorage = typeof window.storage !== 'undefined';
+        // ── Persistence layer ──────────────────────────────────────────
+        // Uses localStorage (persists across visits on this browser).
+        // Falls back to in-memory storage if localStorage is blocked.
         const memoryFallback = {};
+        const PREFIX = 'physhub:';
 
         async function storeGet(key) {
-            if (hasRealStorage) {
-                try {
-                    const res = await window.storage.get(key, false);
-                    return res ? res.value : null;
-                } catch (e) {
-                    return null;
-                }
+            try {
+                const v = window.localStorage.getItem(PREFIX + key);
+                return v === null ? (memoryFallback[key] ?? null) : v;
+            } catch (e) {
+                return memoryFallback[key] ?? null;
             }
-            return memoryFallback[key] ?? null;
         }
 
         async function storeSet(key, value) {
-            if (hasRealStorage) {
-                try {
-                    await window.storage.set(key, value, false);
-                    return true;
-                } catch (e) {
-                    return false;
-                }
-            }
             memoryFallback[key] = value;
-            return true;
+            try {
+                window.localStorage.setItem(PREFIX + key, value);
+                return true;
+            } catch (e) {
+                return false;
+            }
         }
 
         let favorites = new Set();
@@ -927,6 +912,10 @@
             const d = new Date(iso);
             return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) +
                    ' ' + d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         }
 
         function render() {
@@ -971,7 +960,7 @@
                 sectionEl.className = 'section';
                 sectionEl.innerHTML = `
                     <div class="section-header">
-                        <div class="section-icon" style="background: ${sec.accent}18; color: ${sec.accent};">${sec.icon}</div>
+                        <div class="section-icon" style="background: color-mix(in srgb, ${sec.accent} 10%, transparent); color: ${sec.accent};">${sec.icon}</div>
                         <h2 class="section-title">${sec.title}</h2>
                         <span class="section-count">${groups[key].length} sim${groups[key].length > 1 ? 's' : ''}</span>
                     </div>
@@ -1003,7 +992,7 @@
                                     ${hasNote ? '📝 Note saved — click to view/edit' : '📝 Add a note...'}
                                 </button>
                                 <div class="note-area" data-note-area="${id}">
-                                    <textarea data-note-input="${id}" placeholder="What did you observe? Questions, parameter values worth remembering...">${noteVal}</textarea>
+                                    <textarea data-note-input="${id}" placeholder="What did you observe? Questions, parameter values worth remembering...">${escapeHtml(noteVal)}</textarea>
                                     <span class="note-saved-tag" data-note-status="${id}"></span>
                                 </div>
                             </div>
