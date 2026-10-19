@@ -1,855 +1,338 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wave Interference Simulator</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wave Interference Simulator</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap');
 
-        :root {
-            --bg: #060610;
-            --panel: #0e0e1c;
-            --border: #1e1e35;
-            --border-bright: #2e2e50;
-            --cyan: #00e5ff;
-            --magenta: #ff00cc;
-            --gold: #ffe566;
-            --green: #39ff88;
-            --red: #ff4466;
-            --amber: #ffb238;
-            --text: #c8cde8;
-            --muted: #5a5f80;
-            --glow-cyan: rgba(0, 229, 255, 0.15);
-            --glow-mag: rgba(255, 0, 204, 0.15);
-        }
+:root{
+  --bg:#eaf4ff; --panel:#ffffff; --ink:#22284a; --muted:#6b7599; --line:#22284a;
+  --blue:#1e88e5; --pink:#e8318f; --orange:#ff8a00; --green:#22b45e; --red:#ee4256; --amber:#f2a100; --violet:#7c5cff;
+  --font:'Comic Sans MS','Comic Sans','Comic Neue',cursive;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:var(--bg) radial-gradient(circle at 1px 1px,#cfe3fa 1.5px,transparent 0) 0 0/22px 22px;
+  color:var(--ink);font-family:var(--font);min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;padding:28px 18px 44px;overflow-x:hidden;
+}
+button,input{font-family:var(--font)}
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+.header{text-align:center;margin-bottom:22px}
+h1{font-size:2.3rem;font-weight:700;color:var(--ink);text-shadow:3px 3px 0 #bfe0ff,5px 5px 0 var(--pink);line-height:1.15}
+.subtitle{margin-top:12px;font-size:.95rem;color:var(--muted)}
 
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'Space Grotesk', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 28px 20px 40px;
-            overflow-x: hidden;
-        }
+/* 3D card look */
+.card3d{background:var(--panel);border:3px solid var(--line);border-radius:18px;box-shadow:0 7px 0 var(--line)}
 
-        /* Ambient background glows */
-        body::before {
-            content: '';
-            position: fixed;
-            top: -200px; left: -200px;
-            width: 600px; height: 600px;
-            background: radial-gradient(circle, rgba(0,229,255,0.04) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: 0;
-        }
-        body::after {
-            content: '';
-            position: fixed;
-            bottom: -200px; right: -200px;
-            width: 600px; height: 600px;
-            background: radial-gradient(circle, rgba(255,0,204,0.04) 0%, transparent 70%);
-            pointer-events: none;
-            z-index: 0;
-        }
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:26px;width:100%;max-width:1340px;align-items:start}
+.left{position:sticky;top:16px;min-width:0}
+.canvas-shell{width:100%;padding:8px}
+.canvas-shell canvas{display:block;width:100%;border-radius:12px;background:#fbfdff;cursor:crosshair;touch-action:pan-y}
 
-        .header {
-            text-align: center;
-            margin-bottom: 24px;
-            position: relative;
-            z-index: 1;
-        }
+/* status */
+.status-bar{display:flex;width:100%;margin:24px 0 20px;overflow:hidden}
+.status-item{flex:1;padding:12px 10px;text-align:center;border-right:3px dashed #c5d3ee;transition:background .25s}
+.status-item:last-child{border-right:none}
+.status-label{font-size:.78rem;color:var(--muted);margin-bottom:4px}
+.status-value{font-size:1.35rem;font-weight:700}
+.sv-phase{color:var(--violet)} .sv-amp{color:var(--orange)}
+.sv-constructive{color:var(--green)} .sv-destructive{color:var(--red)} .sv-partial{color:var(--amber)}
+.badge-dot{display:inline-block;width:11px;height:11px;border-radius:50%;border:2px solid var(--line);margin-right:6px;animation:pop 1.4s ease-in-out infinite}
+.dot-constructive{background:var(--green)} .dot-destructive{background:var(--red)} .dot-partial{background:var(--amber)}
+@keyframes pop{0%,100%{transform:scale(1)}50%{transform:scale(1.35)}}
 
-        .eyebrow {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.68rem;
-            letter-spacing: 4px;
-            color: var(--muted);
-            text-transform: uppercase;
-            margin-bottom: 8px;
-        }
+/* controls */
+.controls{display:flex;flex-direction:column;gap:20px;min-width:0}
+.wave-card{padding:16px 20px 18px}
+.wave-card.c1{border-top:10px solid var(--blue)} .wave-card.c2{border-top:10px solid var(--pink)}
+.wave-title{font-size:1.05rem;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.title-pill{padding:1px 11px;border-radius:20px;border:2px solid var(--line);color:#fff;font-size:.85rem;box-shadow:0 3px 0 var(--line)}
+.pill-c{background:var(--blue)} .pill-m{background:var(--pink)}
+.slider-group{margin-bottom:16px} .slider-group:last-child{margin-bottom:0}
+.slider-label{display:flex;justify-content:space-between;font-size:.88rem;color:var(--muted);margin-bottom:8px}
+.slider-label span:last-child{color:var(--ink);font-weight:700}
 
-        h1 {
-            font-size: 2rem;
-            font-weight: 600;
-            letter-spacing: -0.5px;
-            background: linear-gradient(120deg, var(--cyan) 0%, #a78bfa 50%, var(--magenta) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            line-height: 1.1;
-        }
+/* chunky 3D sliders */
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:14px;border-radius:10px;border:3px solid var(--line);outline:none;cursor:pointer;
+  background:linear-gradient(to right,var(--fill,var(--violet)) var(--pct,0%),#e3eaf7 var(--pct,0%))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,var(--fill,var(--violet)) 75%);
+  border:3px solid var(--line);box-shadow:0 4px 0 var(--line);cursor:grab;transition:transform .12s,box-shadow .12s}
+input[type=range]::-webkit-slider-thumb:hover{transform:translateY(-2px);box-shadow:0 6px 0 var(--line)}
+input[type=range]:active::-webkit-slider-thumb{transform:translateY(3px);box-shadow:0 1px 0 var(--line);cursor:grabbing}
+input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--fill,var(--violet));border:3px solid var(--line);box-shadow:0 4px 0 var(--line);cursor:grab}
+input[type=range]:focus-visible{outline:3px solid var(--orange);outline-offset:3px}
+.c1 input{--fill:var(--blue)} .c2 input{--fill:var(--pink)}
 
-        .subtitle {
-            margin-top: 6px;
-            font-size: 0.85rem;
-            color: var(--muted);
-            font-weight: 300;
-        }
+.global-card{padding:18px 20px 22px}
+.global-inner{display:flex;flex-direction:column;align-items:stretch;gap:20px}
+.global-inner>canvas{align-self:center}
+.phase-section{min-width:0}
+.phase-card{display:flex;align-items:center;gap:22px;padding:14px 22px;margin-top:22px}
+.phase-card .phase-section{flex:1}
+.phase-label-row{display:flex;justify-content:space-between;margin-bottom:8px;font-size:.9rem}
+.phase-title{color:var(--muted)} .phase-val{font-weight:700;color:var(--violet)}
+.phase-row{display:flex;align-items:center;gap:10px}
+.group-label{font-size:.85rem;color:var(--muted);margin-bottom:8px}
+.presets{display:flex;gap:10px;flex-wrap:wrap}
 
-        /* Canvas wrapper with decorative border */
-        .canvas-shell {
-            position: relative;
-            width: 100%;
-            max-width: 920px;
-            z-index: 1;
-        }
+/* 3D buttons */
+.btn3d{--face:#fff;--edge:var(--line);
+  padding:9px 16px;border-radius:14px;font-size:.92rem;font-weight:700;cursor:pointer;color:var(--ink);
+  background:var(--face);border:3px solid var(--line);box-shadow:0 6px 0 var(--edge);
+  transform:translateY(0);transition:transform .1s,box-shadow .1s,background .15s,color .15s;user-select:none}
+.btn3d:hover{transform:translateY(-2px);box-shadow:0 8px 0 var(--edge);background:#fff7d6}
+.btn3d:active{transform:translateY(5px);box-shadow:0 1px 0 var(--edge)}
+.btn3d:focus-visible{outline:3px solid var(--orange);outline-offset:3px}
+.btn3d.sm{padding:6px 11px;border-radius:12px}
+.btn3d.active-c{--face:var(--green);color:#fff} .btn3d.active-d{--face:var(--red);color:#fff} .btn3d.active-p{--face:var(--amber);color:#fff}
+.btn3d.active-c:hover,.btn3d.active-d:hover,.btn3d.active-p:hover{background:inherit;filter:brightness(1.08)}
+.btn3d.on{--face:var(--violet);color:#fff}
+.btn3d.on:hover{background:var(--violet);filter:brightness(1.08)}
+.btn3d.off{opacity:.55;box-shadow:0 2px 0 var(--edge);transform:translateY(4px)}
+.btn3d.off:hover{opacity:.8}
 
-        .canvas-shell::before {
-            content: '';
-            position: absolute;
-            inset: -1px;
-            border-radius: 14px;
-            background: linear-gradient(135deg, var(--cyan) 0%, transparent 40%, var(--magenta) 100%);
-            opacity: 0.35;
-            z-index: -1;
-        }
+/* legend toggles */
+.legend{display:flex;gap:14px;margin-top:4px;flex-wrap:wrap;justify-content:center}
+.legend .btn3d{display:flex;align-items:center;gap:8px}
+.swatch{width:22px;height:6px;border-radius:4px;border:2px solid var(--line)}
 
-        #canvas-container {
-            border-radius: 13px;
-            overflow: hidden;
-            background: #080814;
-            box-shadow:
-                0 0 60px rgba(0, 229, 255, 0.06),
-                0 0 120px rgba(255, 0, 204, 0.04),
-                inset 0 0 40px rgba(0,0,0,0.4);
-        }
-
-        canvas {
-            display: block;
-            width: 100%;
-        }
-
-        /* Status bar */
-        .status-bar {
-            display: flex;
-            align-items: stretch;
-            gap: 0;
-            margin: 16px 0;
-            width: 100%;
-            max-width: 920px;
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            overflow: hidden;
-            z-index: 1;
-        }
-
-        .status-item {
-            flex: 1;
-            padding: 14px 20px;
-            text-align: center;
-            border-right: 1px solid var(--border);
-            position: relative;
-            transition: background 0.3s;
-        }
-        .status-item:last-child { border-right: none; }
-        .status-item.active-glow { background: rgba(57, 255, 136, 0.04); }
-
-        .status-label {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.62rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--muted);
-            margin-bottom: 5px;
-        }
-
-        .status-value {
-            font-family: 'Space Mono', monospace;
-            font-size: 1.3rem;
-            font-weight: 700;
-            letter-spacing: -1px;
-        }
-        .sv-phase { color: #a78bfa; }
-        .sv-constructive { color: var(--green); text-shadow: 0 0 16px rgba(57,255,136,0.5); }
-        .sv-destructive { color: var(--red); text-shadow: 0 0 16px rgba(255,68,102,0.5); }
-        .sv-partial { color: var(--amber); text-shadow: 0 0 16px rgba(255,178,56,0.4); }
-        .sv-amp { color: var(--gold); text-shadow: 0 0 16px rgba(255,229,102,0.3); }
-
-        /* Interference badge */
-        .interference-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .badge-dot {
-            width: 7px; height: 7px;
-            border-radius: 50%;
-            display: inline-block;
-            animation: pulse-dot 1.5s ease-in-out infinite;
-        }
-        @keyframes pulse-dot {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.5); opacity: 0.6; }
-        }
-        .dot-constructive { background: var(--green); box-shadow: 0 0 8px var(--green); }
-        .dot-destructive { background: var(--red); box-shadow: 0 0 8px var(--red); }
-        .dot-partial { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
-
-        /* Main controls grid */
-        .controls {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-            max-width: 920px;
-            width: 100%;
-            z-index: 1;
-        }
-
-        .wave-card {
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 18px 20px;
-            position: relative;
-            overflow: hidden;
-            transition: border-color 0.3s;
-        }
-        .wave-card:hover { border-color: var(--border-bright); }
-
-        /* Subtle colored stripe on left edge */
-        .wave-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0;
-            width: 3px; height: 100%;
-            border-radius: 3px 0 0 3px;
-        }
-        .wave-card.c1::before { background: linear-gradient(to bottom, var(--cyan), transparent); }
-        .wave-card.c2::before { background: linear-gradient(to bottom, var(--magenta), transparent); }
-
-        .wave-title {
-            font-size: 0.78rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .title-pill {
-            padding: 2px 10px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-family: 'Space Mono', monospace;
-            letter-spacing: 0;
-        }
-        .pill-c { background: rgba(0,229,255,0.12); color: var(--cyan); border: 1px solid rgba(0,229,255,0.25); }
-        .pill-m { background: rgba(255,0,204,0.12); color: var(--magenta); border: 1px solid rgba(255,0,204,0.25); }
-
-        .slider-group {
-            margin-bottom: 14px;
-        }
-        .slider-group:last-child { margin-bottom: 0; }
-
-        .slider-label {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.75rem;
-            color: var(--muted);
-            margin-bottom: 7px;
-        }
-        .slider-label span:last-child {
-            font-family: 'Space Mono', monospace;
-            color: var(--text);
-            font-size: 0.78rem;
-        }
-
-        input[type="range"] {
-            width: 100%;
-            height: 4px;
-            border-radius: 2px;
-            background: #1a1a2e;
-            outline: none;
-            -webkit-appearance: none;
-            appearance: none;
-            cursor: pointer;
-        }
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 15px; height: 15px;
-            border-radius: 50%;
-            background: #fff;
-            cursor: pointer;
-            box-shadow: 0 0 12px rgba(255,255,255,0.4), 0 0 24px rgba(167,139,250,0.3);
-            transition: box-shadow 0.2s;
-        }
-        input[type="range"]::-webkit-slider-thumb:hover {
-            box-shadow: 0 0 16px rgba(255,255,255,0.6), 0 0 32px rgba(167,139,250,0.5);
-        }
-        input[type="range"]::-moz-range-thumb {
-            width: 15px; height: 15px;
-            border-radius: 50%;
-            background: #fff;
-            cursor: pointer;
-            border: none;
-        }
-
-        /* Track fill color via CSS custom property trick */
-        .slider-c input[type="range"] { accent-color: var(--cyan); }
-        .slider-m input[type="range"] { accent-color: var(--magenta); }
-
-        /* Global controls */
-        .global-card {
-            grid-column: 1 / -1;
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 18px 20px;
-        }
-
-        .global-inner {
-            display: flex;
-            align-items: center;
-            gap: 28px;
-            flex-wrap: wrap;
-        }
-
-        .phase-section {
-            flex: 1;
-            min-width: 220px;
-        }
-
-        .phase-label-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 7px;
-        }
-        .phase-title {
-            font-size: 0.75rem;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .phase-val {
-            font-family: 'Space Mono', monospace;
-            font-size: 0.78rem;
-            color: #a78bfa;
-        }
-
-        #phaseDiff { accent-color: #a78bfa; }
-
-        /* Phase arc visual */
-        .phase-arc-wrap {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* Presets */
-        .preset-section {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .preset-row-label {
-            font-size: 0.65rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            color: var(--muted);
-            margin-bottom: 2px;
-        }
-        .presets {
-            display: flex;
-            gap: 8px;
-        }
-
-        .preset-btn {
-            padding: 8px 16px;
-            border-radius: 7px;
-            font-size: 0.78rem;
-            font-family: 'Space Grotesk', sans-serif;
-            font-weight: 500;
-            cursor: pointer;
-            border: 1px solid var(--border-bright);
-            background: transparent;
-            color: var(--muted);
-            transition: all 0.2s;
-            letter-spacing: 0.3px;
-        }
-        .preset-btn:hover {
-            color: var(--text);
-            border-color: #4a4a70;
-            background: rgba(255,255,255,0.03);
-        }
-        .preset-btn.active-c {
-            background: rgba(57,255,136,0.1);
-            border-color: rgba(57,255,136,0.4);
-            color: var(--green);
-            text-shadow: 0 0 10px rgba(57,255,136,0.4);
-        }
-        .preset-btn.active-d {
-            background: rgba(255,68,102,0.1);
-            border-color: rgba(255,68,102,0.4);
-            color: var(--red);
-            text-shadow: 0 0 10px rgba(255,68,102,0.4);
-        }
-        .preset-btn.active-p {
-            background: rgba(255,178,56,0.1);
-            border-color: rgba(255,178,56,0.4);
-            color: var(--amber);
-        }
-
-        /* Legend */
-        .legend {
-            display: flex;
-            gap: 22px;
-            margin-top: 14px;
-            flex-wrap: wrap;
-            justify-content: center;
-            z-index: 1;
-        }
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            font-size: 0.76rem;
-            color: var(--muted);
-        }
-        .legend-line {
-            width: 22px; height: 2px;
-            border-radius: 1px;
-        }
-
-        /* Animate opacity on canvas via class */
-        canvas { image-rendering: crisp-edges; }
-    </style>
+.hint{margin-top:16px;font-size:.82rem;color:var(--muted);text-align:center}
+@media(max-width:1000px){.layout{grid-template-columns:1fr}.left{position:static}}
+@media(max-width:700px){h1{font-size:1.7rem}.status-value{font-size:1.05rem}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
 <base target="_blank">
 </head>
 <body>
 
 <div class="header">
-    <div class="eyebrow">Physics Simulation</div>
-    <h1>Wave Interference</h1>
-    <p class="subtitle">Superposition of two sine waves — adjust phase, frequency &amp; amplitude</p>
+  <h1>Wave Interference</h1>
+  <p class="subtitle">Superposition of two sine waves. Adjust phase, frequency and amplitude.</p>
 </div>
 
-<div class="canvas-shell">
-    <div id="canvas-container">
-        <canvas id="waveCanvas" width="900" height="400"></canvas>
-    </div>
+<div class="layout">
+<div class="left">
+<div class="canvas-shell card3d">
+  <canvas id="waveCanvas" width="900" height="400"></canvas>
 </div>
 
-<div class="status-bar">
-    <div class="status-item">
-        <div class="status-label">Phase Diff</div>
-        <div class="status-value sv-phase" id="phaseDisplay">0°</div>
-    </div>
-    <div class="status-item">
-        <div class="status-label">Interference</div>
-        <div class="status-value" id="interferenceType">
-            <span class="interference-badge">
-                <span class="badge-dot dot-constructive" id="badgeDot"></span>
-                <span id="interferenceText">Constructive</span>
-            </span>
+<div class="phase-card card3d">
+<div class="phase-section">
+        <div class="phase-label-row"><span class="phase-title">Phase difference</span><span class="phase-val" id="phaseDiffVal">0°</span></div>
+        <div class="phase-row">
+          <button class="btn3d sm" id="phaseMinus" title="Back 15°">−15°</button>
+          <input type="range" id="phaseDiff" min="0" max="360" step="1" value="0">
+          <button class="btn3d sm" id="phasePlus" title="Forward 15°">+15°</button>
         </div>
-    </div>
-    <div class="status-item">
-        <div class="status-label">Resultant Amp</div>
-        <div class="status-value sv-amp" id="resultantAmp">2.00</div>
-    </div>
-    <div class="status-item">
-        <div class="status-label">Wave Speed</div>
-        <div class="status-value" style="color:#7dd3fc;" id="speedDisplay">1.0×</div>
-    </div>
+      </div>
+<canvas id="phaseArc" width="70" height="70"></canvas>
 </div>
 
-<div class="controls">
-    <div class="wave-card c1 slider-c">
-        <div class="wave-title">
-            <span class="title-pill pill-c">W1</span>
-            Wave 1 &nbsp;<span style="color:var(--cyan);font-size:0.7rem;">Cyan</span>
-        </div>
-        <div class="slider-group">
-            <div class="slider-label"><span>Amplitude</span><span id="amp1Val">1.0</span></div>
-            <input type="range" id="amp1" min="0.1" max="2.0" step="0.1" value="1.0">
-        </div>
-        <div class="slider-group">
-            <div class="slider-label"><span>Frequency</span><span id="freq1Val">1.0</span></div>
-            <input type="range" id="freq1" min="0.5" max="3.0" step="0.1" value="1.0">
-        </div>
-        <div class="slider-group">
-            <div class="slider-label"><span>Phase</span><span id="phase1Val">0°</span></div>
-            <input type="range" id="phase1" min="0" max="360" step="1" value="0">
-        </div>
-    </div>
-
-    <div class="wave-card c2 slider-m">
-        <div class="wave-title">
-            <span class="title-pill pill-m">W2</span>
-            Wave 2 &nbsp;<span style="color:var(--magenta);font-size:0.7rem;">Magenta</span>
-        </div>
-        <div class="slider-group">
-            <div class="slider-label"><span>Amplitude</span><span id="amp2Val">1.0</span></div>
-            <input type="range" id="amp2" min="0.1" max="2.0" step="0.1" value="1.0">
-        </div>
-        <div class="slider-group">
-            <div class="slider-label"><span>Frequency</span><span id="freq2Val">1.0</span></div>
-            <input type="range" id="freq2" min="0.5" max="3.0" step="0.1" value="1.0">
-        </div>
-        <div class="slider-group">
-            <div class="slider-label"><span>Phase</span><span id="phase2Val">0°</span></div>
-            <input type="range" id="phase2" min="0" max="360" step="1" value="0">
-        </div>
-    </div>
-
-    <div class="global-card">
-        <div class="global-inner">
-            <div class="phase-section">
-                <div class="phase-label-row">
-                    <span class="phase-title">Phase Difference</span>
-                    <span class="phase-val" id="phaseDiffVal">0°</span>
-                </div>
-                <input type="range" id="phaseDiff" min="0" max="360" step="1" value="0">
-            </div>
-
-            <div style="display:flex;align-items:center;gap:10px;">
-                <canvas id="phaseArc" width="70" height="70"></canvas>
-            </div>
-
-            <div class="preset-section">
-                <div class="preset-row-label">Quick Presets</div>
-                <div class="presets">
-                    <button class="preset-btn active-c" data-phase="0" data-type="c">Constructive</button>
-                    <button class="preset-btn" data-phase="180" data-type="d">Destructive</button>
-                    <button class="preset-btn" data-phase="90" data-type="p">Partial</button>
-                </div>
-            </div>
-
-            <div class="preset-section">
-                <div class="preset-row-label">Speed</div>
-                <div class="presets">
-                    <button class="preset-btn" id="speedDown">–</button>
-                    <button class="preset-btn" id="speedReset" style="min-width:44px;">1×</button>
-                    <button class="preset-btn" id="speedUp">+</button>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="status-bar card3d">
+  <div class="status-item"><div class="status-label">Phase difference</div><div class="status-value sv-phase" id="phaseDisplay">0°</div></div>
+  <div class="status-item"><div class="status-label">Interference</div>
+    <div class="status-value"><span class="badge-dot dot-constructive" id="badgeDot"></span><span id="interferenceText" class="sv-constructive">Constructive</span></div></div>
+  <div class="status-item"><div class="status-label">Resultant amplitude</div><div class="status-value sv-amp" id="resultantAmp">2.00</div></div>
+  <div class="status-item"><div class="status-label">Wave speed</div><div class="status-value" style="color:var(--blue)" id="speedDisplay">1.0×</div></div>
 </div>
 
 <div class="legend">
-    <div class="legend-item">
-        <div class="legend-line" style="background:var(--cyan);box-shadow:0 0 6px var(--cyan);"></div>
-        Wave 1
+  <button class="btn3d" id="tog1"><span class="swatch" style="background:var(--blue)"></span>Wave 1</button>
+  <button class="btn3d" id="tog2"><span class="swatch" style="background:var(--pink)"></span>Wave 2</button>
+  <button class="btn3d" id="togR"><span class="swatch" style="background:var(--orange);height:8px"></span>Resultant</button>
+</div>
+<p class="hint">Hover or touch the graph to read exact values. Click the legend buttons to hide or show a wave.</p>
+</div>
+
+<div class="controls">
+  <div class="wave-card c1 card3d">
+    <div class="wave-title"><span class="title-pill pill-c">W1</span>Wave 1 (blue)</div>
+    <div class="slider-group"><div class="slider-label"><span>Amplitude</span><span id="amp1Val">1.0</span></div><input type="range" id="amp1" min="0.1" max="2.0" step="0.1" value="1.0"></div>
+    <div class="slider-group"><div class="slider-label"><span>Frequency</span><span id="freq1Val">1.0</span></div><input type="range" id="freq1" min="0.5" max="3.0" step="0.1" value="1.0"></div>
+    <div class="slider-group"><div class="slider-label"><span>Phase</span><span id="phase1Val">0°</span></div><input type="range" id="phase1" min="0" max="360" step="1" value="0"></div>
+  </div>
+
+  <div class="wave-card c2 card3d">
+    <div class="wave-title"><span class="title-pill pill-m">W2</span>Wave 2 (pink)</div>
+    <div class="slider-group"><div class="slider-label"><span>Amplitude</span><span id="amp2Val">1.0</span></div><input type="range" id="amp2" min="0.1" max="2.0" step="0.1" value="1.0"></div>
+    <div class="slider-group"><div class="slider-label"><span>Frequency</span><span id="freq2Val">1.0</span></div><input type="range" id="freq2" min="0.5" max="3.0" step="0.1" value="1.0"></div>
+    <div class="slider-group"><div class="slider-label"><span>Phase</span><span id="phase2Val">0°</span></div><input type="range" id="phase2" min="0" max="360" step="1" value="0"></div>
+  </div>
+
+  <div class="global-card card3d">
+    <div class="global-inner">
+            <div>
+        <div class="group-label">Quick presets</div>
+        <div class="presets">
+          <button class="btn3d active-c" data-phase="0" data-type="c">Constructive</button>
+          <button class="btn3d" data-phase="180" data-type="d">Destructive</button>
+          <button class="btn3d" data-phase="90" data-type="p">Partial</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="group-label">Playback and speed</div>
+        <div class="presets">
+          <button class="btn3d on" id="playPause" style="min-width:92px">⏸ Pause</button>
+          <button class="btn3d sm" id="speedDown">−</button>
+          <button class="btn3d sm" id="speedReset" style="min-width:46px">1×</button>
+          <button class="btn3d sm" id="speedUp">+</button>
+        </div>
+      </div>
     </div>
-    <div class="legend-item">
-        <div class="legend-line" style="background:var(--magenta);box-shadow:0 0 6px var(--magenta);"></div>
-        Wave 2
-    </div>
-    <div class="legend-item">
-        <div class="legend-line" style="background:#fff;box-shadow:0 0 6px #ffe566;height:3px;"></div>
-        Resultant (superposition)
-    </div>
+  </div>
+</div>
 </div>
 
 <script>
-const canvas = document.getElementById('waveCanvas');
-const ctx = canvas.getContext('2d');
-const arcCanvas = document.getElementById('phaseArc');
-const arcCtx = arcCanvas.getContext('2d');
+const canvas=document.getElementById('waveCanvas'),ctx=canvas.getContext('2d');
+const arcCanvas=document.getElementById('phaseArc'),arcCtx=arcCanvas.getContext('2d');
+const FONT="'Comic Sans MS','Comic Sans','Comic Neue',cursive";
 
-let wave1 = { amp: 1.0, freq: 1.0, phase: 0 };
-let wave2 = { amp: 1.0, freq: 1.0, phase: 0 };
-let phaseDiff = 0;
-let time = 0;
-let speed = 1.0;
+let wave1={amp:1,freq:1,phase:0},wave2={amp:1,freq:1,phase:0};
+let phaseDiff=0,time=0,speed=1,paused=false,mouseX=null;
+const show={w1:true,w2:true,r:true};
 
-const W = canvas.width;
-const H = canvas.height;
-const PAD = 55;
-const GW = W - 2*PAD;
-const CY = H / 2;
-const SCALE_Y = (H - 2*PAD) / 5;
-const SCALE_X = GW / (4 * Math.PI);
+const W=canvas.width,H=canvas.height,PAD=55,GW=W-2*PAD,CY=H/2;
+const SCALE_Y=(H-2*PAD)/5,SCALE_X=GW/(4*Math.PI);
+const $=id=>document.getElementById(id);
 
-// DOM refs
-const sliders = {
-    amp1: document.getElementById('amp1'),
-    freq1: document.getElementById('freq1'),
-    phase1: document.getElementById('phase1'),
-    amp2: document.getElementById('amp2'),
-    freq2: document.getElementById('freq2'),
-    phase2: document.getElementById('phase2'),
-    phaseDiff: document.getElementById('phaseDiff'),
-};
-const vals = {
-    amp1: document.getElementById('amp1Val'),
-    freq1: document.getElementById('freq1Val'),
-    phase1: document.getElementById('phase1Val'),
-    amp2: document.getElementById('amp2Val'),
-    freq2: document.getElementById('freq2Val'),
-    phase2: document.getElementById('phase2Val'),
-    phaseDiff: document.getElementById('phaseDiffVal'),
-};
+const sliders={amp1:$('amp1'),freq1:$('freq1'),phase1:$('phase1'),amp2:$('amp2'),freq2:$('freq2'),phase2:$('phase2'),phaseDiff:$('phaseDiff')};
+const vals={amp1:$('amp1Val'),freq1:$('freq1Val'),phase1:$('phase1Val'),amp2:$('amp2Val'),freq2:$('freq2Val'),phase2:$('phase2Val'),phaseDiff:$('phaseDiffVal')};
 
-function drawPhaseArc(deg) {
-    const c = arcCtx;
-    const r = 28, cx = 35, cy = 35;
-    c.clearRect(0, 0, 70, 70);
+function fillSlider(s){const p=(s.value-s.min)/(s.max-s.min)*100;s.style.setProperty('--pct',p+'%');}
+function fillAll(){Object.values(sliders).forEach(fillSlider);}
+function classify(n){return (n<15||n>345)?'c':(n>165&&n<195)?'d':'p';}
 
-    // Outer ring
-    c.beginPath();
-    c.arc(cx, cy, r, 0, Math.PI*2);
-    c.strokeStyle = '#1e1e35';
-    c.lineWidth = 3;
-    c.stroke();
-
-    // Fill arc
-    const rad = (deg - 90) * Math.PI / 180;
-    const startAngle = -Math.PI/2;
-    const endAngle = startAngle + deg * Math.PI/180;
-
-    let arcColor;
-    const n = ((deg % 360) + 360) % 360;
-    if (n < 15 || n > 345) arcColor = '#39ff88';
-    else if (n > 165 && n < 195) arcColor = '#ff4466';
-    else arcColor = '#ffb238';
-
-    c.beginPath();
-    c.moveTo(cx, cy);
-    c.arc(cx, cy, r, startAngle, endAngle, false);
-    c.closePath();
-    c.fillStyle = arcColor + '28';
-    c.fill();
-
-    c.beginPath();
-    c.arc(cx, cy, r, startAngle, endAngle, false);
-    c.strokeStyle = arcColor;
-    c.lineWidth = 2.5;
-    c.shadowColor = arcColor;
-    c.shadowBlur = 8;
-    c.stroke();
-    c.shadowBlur = 0;
-
-    // Center dot
-    c.beginPath();
-    c.arc(cx, cy, 3, 0, Math.PI*2);
-    c.fillStyle = '#ffffff55';
-    c.fill();
-
-    // Degree text
-    c.fillStyle = '#888';
-    c.font = '600 9px Space Mono, monospace';
-    c.textAlign = 'center';
-    c.textBaseline = 'middle';
-    c.fillText(deg + '°', cx, cy);
+function drawPhaseArc(deg){
+  const c=arcCtx,r=28,cx=35,cy=35;c.clearRect(0,0,70,70);
+  c.beginPath();c.arc(cx,cy,r,0,Math.PI*2);c.strokeStyle='#d5e0f3';c.lineWidth=5;c.stroke();
+  const k=classify(((deg%360)+360)%360);
+  const col=k==='c'?'#22b45e':k==='d'?'#ee4256':'#f2a100';
+  const a0=-Math.PI/2,a1=a0+deg*Math.PI/180;
+  c.beginPath();c.moveTo(cx,cy);c.arc(cx,cy,r,a0,a1);c.closePath();c.fillStyle=col+'33';c.fill();
+  c.beginPath();c.arc(cx,cy,r,a0,a1);c.strokeStyle=col;c.lineWidth=5;c.lineCap='round';c.stroke();
+  c.fillStyle='#22284a';c.font='700 12px '+FONT;c.textAlign='center';c.textBaseline='middle';c.fillText(deg+'°',cx,cy);
 }
 
-function updateDisplay() {
-    vals.amp1.textContent = wave1.amp.toFixed(1);
-    vals.freq1.textContent = wave1.freq.toFixed(1);
-    vals.phase1.textContent = wave1.phase + '°';
-    vals.amp2.textContent = wave2.amp.toFixed(1);
-    vals.freq2.textContent = wave2.freq.toFixed(1);
-    vals.phase2.textContent = wave2.phase + '°';
-    vals.phaseDiff.textContent = phaseDiff + '°';
-
-    document.getElementById('phaseDisplay').textContent = phaseDiff + '°';
-    document.getElementById('speedDisplay').textContent = speed.toFixed(1) + '×';
-
-    const n = ((phaseDiff % 360) + 360) % 360;
-    const dot = document.getElementById('badgeDot');
-    const txt = document.getElementById('interferenceText');
-    const container = document.getElementById('interferenceType');
-
-    if (n < 15 || n > 345) {
-        dot.className = 'badge-dot dot-constructive';
-        txt.textContent = 'Constructive';
-        txt.className = 'sv-constructive';
-    } else if (n > 165 && n < 195) {
-        dot.className = 'badge-dot dot-destructive';
-        txt.textContent = 'Destructive';
-        txt.className = 'sv-destructive';
-    } else {
-        dot.className = 'badge-dot dot-partial';
-        txt.textContent = 'Partial';
-        txt.className = 'sv-partial';
-    }
-
-    const phi1 = wave1.phase * Math.PI/180;
-    const phi2 = wave2.phase * Math.PI/180;
-    const resAmp = Math.sqrt(
-        wave1.amp**2 + wave2.amp**2 + 2*wave1.amp*wave2.amp*Math.cos(phi2 - phi1)
-    );
-    document.getElementById('resultantAmp').textContent = resAmp.toFixed(2);
-
-    drawPhaseArc(phaseDiff);
+function setActivePreset(){
+  document.querySelectorAll('.btn3d[data-phase]').forEach(b=>{
+    b.classList.remove('active-c','active-d','active-p');
+    if(parseInt(b.dataset.phase)===phaseDiff)b.classList.add('active-'+b.dataset.type);
+  });
 }
 
-function drawGrid() {
-    // Faint horizontal amplitude guides
-    ctx.strokeStyle = '#13132a';
-    ctx.lineWidth = 1;
-    [-2,-1,0,1,2].forEach(a => {
-        const y = CY - a * SCALE_Y;
-        ctx.beginPath();
-        ctx.moveTo(PAD, y);
-        ctx.lineTo(W - PAD, y);
-        ctx.stroke();
-        if (a !== 0) {
-            ctx.fillStyle = '#2a2a4a';
-            ctx.font = '10px Space Mono, monospace';
-            ctx.textAlign = 'right';
-            ctx.fillText((a > 0 ? '+' : '') + a, PAD - 6, y + 4);
-        }
-    });
-
-    // x-axis
-    ctx.strokeStyle = '#252540';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(PAD, CY);
-    ctx.lineTo(W - PAD, CY);
-    ctx.stroke();
-
-    // axis label
-    ctx.fillStyle = '#2e2e55';
-    ctx.font = '10px Space Grotesk, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('position →', W/2, H - 10);
-    ctx.textAlign = 'right';
-    ctx.fillText('A', PAD - 10, PAD + 4);
-    // YV Watermark
-    ctx.save();
-    ctx.globalAlpha = 0.08;
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '600 48px Space Grotesk, sans-serif';
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'bottom';
-    ctx.fillText('YV', W - PAD - 10, H - PAD - 10);
-    ctx.restore();
-
+function updateDisplay(){
+  vals.amp1.textContent=wave1.amp.toFixed(1);vals.freq1.textContent=wave1.freq.toFixed(1);vals.phase1.textContent=wave1.phase+'°';
+  vals.amp2.textContent=wave2.amp.toFixed(1);vals.freq2.textContent=wave2.freq.toFixed(1);vals.phase2.textContent=wave2.phase+'°';
+  vals.phaseDiff.textContent=phaseDiff+'°';
+  $('phaseDisplay').textContent=phaseDiff+'°';
+  $('speedDisplay').textContent=speed.toFixed(1)+'×';
+  $('speedReset').textContent=speed.toFixed(1)+'×';
+  const k=classify(((phaseDiff%360)+360)%360);
+  const names={c:'Constructive',d:'Destructive',p:'Partial'},cls={c:'constructive',d:'destructive',p:'partial'};
+  $('badgeDot').className='badge-dot dot-'+cls[k];
+  $('interferenceText').textContent=names[k];
+  $('interferenceText').className='sv-'+cls[k];
+  const d=(wave2.phase-wave1.phase)*Math.PI/180;
+  $('resultantAmp').textContent=Math.sqrt(wave1.amp**2+wave2.amp**2+2*wave1.amp*wave2.amp*Math.cos(d)).toFixed(2);
+  drawPhaseArc(phaseDiff);fillAll();
 }
 
-// Glow trail effect — draw wave with multiple passes
-function drawWave(amp, freq, phase, color, time, alpha, lw) {
-    const phRad = phase * Math.PI/180;
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    ctx.strokeStyle = color;
-    ctx.lineWidth = lw;
-    ctx.shadowColor = color;
-    ctx.shadowBlur = 18;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.beginPath();
-    for (let px = 0; px <= GW; px += 1.5) {
-        const x = px / SCALE_X;
-        const y = amp * Math.sin(freq * x - time * 2 * speed + phRad);
-        const cx2 = PAD + px;
-        const cy2 = CY - y * SCALE_Y;
-        px === 0 ? ctx.moveTo(cx2, cy2) : ctx.lineTo(cx2, cy2);
-    }
-    ctx.stroke();
-    ctx.restore();
+function yAt(w,x){return w.amp*Math.sin(w.freq*x-time*2*speed+w.phase*Math.PI/180);}
+
+function drawGrid(){
+  ctx.lineWidth=1;ctx.font='12px '+FONT;
+  [-2,-1,0,1,2].forEach(a=>{
+    const y=CY-a*SCALE_Y;
+    ctx.strokeStyle='#e1e9f6';ctx.beginPath();ctx.moveTo(PAD,y);ctx.lineTo(W-PAD,y);ctx.stroke();
+    if(a!==0){ctx.fillStyle='#8a94b5';ctx.textAlign='right';ctx.fillText((a>0?'+':'')+a,PAD-8,y+4);}
+  });
+  ctx.strokeStyle='#22284a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(PAD,CY);ctx.lineTo(W-PAD,CY);ctx.stroke();
+  ctx.fillStyle='#8a94b5';ctx.textAlign='center';ctx.fillText('position →',W/2,H-12);
+  ctx.textAlign='right';ctx.fillText('A',PAD-10,PAD+4);
+  ctx.save();ctx.globalAlpha=0.09;ctx.fillStyle='#22284a';ctx.font='700 48px '+FONT;ctx.textAlign='right';ctx.textBaseline='bottom';
+  ctx.fillText('YV',W-PAD-10,H-PAD-10);ctx.restore();
 }
 
-function drawResultant(time) {
-    const phi1 = wave1.phase * Math.PI/180;
-    const phi2 = wave2.phase * Math.PI/180;
-    ctx.save();
-    ctx.lineWidth = 3;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.shadowColor = '#ffe566';
-    ctx.shadowBlur = 22;
-    ctx.strokeStyle = '#ffffff';
-    ctx.beginPath();
-    for (let px = 0; px <= GW; px += 1.5) {
-        const x = px / SCALE_X;
-        const y1 = wave1.amp * Math.sin(wave1.freq * x - time * 2 * speed + phi1);
-        const y2 = wave2.amp * Math.sin(wave2.freq * x - time * 2 * speed + phi2);
-        const y = y1 + y2;
-        const cx2 = PAD + px;
-        const cy2 = CY - y * SCALE_Y;
-        px === 0 ? ctx.moveTo(cx2, cy2) : ctx.lineTo(cx2, cy2);
-    }
-    ctx.stroke();
-
-    // Second thin bright pass for crispness
-    ctx.shadowBlur = 4;
-    ctx.lineWidth = 1.5;
-    ctx.strokeStyle = '#ffe566';
-    ctx.beginPath();
-    for (let px = 0; px <= GW; px += 1.5) {
-        const x = px / SCALE_X;
-        const y1 = wave1.amp * Math.sin(wave1.freq * x - time * 2 * speed + phi1);
-        const y2 = wave2.amp * Math.sin(wave2.freq * x - time * 2 * speed + phi2);
-        const y = y1 + y2;
-        const cx2 = PAD + px;
-        const cy2 = CY - y * SCALE_Y;
-        px === 0 ? ctx.moveTo(cx2, cy2) : ctx.lineTo(cx2, cy2);
-    }
-    ctx.stroke();
-    ctx.restore();
+function drawCurve(fn,color,lw,shadow){
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+  if(shadow){ctx.beginPath();for(let px=0;px<=GW;px+=2){const y=fn(px/SCALE_X);px?ctx.lineTo(PAD+px,CY-y*SCALE_Y+4):ctx.moveTo(PAD,CY-y*SCALE_Y+4);}
+    ctx.strokeStyle='rgba(34,40,74,.25)';ctx.lineWidth=lw;ctx.stroke();}
+  ctx.beginPath();
+  for(let px=0;px<=GW;px+=2){const y=fn(px/SCALE_X);px?ctx.lineTo(PAD+px,CY-y*SCALE_Y):ctx.moveTo(PAD,CY-y*SCALE_Y);}
+  ctx.strokeStyle=color;ctx.lineWidth=lw;ctx.stroke();ctx.restore();
 }
 
-function animate() {
-    ctx.clearRect(0, 0, W, H);
-    drawGrid();
-    drawWave(wave1.amp, wave1.freq, wave1.phase, '#00e5ff', time, 0.28, 2);
-    drawWave(wave2.amp, wave2.freq, wave2.phase, '#ff00cc', time, 0.28, 2);
-    drawResultant(time);
-    time += 0.025;
-    requestAnimationFrame(animate);
+function drawProbe(){
+  if(mouseX===null)return;
+  const px=Math.min(GW,Math.max(0,mouseX-PAD)),x=px/SCALE_X,X=PAD+px;
+  const y1=yAt(wave1,x),y2=yAt(wave2,x),yr=y1+y2;
+  ctx.save();ctx.setLineDash([6,5]);ctx.strokeStyle='#7c5cff';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(X,PAD/2);ctx.lineTo(X,H-PAD/2);ctx.stroke();ctx.setLineDash([]);
+  const dots=[[show.w1,y1,'#1e88e5'],[show.w2,y2,'#e8318f'],[show.r,yr,'#ff8a00']];
+  dots.forEach(([on,y,col])=>{if(!on)return;ctx.beginPath();ctx.arc(X,CY-y*SCALE_Y,7,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();ctx.strokeStyle='#22284a';ctx.lineWidth=3;ctx.stroke();});
+  const lines=[['y₁ = '+y1.toFixed(2),'#1e88e5'],['y₂ = '+y2.toFixed(2),'#e8318f'],['y = '+yr.toFixed(2),'#ff8a00']];
+  const bw=104,bh=70,bx=X+16+bw>W-8?X-16-bw:X+16,by=PAD/2+6;
+  ctx.fillStyle='rgba(34,40,74,.25)';ctx.fillRect(bx+3,by+4,bw,bh);
+  ctx.fillStyle='#fff';ctx.strokeStyle='#22284a';ctx.lineWidth=2.5;ctx.fillRect(bx,by,bw,bh);ctx.strokeRect(bx,by,bw,bh);
+  ctx.font='700 13px '+FONT;ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  lines.forEach(([t,c],i)=>{ctx.fillStyle=c;ctx.fillText(t,bx+10,by+21+i*20);});
+  ctx.restore();
 }
 
-// Listeners
-sliders.amp1.addEventListener('input', e => { wave1.amp = parseFloat(e.target.value); updateDisplay(); });
-sliders.freq1.addEventListener('input', e => { wave1.freq = parseFloat(e.target.value); updateDisplay(); });
-sliders.phase1.addEventListener('input', e => {
-    wave1.phase = parseInt(e.target.value);
-    phaseDiff = ((wave2.phase - wave1.phase) % 360 + 360) % 360;
-    sliders.phaseDiff.value = phaseDiff;
-    updateDisplay();
-});
-sliders.amp2.addEventListener('input', e => { wave2.amp = parseFloat(e.target.value); updateDisplay(); });
-sliders.freq2.addEventListener('input', e => { wave2.freq = parseFloat(e.target.value); updateDisplay(); });
-sliders.phase2.addEventListener('input', e => {
-    wave2.phase = parseInt(e.target.value);
-    phaseDiff = ((wave2.phase - wave1.phase) % 360 + 360) % 360;
-    sliders.phaseDiff.value = phaseDiff;
-    updateDisplay();
-});
-sliders.phaseDiff.addEventListener('input', e => {
-    phaseDiff = parseInt(e.target.value);
-    wave2.phase = ((wave1.phase + phaseDiff) % 360 + 360) % 360;
-    sliders.phase2.value = wave2.phase;
-    updateDisplay();
-    document.querySelectorAll('.preset-btn[data-phase]').forEach(b => {
-        b.classList.remove('active-c','active-d','active-p');
-    });
+function animate(){
+  ctx.clearRect(0,0,W,H);drawGrid();
+  if(show.w1)drawCurve(x=>yAt(wave1,x),'#1e88e5',3,false);
+  if(show.w2)drawCurve(x=>yAt(wave2,x),'#e8318f',3,false);
+  if(show.r)drawCurve(x=>yAt(wave1,x)+yAt(wave2,x),'#ff8a00',5,true);
+  drawProbe();
+  if(!paused)time+=0.025;
+  requestAnimationFrame(animate);
+}
+
+// canvas probe
+function setProbe(e){const r=canvas.getBoundingClientRect();const t=e.touches?e.touches[0]:e;mouseX=(t.clientX-r.left)*W/r.width;}
+canvas.addEventListener('mousemove',setProbe);
+canvas.addEventListener('mouseleave',()=>mouseX=null);
+canvas.addEventListener('touchstart',setProbe,{passive:true});
+canvas.addEventListener('touchmove',setProbe,{passive:true});
+canvas.addEventListener('touchend',()=>mouseX=null);
+
+// sliders
+function syncDiffFromWaves(){phaseDiff=((wave2.phase-wave1.phase)%360+360)%360;sliders.phaseDiff.value=phaseDiff;setActivePreset();}
+sliders.amp1.addEventListener('input',e=>{wave1.amp=parseFloat(e.target.value);updateDisplay();});
+sliders.freq1.addEventListener('input',e=>{wave1.freq=parseFloat(e.target.value);updateDisplay();});
+sliders.phase1.addEventListener('input',e=>{wave1.phase=parseInt(e.target.value);syncDiffFromWaves();updateDisplay();});
+sliders.amp2.addEventListener('input',e=>{wave2.amp=parseFloat(e.target.value);updateDisplay();});
+sliders.freq2.addEventListener('input',e=>{wave2.freq=parseFloat(e.target.value);updateDisplay();});
+sliders.phase2.addEventListener('input',e=>{wave2.phase=parseInt(e.target.value);syncDiffFromWaves();updateDisplay();});
+function setDiff(v){
+  phaseDiff=((v%360)+360)%360;
+  wave2.phase=((wave1.phase+phaseDiff)%360+360)%360;
+  sliders.phaseDiff.value=phaseDiff;sliders.phase2.value=wave2.phase;
+  setActivePreset();updateDisplay();
+}
+sliders.phaseDiff.addEventListener('input',e=>setDiff(parseInt(e.target.value)));
+$('phaseMinus').addEventListener('click',()=>setDiff(phaseDiff-15));
+$('phasePlus').addEventListener('click',()=>setDiff(phaseDiff+15));
+document.querySelectorAll('.btn3d[data-phase]').forEach(b=>b.addEventListener('click',()=>setDiff(parseInt(b.dataset.phase))));
+
+// speed + playback
+$('speedUp').addEventListener('click',()=>{speed=Math.min(3,+(speed+0.5).toFixed(1));updateDisplay();});
+$('speedDown').addEventListener('click',()=>{speed=Math.max(0.1,+(speed-0.5).toFixed(1));updateDisplay();});
+$('speedReset').addEventListener('click',()=>{speed=1;updateDisplay();});
+$('playPause').addEventListener('click',e=>{paused=!paused;e.currentTarget.textContent=paused?'▶ Play':'⏸ Pause';e.currentTarget.classList.toggle('on',!paused);});
+
+// legend toggles
+[['tog1','w1'],['tog2','w2'],['togR','r']].forEach(([id,k])=>{
+  $(id).addEventListener('click',e=>{show[k]=!show[k];e.currentTarget.classList.toggle('off',!show[k]);});
 });
 
-document.querySelectorAll('.preset-btn[data-phase]').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('.preset-btn[data-phase]').forEach(b => b.classList.remove('active-c','active-d','active-p'));
-        const t = btn.dataset.type;
-        btn.classList.add(t === 'c' ? 'active-c' : t === 'd' ? 'active-d' : 'active-p');
-        phaseDiff = parseInt(btn.dataset.phase);
-        wave2.phase = ((wave1.phase + phaseDiff) % 360 + 360) % 360;
-        sliders.phaseDiff.value = phaseDiff;
-        sliders.phase2.value = wave2.phase;
-        updateDisplay();
-    });
-});
-
-document.getElementById('speedUp').addEventListener('click', () => { speed = Math.min(3, +(speed + 0.5).toFixed(1)); updateDisplay(); });
-document.getElementById('speedDown').addEventListener('click', () => { speed = Math.max(0.1, +(speed - 0.5).toFixed(1)); updateDisplay(); });
-document.getElementById('speedReset').addEventListener('click', () => { speed = 1.0; updateDisplay(); });
-
-updateDisplay();
-animate();
+setActivePreset();updateDisplay();animate();
 </script>
 </body>
 </html>
