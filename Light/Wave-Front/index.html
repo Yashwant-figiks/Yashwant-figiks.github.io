@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wave Sources – Point, Linear, Plane</title>
+<style>
+:root{--bg:#f6f7f9;--fg:#1c2230;--muted:#5b6475;--card:#fff;--line:#d5d9e2;--acc:#d33a3a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12151c;--fg:#e8ebf2;--muted:#9aa3b5;--card:#1b2030;--line:#2e3548;--acc:#ff6b6b}}
+:root[data-theme="dark"]{--bg:#12151c;--fg:#e8ebf2;--muted:#9aa3b5;--card:#1b2030;--line:#2e3548;--acc:#ff6b6b}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:14px;max-width:960px;margin-inline:auto}
+h1{font-size:1.25rem;margin:0 0 4px}
+p.sub{margin:0 0 12px;color:var(--muted);font-size:.9rem}
+canvas{width:100%;display:block;border-radius:12px;border:1px solid var(--line);background:#0e1320;touch-action:none}
+.tabs,.btns{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.btns{margin:12px 0 0}
+button{background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:.85rem;cursor:pointer}
+button:hover{border-color:var(--acc)}
+button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 18px}
+label{display:flex;flex-direction:column;font-size:.82rem;color:var(--muted);gap:3px}
+label b{color:var(--fg);font-weight:600}
+input[type=range]{width:100%}
+.info{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:12px;font-size:.88rem;line-height:1.55}
+.info h2{font-size:1rem;margin:0 0 6px}
+.info code{background:var(--bg);padding:1px 6px;border-radius:5px}
+</style>
+</head>
+<body>
+<h1>Wave Sources &amp; Their Wavefronts</h1>
+<p class="sub">See how the shape of the wavefront depends on the shape of the source. Drag the canvas to rotate.</p>
+
+<div class="tabs" id="tabs">
+  <button data-m="point" class="on">● Point source</button>
+  <button data-m="line">│ Linear source</button>
+  <button data-m="plane">▭ Plane source</button>
+</div>
+
+<canvas id="c" width="900" height="620"></canvas>
+
+<div class="btns">
+  <button id="play">⏸ Pause</button>
+  <button id="v3d">3D view</button>
+  <button id="vtop">Top view</button>
+  <button id="vside">Angled view</button>
+  <button id="sty">Style: Wireframe → switch to Solid fade</button>
+</div>
+
+<div class="panel">
+  <label>Wavelength λ: <b id="lv">1.5</b><input id="lam" type="range" min="0.8" max="3" step="0.05" value="1.5"></label>
+  <label>Wave speed: <b id="sv">1.0</b><input id="spd" type="range" min="0.2" max="3" step="0.1" value="1"></label>
+  <label>Rotate (yaw): <b id="yv">35°</b><input id="yaw" type="range" min="-180" max="180" step="1" value="35"></label>
+  <label>Tilt (elevation): <b id="ev">32°</b><input id="elv" type="range" min="10" max="90" step="1" value="32"></label>
+</div>
+
+<div class="info" id="info"></div>
+
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const $=id=>document.getElementById(id);
+let mode='point',sty='wire',lam=1.5,spd=1,yaw=35,elev=32,playing=true,t=0,last=performance.now();
+const H=4,W=6;
+const INFO={
+ point:{c:[255,190,70],t:'Point source → spherical wavefronts',
+  d:'Waves spread equally in all directions, so wavefronts are concentric <b>spheres</b>. Surface area grows as 4πr², so intensity falls as <code>I ∝ 1/r²</code> and amplitude as <code>A ∝ 1/r</code>. Notice the rings fading as they expand.'},
+ line:{c:[90,230,180],t:'Linear source → cylindrical wavefronts',
+  d:'A long straight line source (e.g. a slit or a tube light) emits coaxial <b>cylinders</b>. Area grows as 2πrL, so <code>I ∝ 1/r</code> and <code>A ∝ 1/√r</code>. The top view looks like circles, the side view like straight lines.'},
+ plane:{c:[255,100,100],t:'Plane source → plane wavefronts',
+  d:'A large flat source (or a point source very far away) emits parallel <b>planes</b>. Area stays constant, so intensity does not fall: <code>I = constant</code>. This is the ideal plane wave of the diffraction and interference experiments.'}
+};
+
+function fit(){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;cv.width=r.width*d;cv.height=r.width*0.68*d;cv.style.height=(r.width*0.68)+'px';}
+window.addEventListener('resize',fit);fit();
+
+function ctr(){return mode==='plane'?[3.5,0,H/2]:[0,0,H/2];}
+function P(x,y,z){
+  const f=yaw*Math.PI/180,e=elev*Math.PI/180,c=ctr();
+  x-=c[0];y-=c[1];z-=c[2];
+  const A=x*Math.cos(f)-y*Math.sin(f),B=x*Math.sin(f)+y*Math.cos(f);
+  const u=B,v=z*Math.cos(e)+A*Math.sin(e);
+  const s=cv.width/(mode==='plane'?19:16);
+  return [cv.width/2+u*s,cv.height/2-v*s];
+}
+function poly(pts,fill,stroke,lw){
+  ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();
+  if(fill){ctx.fillStyle=fill;ctx.fill();}
+  if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw||1;ctx.stroke();}
+}
+function line(pts,stroke,lw){
+  ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));
+  ctx.strokeStyle=stroke;ctx.lineWidth=lw;ctx.stroke();
+}
+const rgba=(c,a)=>`rgba(${c[0]},${c[1]},${c[2]},${a})`;
+function circ(r,cx,cy,cz,plane,n){ // plane: 'xy','xz','yz' or generic tilted by angle
+  const pts=[];n=n||64;
+  for(let i=0;i<=n;i++){const q=2*Math.PI*i/n,a=r*Math.cos(q),b=r*Math.sin(q);
+    if(plane==='xy')pts.push(P(cx+a,cy+b,cz));
+    else if(plane==='xz')pts.push(P(cx+a,cy,cz+b));
+    else pts.push(P(cx,cy+a,cz+b));}
+  return pts;
+}
+// vertical great circle at azimuth phi
+function mer(r,phi,cz){const pts=[],n=64;
+  for(let i=0;i<=n;i++){const q=2*Math.PI*i/n;pts.push(P(r*Math.cos(q)*Math.cos(phi),r*Math.cos(q)*Math.sin(phi),cz+r*Math.sin(q)));}
+  return pts;}
+
+function drawPointSolid(p,c){
+  const cz=H/2,o=P(0,0,cz),s=cv.width/16,list=[],RMAX=5.8;
+  for(let j=0;j<=8;j++){const r=p+j*lam;if(r>RMAX)break;if(r>0.03)list.push(r);}
+  list.reverse().forEach(r=>{
+    const k=Math.max(0,1-r/RMAX),al=Math.pow(k,1.4),R=r*s;
+    const g=ctx.createRadialGradient(o[0],o[1],0,o[0],o[1],R);
+    g.addColorStop(0,rgba(c,al*0.30));g.addColorStop(0.7,rgba(c,al*0.42));g.addColorStop(1,rgba(c,al*0.95));
+    ctx.beginPath();ctx.arc(o[0],o[1],R,0,7);ctx.fillStyle=g;ctx.fill();
+    ctx.strokeStyle=rgba([255,235,200],al*0.9);ctx.lineWidth=1.4;ctx.stroke();
+  });
+  const g2=ctx.createRadialGradient(o[0],o[1],0,o[0],o[1],30);
+  g2.addColorStop(0,'rgba(255,255,235,1)');g2.addColorStop(0.35,rgba(c,0.85));g2.addColorStop(1,rgba(c,0));
+  ctx.fillStyle=g2;ctx.beginPath();ctx.arc(o[0],o[1],30,0,7);ctx.fill();
+}
+function drawPoint(p,c){
+  if(sty==='solid'){drawPointSolid(p,c);return;}
+  const cz=H/2,list=[];
+  for(let j=0;j<=8;j++){const r=p+j*lam;if(r>5.8)break;if(r>0.05)list.push(r);}
+  list.reverse().forEach(r=>{
+    const al=Math.min(0.9,0.12+1.0/(r+0.8));
+    poly(circ(r,0,0,cz,'xy'),rgba(c,al*0.10),null);
+    line(circ(r,0,0,cz,'xy'),rgba(c,al),1.6);
+    for(let k=0;k<4;k++)line(mer(r,k*Math.PI/4,cz),rgba(c,al*0.55),1);
+    [0.5,-0.5].forEach(s=>{const rr=r*Math.sqrt(1-s*s);line(circ(rr,0,0,cz+r*s,'xy',48),rgba(c,al*0.4),1);});
+  });
+  const o=P(0,0,cz),g=ctx.createRadialGradient(o[0],o[1],0,o[0],o[1],26);
+  g.addColorStop(0,'rgba(255,255,230,1)');g.addColorStop(0.3,rgba(c,0.8));g.addColorStop(1,rgba(c,0));
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(o[0],o[1],26,0,7);ctx.fill();
+}
+function drawLineSolid(p,c){
+  const list=[],n=56,RMAX=5.8;
+  for(let j=0;j<=8;j++){const r=p+j*lam;if(r>RMAX)break;if(r>0.03)list.push(r);}
+  list.reverse().forEach(r=>{
+    const al=Math.pow(Math.max(0,1-r/RMAX),1.4);
+    const top=[],bot=[];
+    for(let i=0;i<n;i++){const q=2*Math.PI*i/n;top.push(P(r*Math.cos(q),r*Math.sin(q),H));bot.push(P(r*Math.cos(q),r*Math.sin(q),0));}
+    poly(bot,rgba(c,al*0.16),null);
+    for(let i=0;i<n;i++){const k=(i+1)%n;poly([bot[i],bot[k],top[k],top[i]],rgba(c,al*0.30),null);}
+    poly(top,rgba(c,al*0.16),rgba([235,255,245],al*0.9),1.4);
+    poly(bot,null,rgba([235,255,245],al*0.9),1.4);
+  });
+  line([P(0,0,-0.3),P(0,0,H+0.3)],'rgba(255,255,255,0.95)',5);
+  line([P(0,0,-0.3),P(0,0,H+0.3)],rgba(c,1),3);
+}
+function drawLine(p,c){
+  if(sty==='solid'){drawLineSolid(p,c);return;}
+  const list=[],n=56;
+  for(let j=0;j<=8;j++){const r=p+j*lam;if(r>5.8)break;if(r>0.05)list.push(r);}
+  list.reverse().forEach(r=>{
+    const al=Math.min(0.9,0.12+0.9/Math.sqrt(r+0.5)-0.2);
+    for(let i=0;i<n;i++){
+      const q1=2*Math.PI*i/n,q2=2*Math.PI*(i+1)/n;
+      poly([P(r*Math.cos(q1),r*Math.sin(q1),0),P(r*Math.cos(q2),r*Math.sin(q2),0),P(r*Math.cos(q2),r*Math.sin(q2),H),P(r*Math.cos(q1),r*Math.sin(q1),H)],rgba(c,al*0.09),null);
+    }
+    line(circ(r,0,0,0,'xy'),rgba(c,al),1.5);line(circ(r,0,0,H,'xy'),rgba(c,al),1.5);
+    for(let k=0;k<12;k++){const q=2*Math.PI*k/12;line([P(r*Math.cos(q),r*Math.sin(q),0),P(r*Math.cos(q),r*Math.sin(q),H)],rgba(c,al*0.35),1);}
+  });
+  line([P(0,0,-0.3),P(0,0,H+0.3)],'rgba(255,255,255,0.95)',5);
+  line([P(0,0,-0.3),P(0,0,H+0.3)],rgba(c,1),3);
+}
+function drawPlaneSolid(p,c){
+  const list=[],XMAX=10;
+  for(let j=0;j<=9;j++){const x=p+j*lam;if(x>XMAX)break;if(x>0.03)list.push(x);}
+  list.reverse().forEach(x=>{
+    const al=Math.pow(Math.max(0,1-x/XMAX),1.3);
+    poly([P(x,-W,0),P(x,W,0),P(x,W,H),P(x,-W,H)],rgba(c,al*0.45),rgba([255,235,235],al*0.9),1.4);
+  });
+  poly([P(0,-W,0),P(0,W,0),P(0,W,H),P(0,-W,H)],'rgba(255,230,230,0.5)','rgba(255,255,255,0.95)',2.5);
+}
+function drawPlane(p,c){
+  if(sty==='solid'){drawPlaneSolid(p,c);return;}
+  const list=[];
+  for(let j=0;j<=9;j++){const x=p+j*lam;if(x>10)break;if(x>0.05)list.push(x);}
+  list.reverse().forEach(x=>{
+    const al=0.6;
+    poly([P(x,-W,0),P(x,W,0),P(x,W,H),P(x,-W,H)],rgba(c,al*0.22),rgba(c,al),1.4);
+  });
+  poly([P(0,-W,0),P(0,W,0),P(0,W,H),P(0,-W,H)],'rgba(255,230,230,0.35)','rgba(255,255,255,0.95)',2.5);
+}
+function draw(){
+  ctx.clearRect(0,0,cv.width,cv.height);
+  const c=INFO[mode].c;
+  for(let x=-10;x<=12;x+=2)line([P(x,-9,0),P(x,9,0)],'rgba(255,255,255,0.05)',1);
+  for(let y=-8;y<=8;y+=2)line([P(-10,y,0),P(12,y,0)],'rgba(255,255,255,0.05)',1);
+  const p=(t*spd)%lam;
+  if(mode==='point')drawPoint(p,c);else if(mode==='line')drawLine(p,c);else drawPlane(p,c);
+}
+function loop(now){const dt=(now-last)/1000;last=now;if(playing)t+=dt;draw();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+
+function setMode(m){
+  mode=m;
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
+  const i=INFO[m];$('info').innerHTML='<h2>'+i.t+'</h2>'+i.d;
+}
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+function sync(){
+  $('lv').textContent=lam.toFixed(2);$('sv').textContent=spd.toFixed(1);
+  $('yv').textContent=Math.round(yaw)+'°';$('ev').textContent=Math.round(elev)+'°';
+  $('lam').value=lam;$('spd').value=spd;$('yaw').value=yaw;$('elv').value=elev;
+}
+$('lam').oninput=e=>{lam=+e.target.value;sync()};
+$('spd').oninput=e=>{spd=+e.target.value;sync()};
+$('yaw').oninput=e=>{yaw=+e.target.value;sync()};
+$('elv').oninput=e=>{elev=+e.target.value;sync()};
+$('play').onclick=()=>{playing=!playing;$('play').textContent=playing?'⏸ Pause':'▶ Play'};
+$('v3d').onclick=()=>{yaw=35;elev=32;sync()};
+$('vtop').onclick=()=>{yaw=90;elev=90;sync()};
+$('vside').onclick=()=>{yaw=-40;elev=18;sync()};
+$('sty').onclick=()=>{sty=sty==='wire'?'solid':'wire';$('sty').textContent=sty==='wire'?'Style: Wireframe → switch to Solid fade':'Style: Solid fade → switch to Wireframe';};
+let drag=null;
+cv.addEventListener('pointerdown',e=>{drag=[e.clientX,e.clientY,yaw,elev];cv.setPointerCapture(e.pointerId)});
+cv.addEventListener('pointermove',e=>{if(!drag)return;yaw=Math.max(-180,Math.min(180,drag[2]+(e.clientX-drag[0])*0.4));elev=Math.max(10,Math.min(90,drag[3]+(e.clientY-drag[1])*0.3));sync()});
+cv.addEventListener('pointerup',()=>drag=null);
+sync();setMode('point');
+</script>
+</body>
+</html>
