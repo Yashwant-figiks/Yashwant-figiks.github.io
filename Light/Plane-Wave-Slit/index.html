@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wavefronts at a Slit – Huygens Simulation</title>
+<style>
+:root{--bg:#f6f7f9;--fg:#1c2230;--muted:#5b6475;--card:#fff;--line:#d5d9e2;--acc:#d33a3a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12151c;--fg:#e8ebf2;--muted:#9aa3b5;--card:#1b2030;--line:#2e3548;--acc:#ff6b6b}}
+:root[data-theme="dark"]{--bg:#12151c;--fg:#e8ebf2;--muted:#9aa3b5;--card:#1b2030;--line:#2e3548;--acc:#ff6b6b}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:14px;max-width:960px;margin-inline:auto}
+h1{font-size:1.25rem;margin:0 0 4px}
+p.sub{margin:0 0 12px;color:var(--muted);font-size:.9rem}
+canvas{width:100%;display:block;border-radius:12px;border:1px solid var(--line);background:#0e1320;touch-action:none}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px 18px}
+label{display:flex;flex-direction:column;font-size:.82rem;color:var(--muted);gap:3px}
+label b{color:var(--fg);font-weight:600}
+input[type=range]{width:100%}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+button{background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:.85rem;cursor:pointer}
+button:hover{border-color:var(--acc)}
+.legend{font-size:.82rem;color:var(--muted);margin-top:10px;line-height:1.5}
+.dot{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:middle}
+</style>
+</head>
+<body>
+<h1>Wavefronts at a Slit (Huygens' Principle)</h1>
+<p class="sub">Plane wavefronts hit a barrier; the slit lets through a portion that spreads into curved (cylindrical) wavefronts.</p>
+<canvas id="c" width="900" height="620"></canvas>
+
+<div class="btns">
+  <button id="play">⏸ Pause</button>
+  <button id="v3d">3D view</button>
+  <button id="vtop">Top view</button>
+  <button id="vside">Angled view</button>
+</div>
+
+<div class="panel">
+  <label>Wavelength λ: <b id="lv">1.5</b><input id="lam" type="range" min="0.8" max="3" step="0.05" value="1.5"></label>
+  <label>Slit width a: <b id="av">0.8</b><input id="sw" type="range" min="0.2" max="6" step="0.05" value="0.8"></label>
+  <label>Wave speed: <b id="sv">1.0</b><input id="spd" type="range" min="0.2" max="3" step="0.1" value="1"></label>
+  <label>Rotate (yaw): <b id="yv">35°</b><input id="yaw" type="range" min="-180" max="180" step="1" value="35"></label>
+  <label>Tilt (elevation): <b id="ev">32°</b><input id="elv" type="range" min="10" max="90" step="1" value="32"></label>
+</div>
+
+<div class="legend">
+  <span class="dot" style="background:#ff5a5a"></span>Incident plane wavefronts (brighter = closer to barrier) &nbsp;
+  <span class="dot" style="background:#8fa8ff"></span>Diffracted wavefronts from the slit &nbsp;
+  <span class="dot" style="background:#c9ceda"></span>Barrier.<br>
+  Narrow slit (a ≲ λ) → almost perfect semicircles. Wide slit → flat centre with curved edges. Drag on the canvas to rotate.
+</div>
+
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const $=id=>document.getElementById(id);
+let lam=1.5,a=0.8,spd=1,yaw=35,elev=32,playing=true,t=0,last=performance.now();
+const W=6,H=3,T=0.3; // barrier half-width, height, thickness
+
+function fit(){const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;cv.width=r.width*d;cv.height=r.width*0.68*d;cv.style.height=(r.width*0.68)+'px';}
+window.addEventListener('resize',fit);fit();
+
+function P(x,y,z){
+  const f=yaw*Math.PI/180,e=elev*Math.PI/180;
+  const A=x*Math.cos(f)-y*Math.sin(f), B=x*Math.sin(f)+y*Math.cos(f);
+  const u=B, v=z*Math.cos(e)+A*Math.sin(e);
+  const s=cv.width/(elev>80?19:17);
+  return [cv.width/2+(u-(0))*s, cv.height*0.56-(v-(1.2*Math.sin(e)+H*0.5*Math.cos(e)))*s];
+}
+function poly(pts,fill,stroke,lw){
+  ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();
+  if(fill){ctx.fillStyle=fill;ctx.fill();}
+  if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw||1;ctx.stroke();}
+}
+function line(pts,stroke,lw){
+  ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));
+  ctx.strokeStyle=stroke;ctx.lineWidth=lw;ctx.stroke();
+}
+function box(x0,x1,y0,y1,z0,z1){
+  const c=(x,y,z)=>P(x,y,z);
+  const faces=[
+    [c(x0,y0,z0),c(x1,y0,z0),c(x1,y0,z1),c(x0,y0,z1)],
+    [c(x0,y1,z0),c(x1,y1,z0),c(x1,y1,z1),c(x0,y1,z1)],
+    [c(x0,y0,z0),c(x0,y1,z0),c(x0,y1,z1),c(x0,y0,z1)],
+    [c(x1,y0,z0),c(x1,y1,z0),c(x1,y1,z1),c(x1,y0,z1)],
+    [c(x0,y0,z1),c(x1,y0,z1),c(x1,y1,z1),c(x0,y1,z1)]
+  ];
+  faces.forEach(f=>poly(f,'rgba(205,210,225,0.30)','rgba(235,238,248,0.75)',1.2));
+}
+// curve of a diffracted wavefront of radius r (x>0 side), slit half-width h=a/2
+function frontCurve(r){
+  const h=a/2,pts=[],n=40;
+  for(let i=0;i<=n;i++){const th=Math.PI/2*(1-i/n);pts.push([r*Math.cos(th),-h-r*Math.sin(th)]);} // lower arc: from y=-h-r up to y=-h
+  pts.push([r,-h]); pts.push([r,h]);
+  for(let i=0;i<=n;i++){const th=Math.PI/2*(i/n);pts.push([r*Math.cos(th),h+r*Math.sin(th)]);}
+  // clean: lower arc begins at theta=pi/2 -> (0,-h-r), ends theta=0 -> (r,-h)
+  return pts;
+}
+function surf(curve,fill,stroke,lw){
+  const bot=curve.map(p=>P(p[0],p[1],0)),top=curve.map(p=>P(p[0],p[1],H));
+  poly(bot.concat(top.slice().reverse()),fill,null);
+  line(top,stroke,lw);line(bot,stroke,lw);
+  // vertical end edges
+  line([bot[0],top[0]],stroke,lw);line([bot[bot.length-1],top[top.length-1]],stroke,lw);
+}
+
+function draw(){
+  ctx.clearRect(0,0,cv.width,cv.height);
+  const d=window.devicePixelRatio||1;
+  // floor grid
+  ctx.lineWidth=1;
+  for(let x=-8;x<=12;x+=2){line([P(x,-9,0),P(x,9,0)],'rgba(255,255,255,0.05)',1);}
+  for(let y=-8;y<=8;y+=2){line([P(-8,y,0),P(12,y,0)],'rgba(255,255,255,0.05)',1);}
+  // propagation arrow on floor
+  line([P(-8,-7,0),P(-5,-7,0)],'rgba(255,255,255,0.35)',2);
+  const ah=P(-5,-7,0);ctx.fillStyle='rgba(255,255,255,0.5)';ctx.beginPath();ctx.arc(ah[0],ah[1],4*d,0,7);ctx.fill();
+
+  const p=(t*spd)%lam;
+  // incident planes (x<0)
+  const inc=[];
+  for(let k=1;k<=6;k++){const x=p-k*lam; if(x<-9)break; inc.push(x);}
+  inc.slice().reverse().forEach(x=>{
+    const al=Math.max(0.08,0.55-Math.abs(x)*0.055);
+    const pl=[P(x,-W,0),P(x,W,0),P(x,W,H),P(x,-W,H)];
+    poly(pl,`rgba(255,${Math.round(90+Math.abs(x)*10)},${Math.round(90+Math.abs(x)*12)},${al*0.55})`,`rgba(255,140,140,${Math.min(1,al+0.15)})`,1.2);
+  });
+  // diffracted fronts (draw far -> near)
+  const fr=[];
+  for(let j=0;j<=9;j++){const r=p+j*lam; if(r>11)break; if(r>0.01)fr.push(r);}
+  fr.slice().reverse().forEach(r=>{
+    const al=Math.max(0.06,0.45-r*0.032);
+    surf(frontCurve(r),`rgba(120,150,255,${al*0.5})`,`rgba(170,195,255,${Math.min(1,al+0.25)})`,1.3);
+  });
+  // barrier
+  box(-T/2,T/2,-W,-a/2,0,H);
+  box(-T/2,T/2,a/2,W,0,H);
+}
+function loop(now){
+  const dt=(now-last)/1000;last=now;if(playing)t+=dt;
+  draw();requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+function sync(){
+  $('lv').textContent=lam.toFixed(2);$('av').textContent=a.toFixed(2);$('sv').textContent=spd.toFixed(1);
+  $('yv').textContent=Math.round(yaw)+'°';$('ev').textContent=Math.round(elev)+'°';
+  $('lam').value=lam;$('sw').value=a;$('spd').value=spd;$('yaw').value=yaw;$('elv').value=elev;
+}
+$('lam').oninput=e=>{lam=+e.target.value;sync()};
+$('sw').oninput=e=>{a=+e.target.value;sync()};
+$('spd').oninput=e=>{spd=+e.target.value;sync()};
+$('yaw').oninput=e=>{yaw=+e.target.value;sync()};
+$('elv').oninput=e=>{elev=+e.target.value;sync()};
+$('play').onclick=()=>{playing=!playing;$('play').textContent=playing?'⏸ Pause':'▶ Play'};
+$('v3d').onclick=()=>{yaw=35;elev=32;sync()};
+$('vtop').onclick=()=>{yaw=90;elev=90;sync()};
+$('vside').onclick=()=>{yaw=-40;elev=22;sync()};
+// drag to rotate
+let drag=null;
+cv.addEventListener('pointerdown',e=>{drag=[e.clientX,e.clientY,yaw,elev];cv.setPointerCapture(e.pointerId)});
+cv.addEventListener('pointermove',e=>{if(!drag)return;yaw=Math.max(-180,Math.min(180,drag[2]+(e.clientX-drag[0])*0.4));elev=Math.max(10,Math.min(90,drag[3]+(e.clientY-drag[1])*0.3));sync()});
+cv.addEventListener('pointerup',()=>drag=null);
+sync();
+</script>
+</body>
+</html>
