@@ -508,24 +508,61 @@
     return (p && p.x > xB + 1 && p.x < xC - 1 && p.y >= 0 && p.y <= H) ? p : null;
   }
 
+  function waveAlong(x0, y0, x1, y1, color) {
+    const dx = x1 - x0, dy = y1 - y0, r = Math.hypot(dx, dy);
+    if (r < 1) return;
+    const ux = dx / r, uy = dy / r, nx = -uy, ny = ux, A = 11;
+    const n = Math.ceil(r / 2);
+    let ex = x1, ey = y1;
+    ctx.beginPath();
+    for (let i = 0; i <= n; i++) {
+      const s = i * r / n;
+      const d = A * Math.sin(TAU * (s / P.lam - phase));
+      const x = x0 + ux * s + nx * d, y = y0 + uy * s + ny * d;
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      ex = x; ey = y;
+    }
+    ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.strokeStyle = color; ctx.stroke();
+    // tip dot: current value of this wave at the probe point
+    ctx.beginPath(); ctx.arc(ex, ey, 4.5, 0, TAU);
+    ctx.fillStyle = color; ctx.fill();
+    ctx.lineWidth = 2; ctx.strokeStyle = '#fff'; ctx.stroke();
+  }
+
   function drawProbe() {
     const p = probePt(); if (!p) return;
     const y1 = cy - P.d / 2, y2 = cy + P.d / 2;
-    ctx.lineWidth = 2.5; ctx.setLineDash([7, 5]);
+
+    // faint dotted baselines
+    ctx.lineWidth = 2; ctx.setLineDash([7, 5]);
     ctx.strokeStyle = BLUEL; ctx.beginPath(); ctx.moveTo(xB, y1); ctx.lineTo(p.x, p.y); ctx.stroke();
     ctx.strokeStyle = CORAL; ctx.beginPath(); ctx.moveTo(xB, y2); ctx.lineTo(p.x, p.y); ctx.stroke();
     ctx.setLineDash([]);
+
+    // sine waves riding on the dotted lines
+    if (!c1) waveAlong(xB, y1, p.x, p.y, BLUEL);
+    if (!c2) waveAlong(xB, y2, p.x, p.y, CORAL);
+
+    // probe marker
     ctx.beginPath(); ctx.arc(p.x, p.y, pin ? 8 : 7, 0, TAU);
     ctx.fillStyle = pin ? NAVY : '#fff'; ctx.fill();
     ctx.lineWidth = 3; ctx.strokeStyle = pin ? '#fff' : NAVY; ctx.stroke();
     if (pin) { ctx.beginPath(); ctx.arc(p.x, p.y, 10.5, 0, TAU); ctx.lineWidth = 2; ctx.strokeStyle = NAVY; ctx.stroke(); }
+
     if (!(c1 || c2)) {
       const r1 = Math.hypot(p.x - xB, p.y - y1), r2 = Math.hypot(p.x - xB, p.y - y2);
-      const tx = p.x > xC - 110 ? p.x - 72 : p.x + 72, ty = p.y < 30 ? p.y + 26 : p.y - 26;
-      tag(tx, ty, 'Δ = ' + ((r1 - r2) / P.lam).toFixed(2) + ' λ');
+      const fr = (r1 - r2) / P.lam;
+      const dInt = Math.abs(fr - Math.round(fr));
+      const dHalf = Math.abs(fr - (Math.floor(fr) + 0.5));
+      const verdict = dInt < 0.1 ? 'In phase ✓' : dHalf < 0.1 ? 'Out of phase ✗' : 'Partly in phase';
+      const tx = p.x > xC - 110 ? p.x - 72 : p.x + 72;
+      const up = p.y >= 60;
+      const ty = up ? p.y - 30 : p.y + 30;
+      const vy = up ? ty - 26 : ty + 26;
+      tag(tx, ty, 'Δ = ' + fr.toFixed(2) + ' λ');
+      tag(tx, vy, verdict);
     }
   }
-
   function drawScene() {
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, W, H);
