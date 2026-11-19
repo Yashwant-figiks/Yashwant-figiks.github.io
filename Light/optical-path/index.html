@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Optical Path Difference and Coherence</title>
+<style>
+:root{--bg:#f4f7fa;--panel:#fff;--ink:#16243a;--mute:#5d6b7e;--line:#d5dde7;--w1:#1565c0;--w2:#d9480f;--slab:rgba(0,150,136,.18);--slabline:#00897b;--grid:#9aa7b8;--ok:#1b7f3b;--okbg:#e3f5e8;--bad:#b3261e;--badbg:#fde7e5;--mid:#8a5a00;--midbg:#fff2d6;--acc:#16243a;--accink:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1621;--panel:#172131;--ink:#e6edf6;--mute:#93a1b5;--line:#2a374b;--w1:#64b5f6;--w2:#ff8a50;--slab:rgba(38,198,180,.2);--slabline:#4db6ac;--grid:#5d6d84;--ok:#7bd88f;--okbg:#17321f;--bad:#ff9a92;--badbg:#3b1a18;--mid:#ffcf70;--midbg:#3a2d10;--acc:#e6edf6;--accink:#0f1621;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1621;--panel:#172131;--ink:#e6edf6;--mute:#93a1b5;--line:#2a374b;--w1:#64b5f6;--w2:#ff8a50;--slab:rgba(38,198,180,.2);--slabline:#4db6ac;--grid:#5d6d84;--ok:#7bd88f;--okbg:#17321f;--bad:#ff9a92;--badbg:#3b1a18;--mid:#ffcf70;--midbg:#3a2d10;--acc:#e6edf6;--accink:#0f1621;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Comic Sans MS","Comic Sans","Chalkboard SE","Comic Neue",cursive;line-height:1.45}
+main{max-width:980px;margin:0 auto;padding:20px 16px 32px}
+h1{font-size:1.45rem;margin:0 0 4px;font-weight:600}
+.sub{color:var(--mute);margin:0 0 16px;font-size:.95rem}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+canvas{display:block;width:100%;height:auto;aspect-ratio:900/400;border-radius:6px}
+.controls{display:grid;grid-template-columns:auto 1fr 1fr;gap:16px 24px;margin-top:14px;align-items:start}
+.btns{display:flex;flex-direction:column;gap:8px}
+button{--sh:#0a1424;font:inherit;font-weight:700;padding:11px 18px;border-radius:14px;border:2px solid rgba(255,255,255,.25);background:linear-gradient(180deg,#4a6491,#16243a);color:#fff;cursor:pointer;min-width:170px;box-shadow:0 6px 0 var(--sh),0 10px 14px rgba(0,0,0,.25);transform:translateY(0);transition:transform .08s,box-shadow .08s,filter .15s;text-shadow:0 1px 1px rgba(0,0,0,.35)}
+button:hover{transform:translateY(-2px);box-shadow:0 8px 0 var(--sh),0 14px 18px rgba(0,0,0,.28);filter:brightness(1.1)}
+button:active{transform:translateY(5px);box-shadow:0 1px 0 var(--sh),0 2px 4px rgba(0,0,0,.25);filter:brightness(.95)}
+canvas{touch-action:pan-y}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:10px;border-radius:6px;background:var(--line);box-shadow:inset 0 2px 3px rgba(0,0,0,.25);cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:24px;height:24px;border-radius:50%;border:2px solid #fff;background:radial-gradient(circle at 32% 30%,#fff,var(--slabline) 70%);box-shadow:0 4px 0 rgba(0,0,0,.3);cursor:grab;transition:transform .1s}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;border:2px solid #fff;background:var(--slabline);box-shadow:0 4px 0 rgba(0,0,0,.3);cursor:grab}
+input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.15)}
+input[type=range]:active::-webkit-slider-thumb{cursor:grabbing;transform:translateY(3px) scale(1.05);box-shadow:0 1px 0 rgba(0,0,0,.3)}
+.ticks .pick{cursor:pointer;padding:2px 3px;border-radius:5px}
+.ticks .pick:hover{background:var(--line);color:var(--ink)}
+button.alt{--sh:#a64400;background:linear-gradient(180deg,#ffb74d,#f57c00)}
+button[aria-pressed="true"]{--sh:#00574f;background:linear-gradient(180deg,#4db6ac,#00897b)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--w1);outline-offset:2px}
+label{display:flex;justify-content:space-between;gap:8px;font-weight:500;font-size:.92rem;margin-bottom:6px}
+label output{font-variant-numeric:tabular-nums;color:var(--w2);font-weight:600}
+input[type=range]{width:100%;accent-color:var(--slabline)}
+.ticks{display:flex;justify-content:space-between;font-size:.68rem;color:var(--mute);margin-top:2px}
+.read{margin-top:14px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.cell{border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--panel)}
+.cell small{display:block;color:var(--mute);font-size:.78rem}
+.cell b{display:block;font-size:1.12rem;font-variant-numeric:tabular-nums;margin-top:2px}
+.cell span{font-size:.8rem;color:var(--mute);font-variant-numeric:tabular-nums}
+.status{margin-top:10px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.badge{padding:7px 14px;border-radius:999px;font-weight:600;border:1px solid currentColor}
+.badge.ok{color:var(--ok);background:var(--okbg)}.badge.bad{color:var(--bad);background:var(--badbg)}.badge.mid{color:var(--mid);background:var(--midbg)}
+.note{color:var(--mute);font-size:.85rem}
+@media(max-width:760px){.controls{grid-template-columns:1fr}.btns{flex-direction:row;flex-wrap:wrap}.read{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<main>
+<h1>Optical path difference and coherence</h1>
+<p class="sub">Two coherent beams start in phase. A slab in the lower beam changes its wavelength, and the crests no longer line up once it leaves.</p>
+<div class="card">
+<canvas id="cv" width="1800" height="800" role="img" aria-label="Two parallel light waves; the lower wave passes through an optional medium slab and shifts in phase relative to the upper wave"></canvas>
+<div class="controls">
+<div class="btns">
+<button id="tog" aria-pressed="false">Introduce Medium</button>
+<button id="play" class="alt">Pause</button>
+</div>
+<div>
+<label for="n">Medium <output id="nout"></output></label>
+<input type="range" id="n" min="0" max="7" step="1" value="4">
+<div class="ticks" id="mticks"><span class="pick" data-i="0">1.00</span><span class="pick" data-i="1">1.0003</span><span class="pick" data-i="2">1.31</span><span class="pick" data-i="3">1.33</span><span class="pick" data-i="4">1.52</span><span class="pick" data-i="5">1.65</span><span class="pick" data-i="6">1.77</span><span class="pick" data-i="7">2.42</span></div>
+</div>
+<div>
+<label for="t">Slab thickness t <output id="tout"></output></label>
+<input type="range" id="t" min="0.5" max="4" step="0.01" value="1.5">
+<div class="ticks"><span>0.5 λ₀</span><span>4.0 λ₀</span></div>
+</div>
+</div>
+</div>
+<div class="read" aria-live="polite">
+<div class="cell"><small>Geometrical path in slab (t)</small><b id="r1"></b><span id="r1b"></span></div>
+<div class="cell"><small>Optical path in slab (n·t)</small><b id="r2"></b><span id="r2b"></span></div>
+<div class="cell"><small>Optical path difference Δx = (n − 1)t</small><b id="r3"></b><span id="r3b"></span></div>
+<div class="cell"><small>Phase difference Δφ = (2π/λ₀)(n − 1)t</small><b id="r4"></b><span id="r4b"></span></div>
+</div>
+<div class="status"><span id="badge" class="badge"></span><span class="note" id="note"></span></div>
+<p class="note">Numbers assume λ₀ = 600 nm. Inside the slab the frequency stays the same, so λ = λ₀/n and v = c/n.</p>
+</main>
+<script>
+(function(){
+var MEDIA=[["Vacuum",1],["Air",1.0003],["Ice",1.31],["Water",1.33],["Crown glass",1.52],["Flint glass",1.65],["Sapphire",1.77],["Diamond",2.42]];
+var cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+var $=function(i){return document.getElementById(i)};
+var W=900,H=400,L0=80,X0=260,Y1=105,Y2=285,A=36,F=0.6,TAU=Math.PI*2,k0=TAU/L0,w=TAU*F;
+var on=false,playing=!(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches),time=0,last=null;
+var idx=4,tl=1.5;
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()}
+function fmt(x,d){return x.toFixed(d)}
+function nEff(){return on?MEDIA[idx][1]:1}
+function update(){
+  var m=MEDIA[idx],n=nEff();
+  $('nout').textContent=m[0]+' (n = '+(m[1]===1.0003?'1.0003':fmt(m[1],2))+')';
+  $('tout').textContent=fmt(tl,2)+' λ₀ = '+Math.round(tl*600)+' nm';
+  var dx=(n-1)*tl,dphi=TAU*dx;
+  $('r1').textContent=fmt(tl,2)+' λ₀';$('r1b').textContent=Math.round(tl*600)+' nm';
+  $('r2').textContent=fmt(n*tl,3)+' λ₀';$('r2b').textContent=Math.round(n*tl*600)+' nm  (n = '+(n===1.0003?'1.0003':fmt(n,2))+')';
+  $('r3').textContent=fmt(dx,3)+' λ₀';$('r3b').textContent=fmt(dx*600,1)+' nm';
+  $('r4').textContent=fmt(dphi,3)+' rad';$('r4b').textContent='= '+fmt(dphi/Math.PI,3)+' π';
+  var r=((dphi%TAU)+TAU)%TAU,tol=0.03,b=$('badge');
+  if(Math.min(r,TAU-r)<tol){b.textContent='In Phase (Constructive)';b.className='badge ok'}
+  else if(Math.abs(r-Math.PI)<tol){b.textContent='Out of Phase (Destructive)';b.className='badge bad'}
+  else{b.textContent='Phase Shifted';b.className='badge mid'}
+  $('note').textContent=on?'Net shift modulo 2π: '+fmt(r/Math.PI,3)+' π':'Medium removed: both beams travel through vacuum.';
+}
+function draw(){
+  var dpr=cv.width/W;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
+  var n=nEff(),tpx=on?tl*L0:0,X1=X0+tpx,dphi=k0*(n-1)*tl*L0*(on?1:0)/1;
+  dphi=on?k0*(n-1)*tpx:0;
+  var ph=(w*time)%TAU,c1=css('--w1'),c2=css('--w2'),grid=css('--grid'),ink=css('--ink'),mute=css('--mute');
+  ctx.font='700 13px "Comic Sans MS","Comic Sans","Chalkboard SE","Comic Neue",cursive';
+  // axes
+  ctx.strokeStyle=css('--line');ctx.lineWidth=1;
+  [Y1,Y2].forEach(function(y){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()});
+  // slab
+  if(on){
+    ctx.fillStyle=css('--slab');ctx.fillRect(X0,Y2-66,tpx,132);
+    ctx.strokeStyle=css('--slabline');ctx.lineWidth=1.5;ctx.strokeRect(X0,Y2-66,tpx,132);
+    ctx.fillStyle=css('--slabline');ctx.beginPath();ctx.roundRect(X1-7,Y2-18,14,36,6);ctx.fill();
+    ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(X1-2,Y2-9);ctx.lineTo(X1-2,Y2+9);ctx.moveTo(X1+2,Y2-9);ctx.lineTo(X1+2,Y2+9);ctx.stroke();
+    ctx.fillStyle=css('--slabline');ctx.textAlign='center';
+    var cx=X0+tpx/2,mm=MEDIA[idx];
+    ctx.fillText(mm[0]+', n = '+(mm[1]===1.0003?'1.0003':fmt(mm[1],2)),cx,Y2+56);
+    ctx.fillText('thickness t',cx,Y2-71);
+  }
+  // dashed crest reference lines (wave 1)
+  ctx.setLineDash([4,5]);ctx.strokeStyle=grid;ctx.lineWidth=1;
+  for(var m=-2;m<=16;m++){var xc=(Math.PI/2+ph+TAU*m)/k0;if(xc<0||xc>W)continue;
+    ctx.beginPath();ctx.moveTo(xc,Y1-A-12);ctx.lineTo(xc,Y2+A+12);ctx.stroke();}
+  ctx.setLineDash([]);
+  // waves
+  ctx.lineWidth=2.6;ctx.lineJoin='round';
+  ctx.strokeStyle=c1;ctx.beginPath();
+  for(var x=0;x<=W;x+=2){var y=Y1-A*Math.sin(k0*x-ph);x?ctx.lineTo(x,y):ctx.moveTo(x,y)}
+  ctx.stroke();
+  ctx.strokeStyle=c2;ctx.beginPath();
+  for(x=0;x<=W;x+=2){var p;
+    if(x<X0||!on)p=k0*x;else if(x<=X1)p=k0*X0+n*k0*(x-X0);else p=k0*x+dphi;
+    y=Y2-A*Math.sin(p-ph);x?ctx.lineTo(x,y):ctx.moveTo(x,y)}
+  ctx.stroke();
+  // crest dots
+  for(m=-2;m<=16;m++){var tg=Math.PI/2+ph+TAU*m,x1=tg/k0;
+    if(x1>=0&&x1<=W){ctx.fillStyle=c1;ctx.beginPath();ctx.arc(x1,Y1-A,4,0,TAU);ctx.fill()}
+    var x2=null,xa=tg/k0;
+    if(!on){x2=xa}else{
+      var xb=X0+(tg-k0*X0)/(n*k0),xcc=(tg-dphi)/k0;
+      if(xa<X0)x2=xa;else if(xb>=X0&&xb<=X1)x2=xb;else if(xcc>X1)x2=xcc}
+    if(x2!==null&&x2>=0&&x2<=W){ctx.fillStyle=c2;ctx.beginPath();ctx.arc(x2,Y2-A,4,0,TAU);ctx.fill()}
+  }
+  // delta-x bracket
+  if(on){
+    var s=((n-1)*tl*L0)%L0;
+    if(s>1.5&&s<L0-1.5){
+      for(m=-2;m<=16;m++){var xx=(Math.PI/2+ph+TAU*m)/k0;
+        if(xx>=700&&xx<700+L0){
+          var bx2=xx-s,by=(Y1+Y2)/2;
+          ctx.strokeStyle=ink;ctx.fillStyle=ink;ctx.lineWidth=1.5;
+          ctx.beginPath();ctx.moveTo(bx2,by);ctx.lineTo(xx,by);
+          ctx.moveTo(bx2,by-5);ctx.lineTo(bx2,by+5);ctx.moveTo(xx,by-5);ctx.lineTo(xx,by+5);ctx.stroke();
+          ctx.textAlign='center';ctx.fillText('Δx mod λ₀',(bx2+xx)/2,by-9);
+          break}}}
+  }
+  // labels
+  ctx.textAlign='left';ctx.fillStyle=c1;ctx.fillText('Wave 1 · vacuum, n = 1.0, speed c',10,22);
+  ctx.fillStyle=c2;ctx.fillText(on?'Wave 2 · speed c outside, c/n inside, λ = λ₀/n inside':'Wave 2 · vacuum, n = 1.0, speed c',10,H-14);
+  ctx.fillStyle=mute;
+  // wavelength marker beside start
+  ctx.strokeStyle=mute;ctx.lineWidth=1.2;ctx.beginPath();
+  ctx.moveTo(150,Y1+A+14);ctx.lineTo(150+L0,Y1+A+14);ctx.moveTo(150,Y1+A+9);ctx.lineTo(150,Y1+A+19);ctx.moveTo(150+L0,Y1+A+9);ctx.lineTo(150+L0,Y1+A+19);ctx.stroke();
+  ctx.textAlign='center';ctx.fillText('λ₀',150+L0/2,Y1+A+32);
+  // phase readout at right
+  ctx.textAlign='right';ctx.fillStyle=ink;
+  ctx.fillText('Δφ = '+fmt(dphi/Math.PI,2)+' π',W-10,22);
+}
+function frame(ts){
+  if(last===null)last=ts;var dt=(ts-last)/1000;last=ts;
+  if(playing)time+=Math.min(dt,0.05);
+  draw();requestAnimationFrame(frame);
+}
+$('tog').onclick=function(){on=!on;this.textContent=on?'Remove Medium':'Introduce Medium';this.setAttribute('aria-pressed',on);update();draw()};
+$('play').onclick=function(){playing=!playing;this.textContent=playing?'Pause':'Play'};
+$('n').oninput=function(){idx=+this.value;update()};
+$('t').oninput=function(){tl=+this.value;update()};
+$('mticks').onclick=function(e){var i=e.target.getAttribute&&e.target.getAttribute('data-i');if(i===null||i===undefined)return;idx=+i;$('n').value=i;update()};
+var drag=false;
+function lx(e){var r=cv.getBoundingClientRect();return (e.clientX-r.left)/r.width*W}
+function nearEdge(e){return on&&Math.abs(lx(e)-(X0+tl*L0))<16}
+cv.addEventListener('pointerdown',function(e){if(nearEdge(e)){drag=true;cv.setPointerCapture(e.pointerId);e.preventDefault()}});
+cv.addEventListener('pointermove',function(e){
+  if(drag){tl=Math.min(4,Math.max(0.5,(lx(e)-X0)/L0));$('t').value=tl;update()}
+  else cv.style.cursor=nearEdge(e)?'ew-resize':'default'});
+cv.addEventListener('pointerup',function(){drag=false});
+cv.addEventListener('pointercancel',function(){drag=false});
+if(!playing)$('play').textContent='Play';
+update();requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
