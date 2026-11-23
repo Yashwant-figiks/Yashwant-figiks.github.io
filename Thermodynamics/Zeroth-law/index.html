@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Temperature, Heat &amp; Thermal Equilibrium</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap">
+<style>
+:root{--bg:#fff8e7;--card:#fff;--ink:#2b2b3a;--mut:#6b6b7b;--line:#e3d9bd;--acc:#7a4dd8;--ok:#e6f7e6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1d1b2a;--card:#2a2740;--ink:#f3efe0;--mut:#b4afc9;--line:#47426a;--acc:#b79bff;--ok:#1f3a2a}}
+:root[data-theme="dark"]{--bg:#1d1b2a;--card:#2a2740;--ink:#f3efe0;--mut:#b4afc9;--line:#47426a;--acc:#b79bff;--ok:#1f3a2a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Comic Sans MS","Comic Sans","Comic Neue","Chalkboard SE",cursive,sans-serif;line-height:1.45}
+button,input,select{font:inherit;color:inherit}
+main{max-width:860px;margin:0 auto;padding:16px}
+h1{font-size:1.6rem;margin:.2em 0}
+.sub{color:var(--mut);margin:0 0 12px}
+.tabs{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.head{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:8px}
+.head .card{margin:0;flex:1;min-width:240px;max-width:430px;font-size:.95rem}
+#s1{display:flex;flex-direction:column}
+button{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:8px 14px;cursor:pointer;position:relative;box-shadow:0 5px 0 var(--line),0 8px 10px rgba(0,0,0,.18);transition:transform .08s,box-shadow .08s}
+button:hover{transform:translateY(-1px)}
+button:active{transform:translateY(5px);box-shadow:0 0 0 var(--line),0 2px 4px rgba(0,0,0,.2)}
+button.on{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:700;box-shadow:0 5px 0 #4a2a99,0 8px 10px rgba(0,0,0,.25)}
+button.on:active{box-shadow:0 0 0 #4a2a99,0 2px 4px rgba(0,0,0,.25)}
+.card{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:12px;margin-bottom:12px}
+canvas{width:100%;height:auto;display:block}
+.ctl{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 16px}
+.ctl label{display:block;font-size:.92rem}
+.ctl input[type=range]{width:100%}
+.row{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:12px;margin-bottom:8px}
+.read{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.read h3{margin:0 0 4px;font-size:1.05rem}
+.big{font-size:1.7rem;font-weight:700}
+.status{font-size:1.05rem;text-align:center;font-weight:700}
+.status.ok{background:var(--ok)}
+.notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.notes p{margin:.3em 0;font-size:.92rem}
+.hint{color:var(--mut);font-size:.9rem}
+[hidden]{display:none!important}
+</style></head><body><main>
+<div class="head"><h1>🌡️ Temperature, Heat &amp; Thermal Equilibrium</h1><div class="card status" id="stat">…</div></div>
+<div class="tabs"><button class="on" data-t="1">🔥 Heat &amp; Equilibrium</button><button data-t="2">🌡️ Zeroth Law</button></div>
+
+<section id="s1">
+<div class="card" style="order:1"><canvas id="box" width="1440" height="680"></canvas></div>
+<div class="card" style="order:3"><canvas id="graph" width="1440" height="340"></canvas></div>
+<div class="card" style="order:2">
+ <div class="ctl">
+  <label>Box A temperature: <b id="ta_v"></b> K<input type="range" id="ta" min="100" max="800" step="10" value="600"></label>
+  <label>Box B temperature: <b id="tb_v"></b> K<input type="range" id="tb" min="100" max="800" step="10" value="150"></label>
+  <label>Particles in A: <b id="na_v"></b><input type="range" id="na" min="5" max="80" value="40"></label>
+  <label>Particles in B: <b id="nb_v"></b><input type="range" id="nb" min="5" max="80" value="40"></label>
+  <label>Simulation speed: <b id="sp_v"></b>×<input type="range" id="sp" min="1" max="8" value="3"></label>
+  <div><label><input type="radio" name="w" value="dia" checked> Diathermic wall (heat passes)</label>
+  <label><input type="radio" name="w" value="adi"> Adiabatic wall (insulated)</label></div>
+ </div>
+ <div class="row"><button id="wbtn" class="on">🔥 Wall: Diathermic</button><button id="pause">⏸ Pause</button><button id="rst">🔄 Restart</button>
+  <button data-p="700,150,40,40">Hot vs Cold</button>
+  <button data-p="300,300,70,15">Same T, different amount</button>
+  <button data-p="600,200,15,70">Small hot vs big cold</button></div>
+ <p class="hint" id="pred"></p>
+</div>
+</section>
+
+<section id="s2" hidden>
+<div class="card"><canvas id="zc" width="1440" height="600"></canvas></div>
+<div class="card status" id="zs">…</div>
+<div class="card">
+ <div class="ctl">
+  <label>Block A temperature: <b id="za_v"></b> °C<input type="range" id="za" min="0" max="100" value="80"></label>
+  <label>Block B temperature: <b id="zb_v"></b> °C<input type="range" id="zb" min="0" max="100" value="80"></label>
+  <div><label><input type="checkbox" id="zac"> A touches C</label><br><label><input type="checkbox" id="zcb"> C touches B</label><br><label><input type="checkbox" id="zab"> A touches B</label></div>
+ </div>
+ <div class="row"><button id="zr">🔄 Restart</button></div>
+ <p class="hint">Try this: touch C to A until it settles. Switch that off, then touch C to B. If C shows the same reading both times, then A and B must be at the same temperature. Now let A touch B: no heat flows!</p>
+</div>
+</section>
+
+</main>
+<script>
+const $=id=>document.getElementById(id),FONT='"Comic Sans MS","Comic Neue","Chalkboard SE",cursive';
+const K=24,W=720,H=340,WX=360,R=4,CW=8,MAXH=400;
+const cv=$('box'),cx=cv.getContext('2d'),gv=$('graph'),gx=gv.getContext('2d'),zv=$('zc'),zx=zv.getContext('2d');
+cx.setTransform(2,0,0,2,0,0);gx.setTransform(2,0,0,2,0,0);zx.setTransform(2,0,0,2,0,0);
+let P=[],Ew=0,wall='dia',paused=false,hist=[],acc=0,eqT=0,E0A=0,pred=0,tab=1;
+let sA={T:0,E:0},sB={T:0,E:0};
+const g=()=>Math.sqrt(-2*Math.log(1-Math.random()))*Math.cos(6.283*Math.random());
+const hue=T=>240-240*Math.min(1,Math.max(0,(T-100)/700));
+const stat=l=>{let n=0,e=0;for(const p of P)if(p.l===l){n++;e+=.5*(p.vx*p.vx+p.vy*p.vy)}return{n,e,T:n?e/n/K:0}};
+function reset(){
+ const ta=+$('ta').value,tb=+$('tb').value,na=+$('na').value,nb=+$('nb').value;P=[];
+ for(let i=0;i<na+nb;i++){const l=i<na,s=Math.sqrt(K*(l?ta:tb));
+  P.push({l,x:l?R+Math.random()*(WX-10-2*R):WX+5+R+Math.random()*(W-WX-10-2*R),y:R+Math.random()*(H-2*R),vx:g()*s,vy:g()*s})}
+ Ew=K*(ta+tb)/2;hist=[];acc=0;eqT=0;
+ const a=stat(true),b=stat(false);sA={T:a.T,E:a.e};sB={T:b.T,E:b.e};E0A=a.e;
+ pred=(na*ta+nb*tb+CW*(ta+tb)/2)/(na+nb+CW);
+ $('pred').textContent="If the wall is diathermic, both boxes should settle near "+Math.round(pred)+" K. Notice it depends on how many particles each box has!";
+}
+function hit(p){
+ if(wall!=='dia')return;
+ const ke=.5*(p.vx*p.vx+p.vy*p.vy);if(ke<1)return;
+ const d=.4*(ke-Ew),f=Math.sqrt((ke-d)/ke);p.vx*=f;p.vy*=f;Ew+=d/CW;
+}
+function step(dt){
+ for(const p of P){
+  p.x+=p.vx*dt;p.y+=p.vy*dt;
+  if(p.y<R){p.y=R;p.vy=-p.vy}else if(p.y>H-R){p.y=H-R;p.vy=-p.vy}
+  if(p.l){if(p.x<R){p.x=R;p.vx=-p.vx}else if(p.x>WX-5-R){p.x=WX-5-R;p.vx=-p.vx;hit(p)}}
+  else{if(p.x>W-R){p.x=W-R;p.vx=-p.vx}else if(p.x<WX+5+R){p.x=WX+5+R;p.vx=-p.vx;hit(p)}}
+ }
+}
+function smooth(){const a=stat(true),b=stat(false),k=.04;
+ sA.T+=(a.T-sA.T)*k;sA.E+=(a.e-sA.E)*k;sB.T+=(b.T-sB.T)*k;sB.E+=(b.e-sB.E)*k}
+function css(){const s=getComputedStyle(document.documentElement);return{ink:s.getPropertyValue('--ink').trim(),line:s.getPropertyValue('--line').trim()}}
+function draw(){
+ const c=css();cx.clearRect(0,0,W,H);
+ cx.fillStyle=`hsla(${hue(sA.T)},85%,55%,.15)`;cx.fillRect(0,0,WX-5,H);
+ cx.fillStyle=`hsla(${hue(sB.T)},85%,55%,.15)`;cx.fillRect(WX+5,0,W-WX-5,H);
+ cx.fillStyle=wall==='dia'?`hsl(${hue(Ew/K)},70%,55%)`:'#8a8a99';cx.fillRect(WX-5,0,10,H);
+ if(wall==='adi'){cx.strokeStyle='#fff';cx.lineWidth=2;for(let y=-10;y<H;y+=14){cx.beginPath();cx.moveTo(WX-5,y+10);cx.lineTo(WX+5,y);cx.stroke()}}
+ for(const p of P){cx.fillStyle=`hsl(${hue(.5*(p.vx*p.vx+p.vy*p.vy)/K)},85%,50%)`;cx.beginPath();cx.arc(p.x,p.y,R,0,6.283);cx.fill()}
+ cx.fillStyle=c.ink;cx.font=`bold 17px ${FONT}`;cx.fillText('Box A: '+Math.round(sA.T)+' K',10,24);cx.fillText('Box B: '+Math.round(sB.T)+' K',WX+14,24);
+ cx.font=`12px ${FONT}`;cx.fillText('Heat: '+(sA.E/1000).toFixed(1),10,42);cx.fillText('Heat: '+(sB.E/1000).toFixed(1),WX+14,42);
+ cx.font=`12px ${FONT}`;cx.fillText(wall==='dia'?'diathermic wall':'adiabatic wall',WX-50,H-8);
+}
+function drawGraph(){
+ const c=css(),GW=720,GH=170,y=v=>10+(GH-35)*(1-(v-50)/800),x=i=>40+i*(GW-50)/MAXH;
+ gx.clearRect(0,0,GW,GH);gx.strokeStyle=c.line;gx.lineWidth=1;gx.strokeRect(40,10,GW-50,GH-35);
+ gx.fillStyle=c.ink;gx.font=`11px ${FONT}`;
+ for(const v of [200,400,600,800]){gx.fillText(v,8,y(v)+4);gx.beginPath();gx.moveTo(40,y(v));gx.lineTo(GW-10,y(v));gx.stroke()}
+ gx.fillText('T (K)',8,18);gx.fillText('time →',GW-60,GH-6);
+ [[0,'#f08c00','A'],[1,'#0a9396','B']].forEach(([k,col,n])=>{
+  gx.strokeStyle=col;gx.lineWidth=3;gx.beginPath();
+  hist.forEach((h,i)=>{i?gx.lineTo(x(i),y(h[k])):gx.moveTo(x(i),y(h[k]))});gx.stroke();
+  gx.fillStyle=col;gx.font=`bold 13px ${FONT}`;gx.fillText('● Box '+n,60+k*80,GH-6)});
+}
+function readout(){
+ const d=sA.T-sB.T,m=(sA.T+sB.T)/2,s=$('stat');let t,ok=false;
+ if(wall==='adi')t='🧱 Adiabatic wall: no heat can cross, so the temperatures stay different.';
+ else if(eqT>2){t='✅ Thermal equilibrium! Both boxes are at about '+Math.round(m)+' K. No net heat flow.';ok=true}
+ else if(Math.abs(d)<.08*m)t='Almost there… the temperatures are nearly equal.';
+ else t=d>0?'🔥 Heat flows from A (hotter) to B (colder)':'🔥 Heat flows from B (hotter) to A (colder)';
+ s.textContent=t;s.className='card status'+(ok?' ok':'');
+}
+/* Zeroth law */
+const z={A:80,B:80,C:20},CAP={A:10,B:10,C:1};
+const zb={A:{x:40,y:150,w:170,h:110},C:{x:300,y:120,w:120,h:160},B:{x:510,y:150,w:170,h:110}};
+function zreset(){z.A=+$('za').value;z.B=+$('zb').value;z.C=20}
+function zstep(dt){
+ const on={ac:$('zac').checked,cb:$('zcb').checked,ab:$('zab').checked},d={A:0,B:0,C:0};
+ [['A','C',on.ac],['C','B',on.cb],['A','B',on.ab]].forEach(([i,j,o])=>{if(o){const f=3*(z[j]-z[i])*dt;d[i]+=f/CAP[i];d[j]-=f/CAP[j]}});
+ for(const n in d)z[n]+=d[n];
+}
+function zdraw(){
+ const c=css(),zh=T=>240-240*Math.min(1,Math.max(0,T/100));
+ zx.clearRect(0,0,W,300);zx.lineCap='round';
+ const links=[['A','C','zac',210,155,300,155],['C','B','zcb',420,155,510,155]];
+ links.forEach(([i,j,id,x1,y1,x2,y2])=>{const o=$(id).checked;
+  zx.strokeStyle=o?c.ink:c.line;zx.lineWidth=o?7:2;zx.setLineDash(o?[]:[6,6]);zx.beginPath();zx.moveTo(x1,y1);zx.lineTo(x2,y2);zx.stroke();
+  if(o&&Math.abs(z[i]-z[j])>.5){zx.setLineDash([]);zx.fillStyle=c.ink;zx.font=`bold 26px ${FONT}`;zx.fillText(z[i]>z[j]?'→':'←',(x1+x2)/2-10,y1-12)}});
+ const o=$('zab').checked;zx.strokeStyle=o?c.ink:c.line;zx.lineWidth=o?7:2;zx.setLineDash(o?[]:[6,6]);
+ zx.beginPath();zx.moveTo(125,150);zx.quadraticCurveTo(360,20,595,150);zx.stroke();zx.setLineDash([]);
+ if(o&&Math.abs(z.A-z.B)>.5){zx.fillStyle=c.ink;zx.font=`bold 26px ${FONT}`;zx.fillText(z.A>z.B?'→':'←',348,72)}
+ for(const n of ['A','B','C']){const b=zb[n];zx.fillStyle=`hsl(${zh(z[n])},85%,60%)`;zx.strokeStyle=c.ink;zx.lineWidth=3;
+  zx.beginPath();zx.roundRect(b.x,b.y,b.w,b.h,18);zx.fill();zx.stroke();
+  zx.fillStyle='#1b1b2b';zx.textAlign='center';zx.font=`bold 17px ${FONT}`;
+  zx.fillText(n==='C'?'C 🌡️ thermometer':'Block '+n,b.x+b.w/2,b.y+34);
+  zx.font=`bold 26px ${FONT}`;zx.fillText(z[n].toFixed(1)+'°C',b.x+b.w/2,b.y+b.h/2+16);zx.textAlign='left'}
+ const eq=(a,b)=>Math.abs(a-b)<.5,L=[],ac=$('zac').checked,cb=$('zcb').checked,ab=$('zab').checked;
+ if(!ac&&!cb&&!ab)L.push('Choose which blocks touch each other 👆');
+ [[ac,'A','C'],[cb,'C','B'],[ab,'A','B']].forEach(([o,i,j])=>{if(o)L.push(i+' and '+j+(eq(z[i],z[j])?' are in thermal equilibrium ✅':' are still exchanging heat…'))});
+ if(eq(z.A,z.C)&&eq(z.C,z.B))L.push('A ≈ C and C ≈ B, so A ≈ B. That is the Zeroth Law! ⚖️');
+ $('zs').innerHTML=L.join('<br>');
+}
+/* UI */
+document.querySelectorAll('input[type=range]').forEach(i=>{const o=$(i.id+'_v'),f=()=>o.textContent=i.value;f();i.addEventListener('input',()=>{f();if(['ta','tb','na','nb'].includes(i.id))reset();if(['za','zb'].includes(i.id))zreset()})});
+function setWall(v){wall=v;eqT=0;document.querySelectorAll('input[name=w]').forEach(r=>r.checked=r.value===v);const b=$('wbtn');b.textContent=v==='dia'?'🔥 Wall: Diathermic':'🧱 Wall: Adiabatic';b.classList.toggle('on',v==='dia')}
+document.querySelectorAll('input[name=w]').forEach(r=>r.onchange=()=>setWall(r.value));
+$('wbtn').onclick=()=>setWall(wall==='dia'?'adi':'dia');
+$('pause').onclick=()=>{paused=!paused;$('pause').textContent=paused?'▶ Play':'⏸ Pause'};
+$('rst').onclick=reset;$('zr').onclick=zreset;
+document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{const v=b.dataset.p.split(',');['ta','tb','na','nb'].forEach((id,i)=>{$(id).value=v[i];$(id+'_v').textContent=v[i]});reset()});
+document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{tab=+b.dataset.t;$('s1').hidden=tab!==1;$('s2').hidden=tab!==2;$('stat').hidden=tab!==1;document.querySelectorAll('[data-t]').forEach(x=>x.classList.toggle('on',x===b))});
+reset();zreset();
+let last=performance.now();
+function loop(now){
+ const dt=Math.min((now-last)/1000,.05);last=now;
+ if(tab===1){
+  if(!paused){const sp=+$('sp').value;let r=dt*sp;while(r>0){const h=Math.min(r,1/60);step(h);r-=h}
+   smooth();acc+=dt*sp;if(acc>=.15){acc=0;hist.push([sA.T,sB.T]);if(hist.length>MAXH)hist.shift()}
+   if(wall==='dia'&&Math.abs(sA.T-sB.T)<.08*(sA.T+sB.T)/2)eqT+=dt*sp;else eqT=0}
+  draw();drawGraph();readout();
+ }else{if(!paused){let r=dt*2;while(r>0){const h=Math.min(r,1/30);zstep(h);r-=h}}zdraw()}
+ requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script></body></html>
