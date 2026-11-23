@@ -1,4 +1,4 @@
-IP<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -630,6 +630,71 @@ IP<!DOCTYPE html>
         }
     </style>
     <base target="_blank">
+
+    <!-- ═══ LIGHT THEME + COMIC SANS OVERRIDES (keep this block last) ═══ -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap');
+        :root {
+            --comic: "Comic Sans MS", "Comic Sans", "Comic Neue", "Chalkboard SE", cursive;
+            --bg: #fff8ec;
+            --text: #2b2b3a;
+            --text-muted: #6b6b7b;
+            --card-bg: #fff;
+            --border: rgba(70,55,110,.16);
+            --border-hover: rgba(201,149,26,.6);
+            --accent-thermo: #ef6c35;
+            --shadow: 0 1px 2px rgba(60,40,0,.08), 0 8px 22px rgba(60,40,0,.10);
+            --shadow-hover: 0 16px 34px rgba(60,40,0,.16), 0 0 0 1px rgba(201,149,26,.3);
+        }
+        body {
+            background:
+                radial-gradient(ellipse 900px 500px at 15% -10%, rgba(255,200,90,.30), transparent 60%),
+                radial-gradient(ellipse 800px 500px at 90% 10%, rgba(120,180,255,.22), transparent 55%),
+                var(--bg);
+        }
+        ::selection { background: rgba(255,190,70,.5); color: #2b2b3a; }
+        header {
+            background:
+                radial-gradient(ellipse 700px 400px at 50% -20%, rgba(255,190,70,.35), transparent 60%),
+                linear-gradient(180deg, #fff3d6, #ffeccc);
+            color: var(--text);
+        }
+        header::before {
+            background-image:
+                linear-gradient(rgba(120,90,30,.07) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(120,90,30,.07) 1px, transparent 1px);
+        }
+        .yv-watermark {
+            background: linear-gradient(180deg, rgba(201,149,26,.16), rgba(201,149,26,.03));
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+        header h1 {
+            background: linear-gradient(180deg, #3a2c6b, #1f1840);
+            -webkit-background-clip: text;
+            background-clip: text;
+            font-family: var(--comic);
+        }
+        .brand-kicker, .journal-title, footer a { color: #9a6b00; font-family: var(--comic); }
+        .stat { background: #fff; }
+        .stat-number {
+            background: linear-gradient(135deg, #d99a12, #a86f00);
+            -webkit-background-clip: text;
+            background-clip: text;
+            font-family: var(--comic);
+        }
+        .search-box, .journal-textarea, .note-area textarea { background: #fff; color: var(--text); }
+        .search-box::placeholder, .journal-textarea::placeholder { color: #a39b8a; }
+        .journal-box, .card { background: #fff; }
+        .card:hover { background: #fffdf7; }
+        .card::after { background: linear-gradient(120deg, transparent, rgba(255,200,90,.18), transparent); }
+        .section-count, .note-toggle, .filter-pill { background: #fff; }
+        .note-toggle.has-note { background: #fffdf7; }
+        .filter-pill.active { background: linear-gradient(135deg, var(--gold-soft), var(--gold)); }
+        .section-title, .card-title, .btn, .filter-pill, .note-toggle,
+        .section-count, .stat-label, footer p { font-family: var(--comic); }
+        footer { background: rgba(201,149,26,.08); }
+    </style>
 </head>
 <body>
 
@@ -647,11 +712,11 @@ IP<!DOCTYPE html>
         <p>Interactive visualizations for waves, oscillations, sound &amp; many more</p>
         <div class="stats">
             <div class="stat">
-                <div class="stat-number" id="topicCount">8</div>
+                <div class="stat-number" id="topicCount">9</div>
                 <div class="stat-label">Topics</div>
             </div>
             <div class="stat">
-                <div class="stat-number" id="simCount">18</div>
+                <div class="stat-number" id="simCount">23</div>
                 <div class="stat-label">Simulations</div>
             </div>
             <div class="stat">
@@ -891,6 +956,16 @@ IP<!DOCTYPE html>
                 desc: "Explore how light bends when the medium changes.",
                 accent: "var(--accent-std10)",
                 icon: "🔦"
+            },
+
+            // ─── Thermodynamics ───
+            {
+                name: "Zeroth Law of Thermodynamics",
+                folder: "Thermodynamics",
+                path: "https://yashwant-figiks.github.io/Thermodynamics/Zeroth-law/",
+                desc: "Heat flow through diathermic and adiabatic walls, thermal equilibrium, and why a thermometer works.",
+                accent: "var(--accent-thermo)",
+                icon: "🌡️"
             }
         ];
 
@@ -906,7 +981,8 @@ IP<!DOCTYPE html>
             "Wave Optics":            { icon: "💡", title: "Wave Optics",            accent: "var(--accent-light)" },
             "Water":                  { icon: "💧", title: "Water",                  accent: "var(--accent-water)" },
             "Semiconductor":          { icon: "🔌", title: "Semiconductor",          accent: "var(--accent-semiconductor)" },
-            "Std-10":                 { icon: "🔦", title: "Std-10",                 accent: "var(--accent-std10)" }
+            "Std-10":                 { icon: "🔦", title: "Std-10",                 accent: "var(--accent-std10)" },
+            "Thermodynamics":         { icon: "🌡️", title: "Thermodynamics",         accent: "var(--accent-thermo)" }
         };
 
         // Keep the header stat cards in sync with the data automatically.
